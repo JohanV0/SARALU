@@ -97,7 +97,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'Ameria/Bogota'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
@@ -118,3 +118,10 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "login"
+LOGIN_URL = "login"
+
+SESSION_COKIE = 900
+SESSION_SAVE_EVERY_REQUEST = True

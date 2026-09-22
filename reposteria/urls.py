@@ -2,6 +2,9 @@ from django.http import HttpResponse
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
-    path('', views.home, name = 'home')
+    path('', views.home, name='home'),
+    path('catalogo/', views.home, name='catalogo'),        # temporal
+    path('producto/<int:id>/', views.home, name='producto_detalle'),  # temporal
 ]

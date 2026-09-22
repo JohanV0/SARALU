@@ -1,0 +1,498 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SARALU — Repostería Artesanal</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: "#b1c8ea",
+            mantequilla: "#ffebaa",
+            chocolate: "#382322",
+            crema: "#fdebde",
+          },
+          fontFamily: {
+            display: ['"Fraunces"', 'serif'],
+            body: ['"Manrope"', 'sans-serif'],
+          },
+          boxShadow: {
+            soft: "0 10px 30px -12px rgba(56, 35, 34, 0.25)",
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body class="bg-crema font-body text-chocolate antialiased">
+
+  {# NAVBAR #}
+  <header class="sticky top-0 z-50 border-b border-chocolate/10 bg-crema/85 backdrop-blur-md">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3.5">
+
+      <div class="flex items-center gap-3 shrink-0">
+
+        {# PANEL ADMIN — solo visible para la dueña #}
+        {% if user.is_authenticated and user.is_staff %}
+          <div class="relative" id="admin-menu">
+            <button type="button"
+                    onclick="document.getElementById('admin-dropdown').classList.toggle('hidden')"
+                    class="grid h-12 w-12 place-items-center rounded-full border-2 border-chocolate/20 bg-chocolate text-crema shadow-soft hover:bg-chocolate/90 transition"
+                    aria-label="Panel de administración">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+
+            <div id="admin-dropdown"
+                 class="hidden absolute left-0 top-14 z-50 w-72 overflow-hidden rounded-2xl border border-chocolate/10 bg-white shadow-2xl">
+
+              <div class="border-b border-chocolate/10 bg-mantequilla/60 px-4 py-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-chocolate/60">Panel</p>
+                <p class="font-display text-lg font-black">Administración</p>
+                <p class="text-xs text-chocolate/60">Hola, {{ user.first_name|default:user.username }}</p>
+              </div>
+
+              <nav class="max-h-[70vh] overflow-y-auto py-2 text-sm">
+
+                {# Panel principal #}
+                <a href="#" {# → {% url 'admin_panel' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  Panel principal
+                </a>
+
+                <p class="mt-3 px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-chocolate/40">Catálogo</p>
+
+                {# Registrar producto #}
+                <a href="#" {# → {% url 'producto_crear' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 4v16m8-8H4" />
+                  </svg>
+                  Registrar producto
+                </a>
+
+                {# Modificar productos #}
+                <a href="#" {# → {% url 'producto_lista' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  Modificar productos
+                </a>
+
+                {# Estado de productos #}
+                <a href="#" {# → {% url 'producto_estado' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  Estado de productos
+                </a>
+
+                <p class="mt-3 px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-chocolate/40">Agenda</p>
+
+                {# Cupos diarios #}
+                <a href="#" {# → {% url 'cupos_diarios' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Cupos diarios
+                </a>
+
+                {# Bloquear fechas #}
+                <a href="#" {# → {% url 'bloquear_fechas' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                  </svg>
+                  Bloquear fechas
+                </a>
+
+                <p class="mt-3 px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-chocolate/40">Pedidos</p>
+
+                {# Pedidos pendientes #}
+                <a href="#" {# → {% url 'pedidos_pendientes' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="2" />
+                    <path d="M9 12h6M9 16h6" />
+                  </svg>
+                  Pedidos pendientes
+                </a>
+
+                {# Todos los pedidos #}
+                <a href="#" {# → {% url 'pedidos_lista' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h10" />
+                  </svg>
+                  Todos los pedidos
+                </a>
+
+                {# Cambiar estado de pedido #}
+                <a href="#" {# → {% url 'pedidos_estado' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                  </svg>
+                  Cambiar estado
+                </a>
+
+                <p class="mt-3 px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-chocolate/40">Reseñas</p>
+
+                {# Responder reseñas #}
+                <a href="#" {# → {% url 'resenas_lista' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                  </svg>
+                  Responder reseñas
+                </a>
+
+                <p class="mt-3 px-4 pt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-chocolate/40">Reportes</p>
+
+                {# Historial de ventas #}
+                <a href="#" {# → {% url 'historial_ventas' %} #}
+                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="20" x2="12" y2="10" />
+                    <line x1="18" y1="20" x2="18" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="16" />
+                  </svg>
+                  Historial de ventas
+                </a>
+
+                <div class="mt-3 border-t border-chocolate/10 pt-2">
+                  {# Cerrar sesión #}
+                  <a href="#" {# → {% url 'logout' %} #}
+                     class="flex items-center gap-3 px-4 py-2.5 text-red-700 hover:bg-red-50 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Cerrar sesión
+                  </a>
+                </div>
+
+              </nav>
+            </div>
+          </div>
+        {% endif %}
+
+        {# Logo + nombre #}
+        <a href="#" {# → {% url 'home' %} #}
+           class="flex items-center gap-3 shrink-0">
+          <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-chocolate/15 bg-mantequilla shadow-soft">
+            <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-cover" />
+          </span>
+          <span class="flex flex-col leading-none">
+            <span class="font-display text-2xl font-black tracking-tight">SARALU</span>
+            <span class="text-[10px] font-semibold uppercase tracking-[0.35em] text-chocolate/50">Repostería</span>
+          </span>
+        </a>
+      </div>
+
+      <ul class="hidden lg:flex items-center gap-7 text-sm font-semibold">
+        <li><a href="#inicio" class="hover:text-chocolate/70 transition">Inicio</a></li>
+        <li><a href="#catalogo-destacado" class="hover:text-chocolate/70 transition">Destacados</a></li>
+        <li><a href="#mas-vendidos" class="hover:text-chocolate/70 transition">Más vendidos</a></li>
+        <li><a href="#nuevos" class="hover:text-chocolate/70 transition">Novedades</a></li>
+      </ul>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+
+        {# Carrito #}
+        <a href="#" {# → {% url 'carrito' %} #}
+           class="relative inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-chocolate/20 hover:border-chocolate/60 transition"
+           aria-label="Carrito de compras">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          {% if carrito_count %}
+            <span class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-chocolate px-1 text-[10px] font-bold text-crema">
+              {{ carrito_count }}
+            </span>
+          {% endif %}
+        </a>
+
+        {% if user.is_authenticated %}
+          <div class="hidden sm:flex items-center gap-2 rounded-full border-2 border-chocolate/20 px-4 py-2 text-sm font-bold">
+            <span class="h-2 w-2 rounded-full bg-green-500"></span>
+            {{ user.first_name|default:user.username }}
+          </div>
+        {% else %}
+          {# Iniciar sesión #}
+          <a href="{% url 'login' %}"
+             class="inline-flex items-center gap-2 rounded-full border-2 border-chocolate/80 px-4 py-2 text-sm font-bold hover:bg-chocolate hover:text-crema transition">
+            Iniciar sesión
+          </a>
+        {% endif %}
+
+        {# Ver catálogo #}
+        <a href="#" {# → {% url 'catalogo' %} #}
+           class="hidden sm:inline-flex items-center gap-2 rounded-full bg-chocolate px-5 py-2.5 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
+          Ver catálogo
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  {# HERO #}
+  <section id="inicio" class="relative overflow-hidden">
+    <div class="relative mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 md:grid-cols-[1.1fr_1fr] md:py-24">
+      <div class="space-y-7">
+        <h1 class="font-display text-5xl font-black leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+          <span class="block text-sm font-body font-bold uppercase tracking-[0.4em] text-chocolate/50 mb-3">SARALU · Repostería</span>
+          Endulzamos tus <span class="italic">momentos</span> especiales
+        </h1>
+        <p class="max-w-lg text-base text-chocolate/70 md:text-lg">
+          Tortas, cupcakes y postres artesanales hechos con ingredientes frescos.
+          Personaliza tu pedido y confírmalo por WhatsApp.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          {# Ver catálogo completo #}
+          <a href="#" {# → {% url 'catalogo' %} #}
+             class="rounded-full bg-chocolate px-7 py-3.5 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
+            Ver catálogo completo
+          </a>
+        </div>
+      </div>
+
+      <div class="relative">
+        <img src="{% static 'img/logo.png' %}" alt="Imagen principal de SARALU"
+             class="relative h-[440px] w-full rounded-[2.5rem] border-4 border-white object-cover shadow-soft" />
+      </div>
+    </div>
+  </section>
+
+  {# CATÁLOGO DESTACADO #}
+  <section id="catalogo-destacado" class="mx-auto max-w-7xl px-6 py-14">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-[0.3em] text-chocolate/50">Lo mejor</span>
+        <h2 class="font-display mt-1 text-3xl font-black md:text-4xl">Catálogo destacado</h2>
+      </div>
+      {# Ver todo (catálogo) #}
+      <a href="#" {# → {% url 'catalogo' %} #}
+         class="text-sm font-bold underline decoration-mantequilla decoration-4 underline-offset-4">
+        Ver todo
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {% for producto in destacados %}
+        <div class="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-chocolate/5 transition hover:-translate-y-1.5 hover:shadow-xl">
+
+          {# Detalle del producto #}
+          <a href="#" {# → {% url 'producto_detalle' producto.id %} #}
+             class="relative block overflow-hidden">
+            {% if producto.imagen %}
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                   class="h-64 w-full object-cover transition group-hover:scale-105" />
+            {% endif %}
+            <span class="absolute left-4 top-4 rounded-full bg-mantequilla px-3 py-1 text-[11px] font-black uppercase">
+              Destacado
+            </span>
+          </a>
+
+          <div class="flex flex-1 flex-col justify-between p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                {# Detalle del producto #}
+                <a href="#" {# → {% url 'producto_detalle' producto.id %} #}>
+                  <h3 class="font-display text-lg font-bold hover:text-chocolate/70 transition">{{ producto.nombre }}</h3>
+                </a>
+                <p class="text-sm text-chocolate/60">{{ producto.descripcion }}</p>
+              </div>
+              <p class="font-display text-lg font-black whitespace-nowrap">${{ producto.precio|floatformat:0 }}</p>
+            </div>
+
+            {# Añadir al carrito #}
+            <form method="post" action="#" {# → {% url 'agregar_carrito' producto.id %} #} class="mt-4">
+              {% csrf_token %}
+              <button type="submit"
+                      class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-4 py-2.5 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
+                Añadir al carrito
+              </button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-span-full flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-chocolate/15 bg-white/50 px-6 py-14 text-center">
+          <h3 class="font-display text-lg font-bold">Sin productos disponibles</h3>
+          <p class="mt-1 text-sm text-chocolate/60">Aún no hemos publicado productos destacados.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# MÁS VENDIDOS #}
+  <section id="mas-vendidos" class="bg-mantequilla/60 py-16">
+    <div class="mx-auto max-w-7xl px-6">
+      <h2 class="font-display text-3xl font-black md:text-4xl mb-8">Productos más vendidos</h2>
+      <div class="grid grid-cols-2 gap-5 md:grid-cols-4">
+        {% for producto in mas_vendidos %}
+          <div class="group rounded-2xl border border-chocolate/10 bg-crema p-4 hover:shadow-soft transition flex flex-col">
+
+            {# Detalle del producto #}
+            <a href="#" {# → {% url 'producto_detalle' producto.id %} #}>
+              {% if producto.imagen %}
+                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                     class="mb-3 h-40 w-full rounded-xl object-cover" />
+              {% endif %}
+              <h3 class="font-bold text-sm">{{ producto.nombre }}</h3>
+              <p class="mt-0.5 text-xs text-chocolate/60">${{ producto.precio|floatformat:0 }}</p>
+            </a>
+
+            {# Añadir al carrito #}
+            <form method="post" action="#" {# → {% url 'agregar_carrito' producto.id %} #} class="mt-3">
+              {% csrf_token %}
+              <button type="submit"
+                      class="w-full rounded-full bg-chocolate px-3 py-2 text-xs font-bold text-crema hover:bg-chocolate/90 transition">
+                Añadir
+              </button>
+            </form>
+          </div>
+        {% empty %}
+          <div class="col-span-full rounded-3xl border-2 border-dashed border-chocolate/15 bg-white/50 px-6 py-14 text-center">
+            <h3 class="font-display text-lg font-bold">Sin productos disponibles</h3>
+            <p class="mt-1 text-sm text-chocolate/60">Todavía no hay productos vendidos.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  {# PRODUCTOS NUEVOS #}
+  <section id="nuevos" class="mx-auto max-w-7xl px-6 py-16">
+    <h2 class="font-display text-3xl font-black md:text-4xl mb-8">Productos nuevos</h2>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      {% for producto in nuevos %}
+        <div class="group flex flex-col overflow-hidden rounded-3xl border border-chocolate/10 bg-azul/40 hover:shadow-soft transition">
+
+          {# Detalle del producto #}
+          <a href="#" {# → {% url 'producto_detalle' producto.id %} #}>
+            {% if producto.imagen %}
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                   class="h-60 w-full object-cover group-hover:scale-105 transition" />
+            {% endif %}
+          </a>
+
+          <div class="flex flex-1 flex-col justify-between p-5">
+            <div>
+              <span class="rounded-full bg-white/70 px-3 py-1 text-[10px] font-black uppercase">Nuevo</span>
+
+              {# Detalle del producto #}
+              <a href="#" {# → {% url 'producto_detalle' producto.id %} #}>
+                <h3 class="font-display mt-3 text-lg font-bold">{{ producto.nombre }}</h3>
+              </a>
+              <p class="mt-1 text-sm text-chocolate/60">{{ producto.descripcion }}</p>
+            </div>
+
+            {# Añadir al carrito #}
+            <form method="post" action="#" {# → {% url 'agregar_carrito' producto.id %} #} class="mt-4">
+              {% csrf_token %}
+              <button type="submit"
+                      class="w-full rounded-full bg-chocolate px-4 py-2.5 text-sm font-bold text-crema hover:bg-chocolate/90 transition">
+                Añadir al carrito
+              </button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-span-full rounded-3xl border-2 border-dashed border-chocolate/15 bg-white/50 px-6 py-14 text-center">
+          <h3 class="font-display text-lg font-bold">Sin productos disponibles</h3>
+          <p class="mt-1 text-sm text-chocolate/60">Muy pronto tendremos nuevas delicias.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# CTA FINAL #}
+  <section class="px-6 pb-20">
+    <div class="mx-auto max-w-7xl rounded-[2.5rem] bg-chocolate px-8 py-16 text-center text-crema">
+      <h2 class="font-display text-3xl font-black md:text-5xl">¿Listo para endulzar tu día?</h2>
+
+      {# Ver catálogo completo #}
+      <a href="#" {# → {% url 'catalogo' %} #}
+         class="mt-8 inline-flex rounded-full bg-mantequilla px-8 py-3.5 text-sm font-bold text-chocolate">
+        Ver catálogo completo
+      </a>
+    </div>
+  </section>
+
+  {# FOOTER #}
+  <footer class="border-t border-chocolate/10 bg-crema">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-chocolate/70 md:flex-row">
+      <p class="font-display text-lg font-black text-chocolate">SARALU</p>
+      <p>© {% now "Y" %} SARALU Repostería.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('click', function (e) {
+      const menu = document.getElementById('admin-menu');
+      const dropdown = document.getElementById('admin-dropdown');
+      if (!menu || !dropdown) return;
+      if (!menu.contains(e.target)) dropdown.classList.add('hidden');
+    });
+  </script>
+
+</body>
+</html>

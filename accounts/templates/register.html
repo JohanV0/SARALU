@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión</title>
+    <title>Crear cuenta</title>
 
     <!-- Tipografías: una elegante para títulos y una limpia para el resto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
     </script>
 </head>
 
-<body class="relative flex min-h-[100dvh] items-center justify-center px-4 py-16
+<body class="relative flex min-h-[100dvh] items-center justify-center px-4 py-8
              font-cuerpo antialiased
              bg-azul text-chocolate
              dark:bg-chocolate dark:text-crema
@@ -74,35 +74,42 @@
     </button>
 
     <!-- Tarjeta -->
-    <main class="relative z-10 mx-auto my-auto w-full max-w-md rounded-3xl p-6 sm:p-10
+    <main class="relative z-10 mx-auto my-auto w-full max-w-md sm:max-w-xl lg:max-w-2xl rounded-3xl p-6 sm:p-10
                  bg-crema ring-1 ring-chocolate/10 shadow-2xl shadow-chocolate/30
                  dark:bg-white/[0.06] dark:ring-white/10 dark:shadow-black/50
                  backdrop-blur-xl">
 
         <!-- Logo y título -->
         <div class="text-center mb-8">
-            <div class="mx-auto mb-6 flex h-36 w-36 items-center justify-center overflow-hidden rounded-full
+            <div class="mx-auto mb-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full
                         bg-mantequilla ring-4 ring-azul">
                 <img src="{% static 'img/logo.png' %}" alt="Logo Saralu" class="h-full w-full object-contain p-3">
             </div>
-            <h1 class="font-titulo text-3xl font-bold tracking-tight text-chocolate dark:text-crema">Te da la Bienvenida </h1>
+            <h1 class="font-titulo text-3xl font-bold tracking-tight text-chocolate dark:text-crema">Crear cuenta</h1>
+            <p class="mt-2 text-sm text-chocolate/70 dark:text-crema/70">
+                Regístrate para gestionar tus tatuajes y citas
+            </p>
         </div>
 
-        <!-- Errores de Django (usuario o contraseña incorrectos) -->
-        {% if form.errors %}
+        <!-- Errores generales del formulario (si tu vista los envía en "errors") -->
+        {% if errors %}
         <div class="mb-5 rounded-xl px-4 py-3 text-sm
                     bg-red-100 text-red-700 ring-1 ring-red-200
                     dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30">
-            Usuario o contraseña incorrectos.
+            <ul class="list-disc pl-4 space-y-0.5">
+                {% for error in errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
         </div>
         {% endif %}
 
-        <form action="{% url 'login' %}" method="post" class="space-y-5">
+        <form method="POST" class="space-y-5">
             {% csrf_token %}
 
             <!-- Usuario -->
             <div>
-                <label for="username" class="mb-1.5 block text-sm font-medium">Nombre</label>
+                <label for="username" class="mb-1.5 block text-sm font-medium">Usuario</label>
                 <div class="group relative">
                     <svg class="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2
                                 text-chocolate/40 dark:text-crema/40
@@ -114,9 +121,65 @@
                         type="text"
                         name="username"
                         id="username"
-                        placeholder="Nombre del usuario"
-                        autofocus
-                        value="{{ form.username.value|default:'' }}"
+                        placeholder="Nombre de usuario"
+                        value="{{ datos.username|default:'' }}"
+                        required
+                        class="w-full rounded-xl py-3 pl-11 pr-4 text-sm
+                               bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
+                               dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
+                               focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
+                </div>
+            </div>
+
+            <!-- Nombre y Apellido en la misma fila -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="first_name" class="mb-1.5 block text-sm font-medium">Nombre</label>
+                    <input
+                        type="text"
+                        name="first_name"
+                        id="first_name"
+                        placeholder="Nombre"
+                        value="{{ datos.first_name|default:'' }}"
+                        required
+                        class="w-full rounded-xl px-4 py-3 text-sm
+                               bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
+                               dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
+                               focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
+                </div>
+                <div>
+                    <label for="last_name" class="mb-1.5 block text-sm font-medium">Apellido</label>
+                    <input
+                        type="text"
+                        name="last_name"
+                        id="last_name"
+                        placeholder="Apellido"
+                        value="{{ datos.last_name|default:'' }}"
+                        required
+                        class="w-full rounded-xl px-4 py-3 text-sm
+                               bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
+                               dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
+                               focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
+                </div>
+            </div>
+
+            <!-- Correo -->
+            <div>
+                <label for="email" class="mb-1.5 block text-sm font-medium">Correo</label>
+                <div class="group relative">
+                    <svg class="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2
+                                text-chocolate/40 dark:text-crema/40
+                                group-focus-within:text-chocolate dark:group-focus-within:text-azul transition-colors"
+                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
+                    <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="tucorreo@ejemplo.com"
+                        value="{{ datos.email|default:'' }}"
+                        required
                         class="w-full rounded-xl py-3 pl-11 pr-4 text-sm
                                bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
                                dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
@@ -126,7 +189,7 @@
 
             <!-- Contraseña -->
             <div>
-                <label for="password" class="mb-1.5 block text-sm font-medium">Contraseña</label>
+                <label for="password1" class="mb-1.5 block text-sm font-medium">Contraseña</label>
                 <div class="group relative">
                     <svg class="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2
                                 text-chocolate/40 dark:text-crema/40
@@ -136,22 +199,39 @@
                     </svg>
                     <input
                         type="password"
-                        name="password"
-                        id="password"
-                        placeholder="Ingrese su contraseña"
+                        name="password1"
+                        id="password1"
+                        placeholder="Crea una contraseña"
+                        value="{{ datos.password1|default:'' }}"
                         required
                         class="w-full rounded-xl py-3 pl-11 pr-4 text-sm
                                bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
                                dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
                                focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
                 </div>
+            </div>
 
-                <!-- Olvidaste tu contraseña, pegado a la caja de contraseña -->
-                <div class="mt-2 text-right">
-                    <a href="#" class="text-xs font-medium text-chocolate/60 hover:text-chocolate
-                                       dark:text-crema/60 dark:hover:text-azul transition-colors">
-                        ¿Olvidaste tu contraseña?
-                    </a>
+            <!-- Confirmar contraseña -->
+            <div>
+                <label for="password2" class="mb-1.5 block text-sm font-medium">Confirmar contraseña</label>
+                <div class="group relative">
+                    <svg class="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2
+                                text-chocolate/40 dark:text-crema/40
+                                group-focus-within:text-chocolate dark:group-focus-within:text-azul transition-colors"
+                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    <input
+                        type="password"
+                        name="password2"
+                        id="password2"
+                        placeholder="Repite la contraseña"
+                        value="{{ datos.password2|default:'' }}"
+                        required
+                        class="w-full rounded-xl py-3 pl-11 pr-4 text-sm
+                               bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
+                               dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
+                               focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
                 </div>
             </div>
 
@@ -163,16 +243,16 @@
                        dark:bg-mantequilla dark:text-chocolate dark:shadow-none
                        dark:hover:bg-mantequilla/90
                        active:scale-[0.98] transition">
-                Ingresar sesión
+                Crear cuenta
             </button>
 
-            <!-- Enlace de registro, como texto aparte debajo del botón -->
+            <!-- Enlace de vuelta al login -->
             <p class="text-center text-sm text-chocolate/70 dark:text-crema/70">
-                ¿No tienes cuenta?
-                <a href="{% url 'register' %}" class="font-semibold text-chocolate underline underline-offset-2
-                                                        hover:text-chocolate/70
-                                                        dark:text-mantequilla dark:hover:text-mantequilla/80 transition-colors">
-                    Regístrate
+                ¿Ya tienes cuenta?
+                <a href="{% url 'login' %}" class="font-semibold text-chocolate underline underline-offset-2
+                                                     hover:text-chocolate/70
+                                                     dark:text-mantequilla dark:hover:text-mantequilla/80 transition-colors">
+                    Inicia sesión
                 </a>
             </p>
         </form>

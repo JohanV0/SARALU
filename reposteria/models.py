@@ -93,7 +93,28 @@ class RepuestaResena(models.Model):
         return f'{self.usuario.username} respondio la resena de {self.resena.producto.username}'
 
 class ConfiguracionAgenda(models.Model):
-    '''
-    modelo que representa 
+    """
+    Configuración global de la agenda.
+    """
+
+    cupo_maximo_por_dia = models.PositiveSmallIntegerField(default=5)
+    
+    # Cuando guardes, fuerza que el id sea 1 (así solo hay una fila)
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    # Método para obtener la configuración (la crea si no existe)
+    @classmethod
+    def obtener(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    # Cómo se muestra como texto
+    def __str__(self):
+        return f'Cupo máximo: {self.cupo_maximo_por_dia}'
+
+class FechaBloqueada(models.Model):
     '''
     
+    '''

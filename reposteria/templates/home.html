@@ -333,17 +333,20 @@
 
       {# ----- Footer del panel ----- #}
       <div class="border-t border-chocolate/10 bg-crema px-4 py-4">
-        <a href="{% url 'logout' %}"
-           class="group flex items-center justify-center gap-2 rounded-2xl border border-red-200/60 bg-white px-4 py-3 text-sm font-semibold text-red-700 shadow-soft hover:bg-red-50 hover:border-red-300 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Cerrar sesión
-        </a>
+        <form action="{% url 'logout' %}" method="post" class="block">
+          {% csrf_token %}
+          <button type="submit"
+                  class="group flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200/60 bg-white px-4 py-3 text-sm font-semibold text-red-700 shadow-soft hover:bg-red-50 hover:border-red-300 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Cerrar sesión
+          </button>
+        </form>
         <p class="mt-3 text-center text-[10px] font-semibold uppercase tracking-widest2 text-chocolate/30">
           SARALU · v1.0
         </p>

@@ -126,6 +126,118 @@
             </div>
         </div>
     </div>
+    <!--SECCIÓN DE RESEÑAS (HU-012)-->
+    <div class="mt-16 border-t border-chocolate/10 pt-10">
+        <h2 class="font-display text-3xl font-black text-chocolate mb-8">Opiniones de clientes</h2>
+
+        <!-- Mensajes de éxito o eliminación -->
+        {% if messages %}
+            <div class="mb-6 flex flex-col gap-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-xl text-sm font-bold {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-mantequilla text-chocolate{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- COLUMNA IZQUIERDA: Formulario o Login -->
+            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-soft border border-chocolate/5 h-max">
+                {% if user.is_authenticated %}
+                    
+                    <h3 class="font-bold text-xl mb-4 text-chocolate">
+                        {% if resena_usuario %}Edita tu reseña{% else %}Deja tu reseña{% endif %}
+                    </h3>
+                    
+                    <!-- Formulario para Guardar o Editar -->
+                    <form method="POST" class="flex flex-col gap-4">
+                        {% csrf_token %}
+                        <!-- Variable oculta para que views.py sepa qué hacer -->
+                        <input type="hidden" name="accion" value="guardar">
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-chocolate/80 mb-1" for="{{ form.calificacion.id_for_label }}">{{ form.calificacion.label }}</label>
+                            {{ form.calificacion }}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-chocolate/80 mb-1" for="{{ form.comentario.id_for_label }}">{{ form.comentario.label }}</label>
+                            {{ form.comentario }}
+                        </div>
+
+                        <div class="mt-2">
+                            <button type="submit" class="w-full md:w-auto rounded-full bg-chocolate px-6 py-3 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
+                                {% if resena_usuario %}Actualizar reseña{% else %}Publicar reseña{% endif %}
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Formulario separado para Eliminar -->
+                    {% if resena_usuario %}
+                    <form method="POST" class="mt-4 border-t border-chocolate/10 pt-4" onsubmit="return confirm('¿Estás seguro de que deseas eliminar tu reseña? Esta acción no se puede deshacer.');">
+                        {% csrf_token %}
+                        <!-- Variable oculta para que views.py elimine -->
+                        <input type="hidden" name="accion" value="eliminar">
+                        <button type="submit" class="text-sm font-bold text-red-500 hover:text-red-700 transition underline">
+                            Eliminar mi reseña
+                        </button>
+                    </form>
+                    {% endif %}
+
+                {% else %}
+                    <!-- Petición de Login para usuarios anónimos -->
+                    <div class="text-center py-8">
+                        <h3 class="font-bold text-lg mb-2 text-chocolate">¿Ya probaste este producto?</h3>
+                        <p class="text-sm text-chocolate/70 mb-6">Para dejar una reseña, por favor inicia sesión o regístrate en nuestra plataforma.</p>
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="inline-block rounded-full bg-chocolate px-8 py-3 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
+                            Iniciar sesión
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- COLUMNA DERECHA: Lista de reseñas -->
+            <div class="flex flex-col gap-6">
+                <h3 class="font-bold text-xl text-chocolate border-b border-chocolate/10 pb-3">Reseñas publicadas ({{ resenas.count }})</h3>
+                
+                <div class="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-2">
+                    {% for resena in resenas %}
+                        <div class="bg-crema/40 p-5 rounded-2xl border border-chocolate/5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-chocolate">{{ resena.usuario.username }}</span>
+                                <span class="text-yellow-500 drop-shadow-sm font-black tracking-widest text-lg">
+                                    <!-- Truco visual para mostrar estrellitas según la calificación -->
+                                    {% if resena.calificacion == 1 %}★☆☆☆☆
+                                    {% elif resena.calificacion == 2 %}★★☆☆☆
+                                    {% elif resena.calificacion == 3 %}★★★☆☆
+                                    {% elif resena.calificacion == 4 %}★★★★☆
+                                    {% elif resena.calificacion == 5 %}★★★★★
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <p class="text-sm text-chocolate/80 leading-relaxed">{{ resena.comentario }}</p>
+                            
+                            <!-- Respuestas de la dueña (del modelo RespuestaResena) -->
+                            {% if resena.respuestas.all %}
+                                <div class="mt-4 bg-white p-4 rounded-xl border border-chocolate/10 shadow-sm relative">
+                                    <div class="absolute -top-2 left-4 w-4 h-4 bg-white border-t border-l border-chocolate/10 transform rotate-45"></div>
+                                    {% for respuesta in resena.respuestas.all %}
+                                        <p class="text-xs font-black text-chocolate mb-1">Respuesta de SARALU:</p>
+                                        <p class="text-xs text-chocolate/70">{{ respuesta.respuesta }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-10">
+                            <p class="text-chocolate/50 italic">Nadie ha comentado aún. ¡Anímate a ser el primero!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
   </main>
 
   {# FOOTER #}

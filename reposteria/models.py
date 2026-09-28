@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from decimal import Decimal
 
 class Categoria(models.Model):
     '''
@@ -14,6 +13,13 @@ class Categoria(models.Model):
         return self.nombre  
 
 class Producto(models.Model):
+    '''
+    '''
+    categoria = models.ForeignKey(
+        Categoria,
+        on_delete= models.CASCADE,
+        related_name= 'productos'
+    )
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)
     precio = models.DecimalField(
@@ -74,7 +80,7 @@ class Resena(models.Model):
     def __str__(self):
         return f'el usuario {self.usuario.username} califico el producto {self.producto.nombre}'
 
-class RepuestaResena(models.Model):
+class RespuestaResena(models.Model):
     '''
     modelo que respresenta una respuesta a una resena
     '''
@@ -121,7 +127,7 @@ class FechaBloqueada(models.Model):
     Representa la fecha en la que la dueña no recibe pedidos.
     '''
     fecha = models.DateField(unique=True)
-    motivo = models.CharField(max_length=150
+    motivo = models.CharField(max_length=150, blank=True
     )
 
     def __str__(self):

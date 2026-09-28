@@ -22,3 +22,7 @@ def catalogo_view(request):
         'categoria_actual': int(categoria_id) if categoria_id else None,
     }
     return render(request, 'catalogo.html', contexto)
+
+def detalle_producto_view(request, producto_id):
+    producto = get_object_or_404(Producto.objects.prefetch_related('imagenes'), id=producto_id)
+    return render(request, 'detalle_producto.html', {'producto': producto})

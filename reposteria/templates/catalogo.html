@@ -155,10 +155,10 @@
 
             <div class="mt-auto flex items-center justify-between pt-5">
               <p class="font-display text-xl font-black">${{ producto.precio|floatformat:0 }}</p>
-              <button type="button"
-                      class="rounded-full bg-chocolate px-4 py-2 text-xs font-bold text-crema shadow-soft transition hover:bg-chocolate/90">
-                Ver detalle
-              </button>
+              <a href="{% url 'detalle_producto' producto.id %}"
+                class="rounded-full bg-chocolate px-4 py-2 text-xs font-bold text-crema shadow-soft transition hover:bg-chocolate/90">
+                  Ver detalle
+              </a>
             </div>
           </div>
         </article>

@@ -8,11 +8,20 @@ from .models import (
     ConfiguracionAgenda,
     FechaBloqueada,
     CupoFecha,
-    # DetallePedido, # Descomenta si usas el modelo
-    # Pedido,        # Descomenta si usas el modelo
+    HorarioAtencion,
+    Perfil,
+    DireccionCliente,
+    Carrito,
+    ItemCarrito,
+    Favorito,
+    Cupon,
+    Pedido,
+    DetallePedido,
+    HistorialEstadoPedido,
+    Pago,
+    Notificacion,
 )
 
-# Registro directo de cada modelo en el panel de administración
 admin.site.register(Categoria)
 admin.site.register(Producto)
 admin.site.register(ImagenProducto)
@@ -21,7 +30,15 @@ admin.site.register(RespuestaResena)
 admin.site.register(ConfiguracionAgenda)
 admin.site.register(FechaBloqueada)
 admin.site.register(CupoFecha)
-
-# Si decides activar los modelos de Pedido y DetallePedido en models.py, descomenta estas líneas:
-# admin.site.register(Pedido)
-# admin.site.register(DetallePedido)
+admin.site.register(HorarioAtencion)
+admin.site.register(Perfil)
+admin.site.register(DireccionCliente)
+admin.site.register(Carrito)
+admin.site.register(ItemCarrito)
+admin.site.register(Favorito)
+admin.site.register(Cupon)
+admin.site.register(Pedido)
+admin.site.register(DetallePedido)
+admin.site.register(HistorialEstadoPedido)
+admin.site.register(Pago)
+admin.site.register(Notificacion)

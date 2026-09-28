@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from decimal import Decimal
 
 class Categoria(models.Model):
     '''
@@ -14,6 +13,13 @@ class Categoria(models.Model):
         return self.nombre  
 
 class Producto(models.Model):
+    '''
+    '''
+    categoria = models.ForeignKey(
+        Categoria,
+        on_delete= models.CASCADE,
+        related_name= 'productos'
+    )
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)
     precio = models.DecimalField(
@@ -74,7 +80,7 @@ class Resena(models.Model):
     def __str__(self):
         return f'el usuario {self.usuario.username} califico el producto {self.producto.nombre}'
 
-class RepuestaResena(models.Model):
+class RespuestaResena(models.Model):
     '''
     modelo que respresenta una respuesta a una resena
     '''
@@ -121,7 +127,7 @@ class FechaBloqueada(models.Model):
     Representa la fecha en la que la dueña no recibe pedidos.
     '''
     fecha = models.DateField(unique=True)
-    motivo = models.CharField(max_length=150
+    motivo = models.CharField(max_length=150, blank=True
     )
 
     def __str__(self):
@@ -131,75 +137,75 @@ class CupoFecha(models.Model):
     Representa los limites disponible por fecha 
     '''
     fecha = models.DateField(unique=True)
-    cupos_disponibles = models.PositiveSmallIntegerField
+    cupos_disponibles = models.PositiveSmallIntegerField()
 
     def __str__(self):
         return f'{self.fecha}-{self.cupos_disponibles} cupos diponibles'
 
-class DetallePedido(models.Model):
-    '''
-    modelo que representa un producto dentro de un pedido
-    '''
-    producto = models.ForeignKey(
-        Producto,
-        on_delete= models.CASCADE,
-        related_name = 'detalles'
-    )
-    pedido = models.ForeignKey(
-        Pedido,
-        on_delete= models.CASCADE,
-        related_name= 'detalles'
-    )
+# class DetallePedido(models.Model):
+#     '''
+#     modelo que representa un producto dentro de un pedido
+#     '''
+#     producto = models.ForeignKey(
+#         Producto,
+#         on_delete= models.CASCADE,
+#         related_name = 'detalles'
+#     )
+#     pedido = models.ForeignKey(
+#         Pedido,
+#         on_delete= models.CASCADE,
+#         related_name= 'detalles'
+#     )
 
-class Pedido(models.Model):
-    '''
+# class Pedido(models.Model):
+#     '''
     
-    '''
-    ESTADOS = [
-        ('pendiente', 'Pendiente'),
-        ('confirmado', 'Confirmado'),
-        ('preparacion', 'En preparación'),
-        ('entregado', 'Entregado'),
-        ('cancelado', 'Cancelado'),
-    ]
+#     '''
+#     ESTADOS = [
+#         ('pendiente', 'Pendiente'),
+#         ('confirmado', 'Confirmado'),
+#         ('preparacion', 'En preparación'),
+#         ('entregado', 'Entregado'),
+#         ('cancelado', 'Cancelado'),
+#     ]
 
-    TIPOS_ENTREGA = [
-        ('domicilio', 'Domicilio en Ibagué'),
-        ('recojo', 'Recojo en tienda'),
-    ]
+#     TIPOS_ENTREGA = [
+#         ('domicilio', 'Domicilio en Ibagué'),
+#         ('recojo', 'Recojo en tienda'),
+#     ]
 
-    cliente = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete= models.CASCADE,
-        related_name='clientes',
-        null=True,
-    )
+#     cliente = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete= models.CASCADE,
+#         related_name='clientes',
+#         null=True,
+#     )
 
-    nombre_contacto = models.CharField(max_length=150)
-    telefono_contacto = models.CharField(max_length=15)
-    direccion_entrega = models.CharField(max_length=250)
-    domicilio = models.CharField(
-        max_length=20,
-        choices='TIPOS_ENTREGA',
-        default='domicilio')
-    # Fechas 
-    creado = models.DateTimeField('Creado', auto_now_add=True)
-    actualizado = models.DateTimeField('Actualizado', auto_now=True)
+#     nombre_contacto = models.CharField(max_length=150)
+#     telefono_contacto = models.CharField(max_length=15)
+#     direccion_entrega = models.CharField(max_length=250)
+#     domicilio = models.CharField(
+#         max_length=20,
+#         choices='TIPOS_ENTREGA',
+#         default='domicilio')
+#     # Fechas 
+#     creado = models.DateTimeField('Creado', auto_now_add=True)
+#     actualizado = models.DateTimeField('Actualizado', auto_now=True)
     
-    estado = models.CharField(
-        max_length=15,
-        choices='ESTADOS',
-        default='pendiente'
-    )
+#     estado = models.CharField(
+#         max_length=15,
+#         choices='ESTADOS',
+#         default='pendiente'
+#     )
 
 
-    total = models.DecimalField('Total', max_digits=10, decimal_places=2, default=0)
+#     total = models.DecimalField('Total', max_digits=10, decimal_places=2, default=0)
 
-    # Comentarios del cliente
-    comentarios = models.TextField('Comentarios', blank=True)
+#     # Comentarios del cliente
+#     comentarios = models.TextField('Comentarios', blank=True)
 
-    def __str__(self):
-        return f'Pedido #{self.id} - {self.nombre_contacto}'
+#     def __str__(self):
+#         return f'Pedido #{self.id} - {self.nombre_contacto}'
 
-    def contar_total(self):
-        total = sum(detalle.total) for detalle in self.detalles.all())
+#     def contar_total(self):
+#         total = sum(detalle.total) for detalle in self.detalles.all())

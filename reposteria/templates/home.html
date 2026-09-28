@@ -390,7 +390,7 @@
         <li><a href="#inicio" class="relative text-chocolate/70 hover:text-chocolate transition after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-chocolate after:transition-all hover:after:w-full">Inicio</a></li>
         <li><a href="#catalogo-destacado" class="relative text-chocolate/70 hover:text-chocolate transition after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-chocolate after:transition-all hover:after:w-full">Destacados</a></li>
         <li><a href="#mas-vendidos" class="relative text-chocolate/70 hover:text-chocolate transition after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-chocolate after:transition-all hover:after:w-full">Más vendidos</a></li>
-        <li><a href="#nuevos" class="relative text-chocolate/70 hover:text-chocolate transition after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-chocolate after:transition-all hover:after:w-full">Novedades</a></li>
+        <li><a href="#es_nuevo" class="relative text-chocolate/70 hover:text-chocolate transition after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-chocolate after:transition-all hover:after:w-full">Novedades</a></li>
       </ul>
 
       <div class="flex items-center gap-2 sm:gap-3">
@@ -613,7 +613,7 @@
   </section>
 
   {# PRODUCTOS NUEVOS #}
-  <section id="nuevos" class="mx-auto max-w-7xl px-6 lg:px-10 py-20">
+  <section id="es_nuevo" class="mx-auto max-w-7xl px-6 lg:px-10 py-20">
     <div class="mb-12">
       <span class="text-[11px] font-bold uppercase tracking-widest2 text-chocolate/45">Recién horneados</span>
       <h2 class="font-display mt-2 text-4xl md:text-5xl font-semibold tracking-tight">Productos nuevos</h2>
@@ -621,7 +621,7 @@
     </div>
 
     <div class="grid grid-cols-1 gap-7 sm:grid-cols-3">
-      {% for producto in nuevos %}
+      {% for producto in es_nuevo %}
         <div class="group flex flex-col overflow-hidden rounded-3xl border border-chocolate/10 bg-azul/25 hover:shadow-lift transition">
 
           {# Detalle del producto #}

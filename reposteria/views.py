@@ -8,5 +8,5 @@ def home(request):
     return render(request, 'home.html', {
         'destacados':  Producto.objects.filter(destacado=True),
         'mas_vendidos': Producto.objects.filter(mas_vendido=True),
-        'nuevos':      Producto.objects.filter(nuevo=True),
+        'es_nuevos':      Producto.objects.filter(es_nuevo=True),
     }) 

@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis productos — SARALU</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: "#b1c8ea",
+            mantequilla: "#ffebaa",
+            chocolate: "#382322",
+            crema: "#fdebde",
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            script: ['"Pacifico"', 'cursive'],
+            body: ['"Nunito"', 'sans-serif'],
+          },
+          boxShadow: {
+            soft: "0 4px 24px -12px rgba(56, 35, 34, 0.18)",
+            lift: "0 18px 40px -20px rgba(56, 35, 34, 0.35)",
+          },
+          letterSpacing: {
+            widest2: "0.3em",
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Pacifico&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body class="bg-crema font-body text-chocolate antialiased">
+
+  {# NAVBAR #}
+  <header class="sticky top-0 z-50 border-b border-chocolate/10 bg-crema/85 backdrop-blur-xl">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 lg:px-10 py-4">
+
+      <a href="{% url 'home' %}" class="flex items-center gap-3 shrink-0 group">
+        <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-full border border-chocolate/15 bg-mantequilla shadow-soft transition group-hover:scale-105">
+          <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-cover" />
+        </span>
+        <span class="flex flex-col leading-none">
+          <span class="font-script text-3xl text-chocolate leading-none mt-1">Saralu</span>
+          <span class="text-[9px] font-semibold uppercase tracking-widest2 text-chocolate/45 mt-1">Repostería</span>
+        </span>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="{% url 'registrar_producto' %}"
+           class="inline-flex items-center gap-2 rounded-full bg-chocolate px-5 py-2.5 text-[13px] font-semibold text-crema hover:bg-chocolate/90 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4v16m8-8H4" />
+          </svg>
+          Registrar producto
+        </a>
+        <a href="{% url 'home' %}"
+           class="group inline-flex items-center gap-2 rounded-full border border-chocolate/70 px-4 py-2 text-[13px] font-semibold hover:bg-chocolate hover:text-crema transition">
+          Volver al inicio
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  {# LISTA #}
+  <section class="mx-auto max-w-6xl px-6 lg:px-10 py-16">
+
+    <!-- Encabezado -->
+    <div class="mb-12">
+      <div class="inline-flex items-center gap-3">
+        <span class="h-px w-8 bg-chocolate/40"></span>
+        <span class="text-[11px] font-bold uppercase tracking-widest2 text-chocolate/60">Panel de administración</span>
+      </div>
+      <h1 class="font-display mt-4 text-4xl md:text-5xl font-semibold tracking-tight">
+        Mis <span class="font-script italic text-chocolate/90 text-5xl md:text-6xl">productos</span>
+      </h1>
+      <p class="mt-4 max-w-xl text-base text-chocolate/65 leading-relaxed">
+        Administra todos los productos de tu catálogo. Puedes editar precios, imágenes y disponibilidad.
+      </p>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+      <div class="mb-6 space-y-3">
+        {% for message in messages %}
+          <div class="flex items-center gap-3 rounded-2xl border border-chocolate/10 bg-mantequilla px-5 py-4 text-sm font-semibold text-chocolate shadow-soft">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if productos %}
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+      {% for p in productos %}
+        <div class="group flex flex-col overflow-hidden rounded-3xl border border-chocolate/10 bg-white transition hover:shadow-lift hover:border-chocolate/20">
+
+          <!-- Imagen -->
+          <div class="relative h-52 overflow-hidden bg-azul/20">
+            {% if p.imagen %}
+              <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}" class="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+            {% else %}
+              <div class="grid h-full w-full place-items-center text-chocolate/40 text-[10px] font-bold tracking-widest2">SIN IMAGEN</div>
+            {% endif %}
+
+            <!-- Badge disponibilidad -->
+            <span class="absolute top-4 right-4 rounded-full {% if p.estado_producto %}bg-mantequilla text-chocolate{% else %}bg-red-100 text-red-700{% endif %} px-3 py-1 text-[10px] font-bold uppercase tracking-widest2">
+              {% if p.estado_producto %}Disponible{% else %}No disp.{% endif %}
+            </span>
+          </div>
+
+          <!-- Info -->
+          <div class="flex flex-1 flex-col p-5">
+            <p class="text-[10px] font-bold uppercase tracking-widest2 text-chocolate/40">{{ p.categoria.nombre|default:"Sin categoría" }}</p>
+            <h3 class="font-display text-lg font-semibold truncate mt-1">{{ p.nombre }}</h3>
+            <p class="mt-1 text-xs text-chocolate/55 line-clamp-2">{{ p.descripcion }}</p>
+
+            <div class="mt-4 flex items-center justify-between border-t border-chocolate/10 pt-4">
+              <span class="font-display text-xl font-bold">${{ p.precio|floatformat:0 }}</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest2 text-chocolate/40">
+                Stock: {{ p.stock }}
+              </span>
+            </div>
+
+            <!-- Botón editar -->
+            <a href="{% url 'editar_producto' p.id %}"
+               class="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-5 py-2.5 text-[13px] font-semibold text-crema hover:bg-chocolate/90 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Editar producto
+            </a>
+          </div>
+
+        </div>
+      {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-chocolate/20 bg-white/40 px-6 py-20 text-center">
+      <h3 class="font-display text-xl font-semibold">Aún no tienes productos</h3>
+      <p class="mt-2 max-w-sm text-sm text-chocolate/55">Registra tu primer producto para empezar a llenar tu catálogo.</p>
+      <a href="{% url 'registrar_producto' %}"
+         class="mt-6 inline-flex items-center gap-2 rounded-full bg-chocolate px-6 py-3 text-sm font-semibold text-crema hover:bg-chocolate/90 transition">
+        Registrar el primero
+      </a>
+    </div>
+    {% endif %}
+
+  </section>
+
+  {# FOOTER #}
+  <footer class="border-t border-chocolate/10 bg-crema">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 lg:px-10 py-10 text-sm text-chocolate/60 md:flex-row">
+      <p class="font-script text-2xl text-chocolate leading-none">Saralu</p>
+      <p class="text-xs">© {% now "Y" %} SARALU Repostería. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

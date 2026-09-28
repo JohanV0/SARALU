@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registrar producto — SARALU</title>
+  <title>Editar {{ producto.nombre }} — SARALU</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -57,17 +57,13 @@
 
       <div class="flex items-center gap-2 sm:gap-3">
         <a href="{% url 'lista_productos' %}"
-           class="inline-flex items-center gap-2 rounded-full border border-chocolate/70 px-4 py-2 text-[13px] font-semibold hover:bg-chocolate hover:text-crema transition">
-          Ver productos
-        </a>
-        <a href="{% url 'home' %}"
            class="group inline-flex items-center gap-2 rounded-full border border-chocolate/70 px-4 py-2 text-[13px] font-semibold hover:bg-chocolate hover:text-crema transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1"
                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
                stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver al inicio
+          Volver a la lista
         </a>
       </div>
     </nav>
@@ -83,10 +79,10 @@
         <span class="text-[11px] font-bold uppercase tracking-widest2 text-chocolate/60">Panel de administración</span>
       </div>
       <h1 class="font-display mt-4 text-4xl md:text-5xl font-semibold tracking-tight">
-        Registrar <span class="font-script italic text-chocolate/90 text-5xl md:text-6xl">producto</span>
+        Editar <span class="font-script italic text-chocolate/90 text-5xl md:text-6xl">producto</span>
       </h1>
       <p class="mt-4 max-w-xl text-base text-chocolate/65 leading-relaxed">
-        Agrega una nueva creación al catálogo de Saralu. Los campos marcados con <span class="font-bold text-chocolate">*</span> son obligatorios.
+        Estás editando: <span class="font-bold text-chocolate">{{ producto.nombre }}</span>
       </p>
     </div>
 
@@ -95,16 +91,20 @@
       <div class="mb-6 space-y-3">
         {% for message in messages %}
           <div class="flex items-center gap-3 rounded-2xl border border-chocolate/10 bg-mantequilla px-5 py-4 text-sm font-semibold text-chocolate shadow-soft">
-            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-chocolate text-crema">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 13l4 4L19 7" />
-              </svg>
-            </span>
             {{ message }}
           </div>
         {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Imagen actual -->
+    {% if producto.imagen %}
+      <div class="mb-8 flex items-center gap-5 rounded-3xl border border-chocolate/10 bg-white p-5 shadow-soft">
+        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="h-24 w-24 rounded-2xl object-cover">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-widest2 text-chocolate/50">Imagen actual</p>
+          <p class="mt-1 text-sm text-chocolate/70">Sube una nueva imagen abajo para reemplazarla.</p>
+        </div>
       </div>
     {% endif %}
 
@@ -194,7 +194,7 @@
 
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 
-            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft hover:border-chocolate/20">
+            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft">
               <span class="mt-0.5">{{ form.estado_producto }}</span>
               <span class="flex flex-col">
                 <span class="text-sm font-bold">Disponible para la venta</span>
@@ -202,7 +202,7 @@
               </span>
             </label>
 
-            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft hover:border-chocolate/20">
+            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft">
               <span class="mt-0.5">{{ form.destacado }}</span>
               <span class="flex flex-col">
                 <span class="text-sm font-bold">Mostrar en Destacados</span>
@@ -210,7 +210,7 @@
               </span>
             </label>
 
-            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft hover:border-chocolate/20">
+            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft">
               <span class="mt-0.5">{{ form.mas_vendido }}</span>
               <span class="flex flex-col">
                 <span class="text-sm font-bold">Mostrar en Más Vendidos</span>
@@ -218,7 +218,7 @@
               </span>
             </label>
 
-            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft hover:border-chocolate/20">
+            <label class="group flex cursor-pointer items-start gap-3 rounded-2xl border border-chocolate/10 bg-white/80 p-4 transition hover:bg-white hover:shadow-soft">
               <span class="mt-0.5">{{ form.es_nuevo }}</span>
               <span class="flex flex-col">
                 <span class="text-sm font-bold">Mostrar en Novedades</span>
@@ -230,14 +230,14 @@
         </div>
 
         <!-- Botones -->
-        <div class="flex flex-col gap-3 border-t border-chocolate/10 pt-8 md:flex-row md:justify-end">
-          <button type="reset"
-                  class="rounded-full border border-chocolate/70 px-6 py-3 text-center text-sm font-semibold hover:bg-chocolate hover:text-crema transition">
-            Limpiar campos
-          </button>
+        <div class="flex flex-col gap-3 border-t border-chocolate/10 pt-8 md:flex-row md:justify-between">
+          <a href="{% url 'lista_productos' %}"
+             class="rounded-full border border-chocolate/70 px-6 py-3 text-center text-sm font-semibold hover:bg-chocolate hover:text-crema transition">
+            Cancelar
+          </a>
           <button type="submit"
                   class="group inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-8 py-3 text-sm font-semibold text-crema shadow-soft hover:bg-chocolate/90 transition">
-            Guardar producto
+            Guardar cambios
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -251,55 +251,11 @@
 
   </section>
 
-  {# LISTA DE PRODUCTOS REGISTRADOS #}
-  {% if productos %}
-  <section class="mx-auto max-w-4xl px-6 lg:px-10 pb-20">
-    <div class="mb-8 flex items-end justify-between gap-4">
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-widest2 text-chocolate/50">Ya publicados</p>
-        <h2 class="font-display mt-2 text-3xl md:text-4xl font-semibold">Productos registrados</h2>
-      </div>
-      <span class="rounded-full border border-chocolate/15 bg-white px-4 py-1.5 text-xs font-bold text-chocolate/70">
-        {{ productos|length }} en total
-      </span>
-    </div>
-
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      {% for p in productos %}
-        <div class="flex items-center gap-4 rounded-2xl border border-chocolate/10 bg-white p-4 shadow-soft transition hover:border-chocolate/20 hover:shadow-lift">
-          {% if p.imagen %}
-            <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}" class="h-16 w-16 rounded-xl object-cover">
-          {% else %}
-            <div class="grid h-16 w-16 place-items-center rounded-xl bg-azul/40 text-chocolate/50 text-[9px] font-bold tracking-widest2">SIN IMG</div>
-          {% endif %}
-          <div class="flex-1 min-w-0">
-            <p class="font-display font-semibold truncate">{{ p.nombre }}</p>
-            <p class="text-xs font-medium text-chocolate/55 mt-0.5">${{ p.precio|floatformat:0 }}</p>
-          </div>
-          <span class="shrink-0 rounded-full {% if p.estado_producto %}bg-mantequilla text-chocolate{% else %}bg-red-100 text-red-700{% endif %} px-3 py-1 text-[10px] font-bold uppercase tracking-widest2">
-            {% if p.estado_producto %}Disponible{% else %}No disp.{% endif %}
-          </span>
-        </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
   {# FOOTER #}
   <footer class="border-t border-chocolate/10 bg-crema">
     <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 lg:px-10 py-10 text-sm text-chocolate/60 md:flex-row">
-      <div class="flex items-center gap-3">
-        <span class="grid h-9 w-9 place-items-center rounded-full border border-chocolate/15 bg-mantequilla">
-          <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
-        </span>
-        <p class="font-script text-2xl text-chocolate leading-none">Saralu</p>
-      </div>
+      <p class="font-script text-2xl text-chocolate leading-none">Saralu</p>
       <p class="text-xs">© {% now "Y" %} SARALU Repostería. Todos los derechos reservados.</p>
-      <div class="flex gap-6 text-xs font-medium">
-        <a href="{% url 'catalogo' %}" class="hover:text-chocolate transition">Catálogo</a>
-        <a href="#" class="hover:text-chocolate transition">Términos</a>
-        <a href="#" class="hover:text-chocolate transition">Contacto</a>
-      </div>
     </div>
   </footer>
 

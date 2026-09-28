@@ -1,5 +1,5 @@
 from django import forms
-from .models import Producto
+from .models import Producto, Categoria
 
 
 INPUT_CLASS = "w-full rounded-2xl border border-chocolate/20 bg-crema px-4 py-3 text-sm font-medium text-chocolate outline-none transition focus:border-chocolate/60 focus:bg-white"
@@ -10,7 +10,7 @@ class ProductoForm(forms.ModelForm):
         model = Producto
         fields = [
             'nombre', 'descripcion', 'precio', 'imagen',
-            'porciones', 'stock', 'disponible',
+            'porciones', 'stock', 'estado_producto',
             'destacado', 'mas_vendido', 'es_nuevo'
         ]
         widgets = {
@@ -22,11 +22,24 @@ class ProductoForm(forms.ModelForm):
             'imagen': forms.ClearableFileInput(attrs={
                 'class': 'block w-full text-sm text-chocolate/70 file:mr-4 file:rounded-full file:border-0 file:bg-chocolate file:px-5 file:py-2 file:text-sm file:font-bold file:text-crema hover:file:bg-chocolate/90 cursor-pointer'
             }),
-            'disponible': forms.CheckboxInput(attrs={'class': 'h-4 w-4 accent-chocolate'}),
+            'estado_producto': forms.CheckboxInput(attrs={'class': 'h-4 w-4 accent-chocolate'}),
             'destacado': forms.CheckboxInput(attrs={'class': 'h-4 w-4 accent-chocolate'}),
             'mas_vendido': forms.CheckboxInput(attrs={'class': 'h-4 w-4 accent-chocolate'}),
             'es_nuevo': forms.CheckboxInput(attrs={'class': 'h-4 w-4 accent-chocolate'}),
         }
+
+    def save(self, commit=True):
+        """Asigna automáticamente una categoría por defecto si el producto no tiene una."""
+        producto = super().save(commit=False)
+        if not producto.categoria_id:
+            categoria, _ = Categoria.objects.get_or_create(
+                nombre='General',
+                defaults={'imagenPrincipal': 'img/logo.png'}
+            )
+            producto.categoria = categoria
+        if commit:
+            producto.save()
+        return producto
 
     def clean_precio(self):
         precio = self.cleaned_data.get('precio')

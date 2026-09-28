@@ -125,3 +125,10 @@ LOGIN_URL = "login"
 
 SESSION_COKIE = 900
 SESSION_SAVE_EVERY_REQUEST = True
+
+
+
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

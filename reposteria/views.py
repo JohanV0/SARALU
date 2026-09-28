@@ -6,12 +6,17 @@ from .forms import ProductoForm
 
 
 def home(request):
-    """Home temporal que redirige al formulario."""
-    return redirect('registrar_producto')
+    """Home que muestra productos destacados, más vendidos y nuevos."""
+    return render(request, 'home.html', {
+        'destacados': Producto.objects.filter(destacado=True, disponible=True),
+        'mas_vendidos': Producto.objects.filter(mas_vendido=True, disponible=True),
+        'nuevos': Producto.objects.filter(es_nuevo=True, disponible=True),
+    })
 
 
 @staff_member_required
 def registrar_producto(request):
+    """HU-009: Registrar producto (solo dueña)."""
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
@@ -32,5 +37,6 @@ def registrar_producto(request):
 
 
 def catalogo(request):
+    """Catálogo público de productos."""
     productos = Producto.objects.filter(disponible=True).order_by('-fecha_creacion')
     return render(request, 'catalogo.html', {'productos': productos})

@@ -10,7 +10,7 @@ def home(request):
 
 def catalogo_view(request):
     categoria_id = request.GET.get('categoria')
-    productos = Producto.objects.filter(activo=True).select_related('categoria')
+    productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
     categorias = Categoria.objects.all()
 
     if categoria_id:

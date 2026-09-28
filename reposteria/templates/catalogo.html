@@ -80,19 +80,28 @@
     </div>
   </section>
 
-  {# FILTROS POR CATEGORÍA #}
+  {# FILTROS POR CATEGORÍA — CORREGIDO #}
   {% if categorias %}
     <section class="mx-auto max-w-7xl px-6">
       <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3">
         <a href="{% url 'catalogo' %}"
-           class="rounded-full border-2 border-chocolate/20 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider transition hover:border-chocolate/60
-                  {% if not categoria_actual %}bg-chocolate text-crema border-chocolate{% endif %}">
+           class="inline-flex items-center rounded-full border-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ease-out
+                  {% if not categoria_actual %}
+                    border-chocolate bg-chocolate text-crema shadow-soft
+                  {% else %}
+                    border-chocolate/20 bg-white text-chocolate hover:border-chocolate hover:bg-mantequilla/50
+                  {% endif %}">
           Todos
         </a>
+
         {% for cat in categorias %}
           <a href="?categoria={{ cat.id }}"
-             class="rounded-full border-2 border-chocolate/20 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider transition hover:border-chocolate/60
-                    {% if categoria_actual == cat.id %}bg-chocolate text-crema border-chocolate{% endif %}">
+             class="inline-flex items-center rounded-full border-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ease-out
+                    {% if categoria_actual == cat.id %}
+                      border-chocolate bg-chocolate text-crema shadow-soft
+                    {% else %}
+                      border-chocolate/20 bg-white text-chocolate hover:border-chocolate hover:bg-mantequilla/50
+                    {% endif %}">
             {{ cat.nombre }}
           </a>
         {% endfor %}
@@ -115,8 +124,8 @@
         <article class="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-chocolate/5 transition hover:-translate-y-1.5 hover:shadow-xl">
 
           <div class="relative overflow-hidden">
-            {% if producto.imagen %}
-              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+            {% if producto.imagenes.first %}
+              <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}"
                    class="h-56 w-full object-cover transition duration-500 group-hover:scale-105" />
             {% else %}
               <div class="grid h-56 w-full place-items-center bg-mantequilla/40">

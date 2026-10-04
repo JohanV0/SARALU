@@ -77,21 +77,13 @@
         <!-- SECCIÓN: GALERÍA -->
         <div class="flex flex-col gap-4">
             <!-- Imagen Principal -->
-            {% if producto.imagenes.first %}
-                <img src="{{ producto.imagenes.first.imagen.url }}" alt="Imagen de {{ producto.nombre }}" class="w-full h-[30rem] object-cover rounded-3xl shadow-soft">
+            {% if producto.imagen %}
+                <img src="{{ producto.imagen.url }}" alt="Imagen de {{ producto.nombre }}" class="w-full h-[30rem] object-cover rounded-3xl shadow-soft">
             {% else %}
                 <div class="w-full h-[30rem] bg-mantequilla/40 rounded-3xl flex items-center justify-center">
                     <span class="font-display text-lg font-bold text-chocolate/40">Sin imagen</span>
                 </div>
             {% endif %}
-
-            <!-- Miniaturas de la galería -->
-            <div class="flex gap-4 overflow-x-auto pb-2">
-                {% for img in producto.imagenes.all %}
-                    <img src="{{ img.imagen.url }}" alt="Vista de {{ producto.nombre }}" class="w-24 h-24 object-cover rounded-xl shadow-sm shrink-0 border-2 border-transparent hover:border-chocolate transition cursor-pointer">
-                {% endfor %}
-            </div>
-        </div>
 
         <!-- SECCIÓN: INFORMACIÓN DEL PRODUCTO -->
         <div class="flex flex-col justify-center">
@@ -112,10 +104,10 @@
 
             <!-- Porciones -->
             {% if producto.porciones %}
-            <div class="mt-6">
-                <h3 class="font-bold text-lg border-b border-chocolate/10 pb-2 mb-3">Rendimiento</h3>
-                <p class="text-chocolate/80"><span class="font-semibold">Porciones estimadas:</span> {{ producto.porciones }}</p>
-            </div>
+                <div class="mt-6">
+                    <h3 class="font-bold text-lg border-b border-chocolate/10 pb-2 mb-3">Rendimiento</h3>
+                     <p class="text-chocolate/80"><span class="font-semibold">Porciones estimadas:</span> {{ producto.porciones }}</p>
+                </div>
             {% endif %}
 
             <!-- Botón de acción -->

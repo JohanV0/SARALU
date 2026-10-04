@@ -1,17 +1,44 @@
 from django.contrib import admin
-from .models import Categoria, Producto, ImagenProducto
+from .models import (
+    Categoria,
+    Producto,
+    ImagenProducto,
+    Resena,
+    RespuestaResena,
+    ConfiguracionAgenda,
+    FechaBloqueada,
+    CupoFecha,
+    HorarioAtencion,
+    Perfil,
+    DireccionCliente,
+    Carrito,
+    ItemCarrito,
+    Favorito,
+    Cupon,
+    Pedido,
+    DetallePedido,
+    HistorialEstadoPedido,
+    Pago,
+    Notificacion,
+)
 
-@admin.register(Categoria)
-class CategoriaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre')
-    search_fields = ('nombre',)
-
-@admin.register(Producto)
-class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'categoria', 'precio')
-    list_filter = ('categoria',)
-    search_fields = ('nombre',)
-
-@admin.register(ImagenProducto)
-class ImagenProductoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'producto', 'imagen')
+admin.site.register(Categoria)
+admin.site.register(Producto)
+admin.site.register(ImagenProducto)
+admin.site.register(Resena)
+admin.site.register(RespuestaResena)
+admin.site.register(ConfiguracionAgenda)
+admin.site.register(FechaBloqueada)
+admin.site.register(CupoFecha)
+admin.site.register(HorarioAtencion)
+admin.site.register(Perfil)
+admin.site.register(DireccionCliente)
+admin.site.register(Carrito)
+admin.site.register(ItemCarrito)
+admin.site.register(Favorito)
+admin.site.register(Cupon)
+admin.site.register(Pedido)
+admin.site.register(DetallePedido)
+admin.site.register(HistorialEstadoPedido)
+admin.site.register(Pago)
+admin.site.register(Notificacion)

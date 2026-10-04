@@ -25,13 +25,12 @@ def catalogo_view(request):
     }
     return render(request, 'catalogo.html', contexto)
 
-def detalle_producto_view(request, producto_id):
-    producto = get_object_or_404(Producto.objects.prefetch_related('imagenes'), id=producto_id)
+def detalle_producto_view(request, id):
+    producto = get_object_or_404(Producto, id=id)
     return render(request, 'detalle_producto.html', {'producto': producto})
 
-def detalle_producto_view(request, producto_id):
-    # Pre-cargamos imágenes y reseñas (con sus usuarios) para optimizar
-    producto = get_object_or_404(Producto.objects.prefetch_related('imagenes', 'resenas__usuario'), id=producto_id)
+def detalle_producto_view(request, id):    # Pre-cargamos imágenes y reseñas (con sus usuarios) para optimizar
+    producto = get_object_or_404(Producto.objects.prefetch_related('imagenes', 'resenas__usuario'), id=id)
     
     resenas = producto.resenas.all()
     resena_usuario = None
@@ -49,7 +48,7 @@ def detalle_producto_view(request, producto_id):
             if accion == 'eliminar' and resena_usuario:
                 resena_usuario.delete()
                 messages.success(request, 'Tu reseña ha sido eliminada.')
-                return redirect('detalle_producto', producto_id=producto.id)
+                return redirect('producto_detalle', id=producto.id)
             
             # Tarea: Crear o Editar reseña
             form = ResenaForm(request.POST, instance=resena_usuario)
@@ -61,7 +60,7 @@ def detalle_producto_view(request, producto_id):
                 
                 mensaje = 'Reseña actualizada.' if resena_usuario else 'Reseña publicada. ¡Gracias!'
                 messages.success(request, mensaje)
-                return redirect('detalle_producto', producto_id=producto.id)
+                return redirect('producto_detalle', id=producto.id)
         else:
             # Si es GET, mostramos el formulario (vacío o lleno si ya había reseña)
             form = ResenaForm(instance=resena_usuario)

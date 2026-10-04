@@ -122,7 +122,7 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {% for producto in productos %}
         <article class="group flex flex-col h-full overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-chocolate/5 transition hover:-translate-y-1.5 hover:shadow-xl">
-          
+
           <div class="relative h-56 w-full overflow-hidden">
             {% if producto.imagen %}
               <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="h-full w-full object-cover">
@@ -154,7 +154,7 @@
 
             <div class="mt-auto flex items-center justify-between pt-5">
               <p class="font-display text-xl font-black">${{ producto.precio|floatformat:0 }}</p>
-              <a href="{% url 'detalle_producto' producto.id %}"
+              <a href="{% url 'producto_detalle' producto.id %}"
                 class="rounded-full bg-chocolate px-4 py-2 text-xs font-bold text-crema shadow-soft transition hover:bg-chocolate/90">
                   Ver detalle
               </a>

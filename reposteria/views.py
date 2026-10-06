@@ -6,9 +6,12 @@ from django.contrib.auth.decorators import login_required
 from .models import Producto, Categoria
 from .forms import ResenaForm
 
-
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'home.html', {
+        'destacados':  Producto.objects.filter(destacado=True),
+        'mas_vendidos': Producto.objects.filter(mas_vendido=True),
+        'es_nuevos':      Producto.objects.filter(es_nuevo=True),
+    }) 
 
 def catalogo_view(request):
     categoria_id = request.GET.get('categoria')
@@ -65,3 +68,4 @@ def detalle_producto_view(request, producto_id):
         'form': form,
     }
     return render(request, 'detalle_producto.html', contexto)
+from .models import Producto

@@ -1,10 +1,8 @@
-from django.http import HttpResponse
 from django.urls import path
 from . import views
 
-
 urlpatterns = [
     path('', views.home, name='home'),
-    path('catalogo/', views.home, name='catalogo'),        # temporal
-    path('producto/<int:id>/', views.home, name='producto_detalle'),  # temporal
+    path('catalogo/', views.catalogo_view, name='catalogo'),
+    path('producto/<int:producto_id>/', views.detalle_producto_view, name='producto_detalle'),
 ]

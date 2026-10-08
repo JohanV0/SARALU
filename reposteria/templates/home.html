@@ -496,7 +496,7 @@
                 </a>
               {% endif %}
 
-              <a href="#" {# → {% url 'catalogo' %} #}
+              <a href="{% url 'catalogo' %}""
                  class="hidden lg:inline-flex items-center gap-2 rounded-2xl bg-chocolate px-5 py-3 text-sm 3xl:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
                 Ver catálogo
               </a>
@@ -556,7 +556,7 @@
             <!-- Buttons -->
             <div class="mt-8 flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
               <a href="#catalogo-destacado" class="group inline-flex items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
-                Ver catálogo
+                Ver Destacados
                 <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
               </a>
               <a href="#mas-vendidos" class="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-gray-50 hover:-translate-y-1 transition-all">
@@ -641,7 +641,7 @@
 
           </div>
 
-          <a href="#" {# → {% url 'catalogo' %} #}
+          <a href="{% url 'catalogo' %}#
              class="group inline-flex items-center gap-3 text-sm lg:text-base font-bold text-chocolate hover:text-cafe transition">
 
             Ver catálogo

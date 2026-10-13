@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ producto.nombre }} — SARALU</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: "#b1c8ea",
+            mantequilla: "#ffebaa",
+            chocolate: "#382322",
+            crema: "#fdebde",
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            body: ['"Nunito"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body class="bg-crema font-body text-chocolate antialiased">
+
+  {# Barra simple #}
+  <div class="bg-chocolate text-crema px-6 py-4">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <a href="{% url 'catalogo' %}" class="font-bold">← Volver al catálogo</a>
+      <span class="font-bold">SARALU</span>
+      <a href="{% url 'lista_productos' %}" class="text-sm">Mis productos</a>
+    </div>
+  </div>
+
+  {# DETALLE TEMPORAL #}
+  <div class="max-w-4xl mx-auto px-6 py-12">
+
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div class="md:flex">
+
+        {# Imagen #}
+        <div class="md:w-1/2">
+          {% if producto.imagen %}
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-full h-96 object-cover">
+          {% else %}
+            <div class="w-full h-96 bg-gray-200 flex items-center justify-center text-gray-400">
+              Sin imagen
+            </div>
+          {% endif %}
+        </div>
+
+        {# Info #}
+        <div class="md:w-1/2 p-8">
+          <p class="text-xs text-gray-500 uppercase tracking-widest">
+            {{ producto.categoria.nombre|default:"Sin categoría" }}
+          </p>
+          <h1 class="font-display text-3xl font-bold mt-2">{{ producto.nombre }}</h1>
+          <p class="text-gray-600 mt-4">{{ producto.descripcion }}</p>
+
+          <p class="text-3xl font-bold mt-6">${{ producto.precio|floatformat:0 }}</p>
+
+          <div class="mt-4 flex gap-2">
+            {% if producto.estado_producto %}
+              <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">Disponible</span>
+            {% else %}
+              <span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">No disponible</span>
+            {% endif %}
+          </div>
+
+          <div class="mt-6 grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p class="text-gray-500">Porciones</p>
+              <p class="font-bold">{{ producto.porciones }}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Stock</p>
+              <p class="font-bold">{{ producto.stock }}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Ventas</p>
+              <p class="font-bold">{{ producto.ventas }}</p>
+            </div>
+          </div>
+
+          <button class="mt-8 w-full bg-chocolate text-crema py-3 rounded-full font-bold hover:bg-chocolate/90 transition">
+            Agregar al carrito
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {# SUGERENCIAS TEMPORAL #}
+    {% if relacionados %}
+    <div class="mt-12">
+      <h2 class="font-display text-2xl font-bold mb-6">También te puede gustar</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% for p in relacionados %}
+          <a href="{% url 'detalle_producto' p.id %}" class="bg-white rounded-xl shadow overflow-hidden hover:shadow-lg transition">
+            {% if p.imagen %}
+              <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}" class="w-full h-40 object-cover">
+            {% else %}
+              <div class="w-full h-40 bg-gray-200"></div>
+            {% endif %}
+            <div class="p-3">
+              <p class="font-bold text-sm truncate">{{ p.nombre }}</p>
+              <p class="text-xs text-gray-500 mt-1">${{ p.precio|floatformat:0 }}</p>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+</body>
+</html>

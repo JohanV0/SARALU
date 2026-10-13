@@ -29,7 +29,6 @@ class ProductoForm(forms.ModelForm):
         }
 
     def save(self, commit=True):
-        """Asigna automáticamente una categoría por defecto si el producto no tiene una."""
         producto = super().save(commit=False)
         if not producto.categoria_id:
             categoria, _ = Categoria.objects.get_or_create(

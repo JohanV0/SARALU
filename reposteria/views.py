@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Producto, Categoria, Resena, RespuestaResena
+from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido
 from .forms import ResenaForm
 
 def home(request):
@@ -133,4 +133,63 @@ def detalle_producto_view(request, producto_id):
         'form': form,
     }
     return render(request, 'detalle_producto.html', contexto)
-    
+
+@login_required
+def armar_pedido_view(request):
+    # 1. Buscamos el carrito del usuario actual
+    carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
+    items_carrito = carrito.items.all()
+
+    # CRITERIO 2: Si el carrito está vacío, rebota al catálogo
+    if not items_carrito.exists():
+        messages.warning(request, "Debes elegir al menos un producto para armar un pedido.")
+        return redirect('catalogo')
+
+    # CRITERIO 1: Calculamos el total
+    subtotal = sum(item.subtotal() for item in items_carrito)
+
+    # ============================================================
+    # PASO 3: GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
+    # ============================================================
+    if request.method == 'POST':
+        tipo_entrega = request.POST.get('tipo_entrega')
+        fecha = request.POST.get('fecha')
+        hora = request.POST.get('hora')
+        
+        # Unimos la fecha y hora para guardarlas en el campo "comentarios"
+        nota_horario = f"Fecha de entrega: {fecha} | Hora: {hora}"
+
+        # Acción 1: Creamos el Pedido oficial
+        nuevo_pedido = Pedido.objects.create(
+            cliente=request.user,
+            nombre_contacto=request.user.username, # Usamos su nombre de usuario
+            telefono_contacto="", # Se deja vacío por ahora
+            domicilio=tipo_entrega,
+            subtotal=subtotal,
+            total=subtotal,
+            comentarios=nota_horario
+        )
+
+        # Acción 2: Copiamos los items del carrito al pedido
+        for item in items_carrito:
+            DetallePedido.objects.create(
+                pedido=nuevo_pedido,
+                producto=item.producto,
+                cantidad=item.cantidad,
+                precio_unitario=item.producto.precio
+            )
+
+        # Acción 3: Vaciamos el carrito (borramos los items)
+        items_carrito.delete()
+
+        # Acción 4: Mensaje de éxito y lo mandamos al inicio
+        messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
+        return redirect('home')
+
+    # ============================================================
+
+    contexto = {
+        'items': items_carrito,
+        'subtotal': subtotal,
+    }
+    return render(request, 'armar_pedido.html', contexto)

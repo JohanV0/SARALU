@@ -60,6 +60,15 @@
 </head>
 
 <body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4">
+  {% if messages %}
+  <div class="fixed top-20 right-5 z-50 flex flex-col gap-2">
+    {% for message in messages %}
+      <div class="bg-mantequilla text-chocolate px-6 py-4 rounded-2xl shadow-soft font-bold border border-chocolate/20">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- Borde blanco redondeado alrededor de toda la página -->
   <div class="min-h-[calc(100vh-16px)] md:min-h-[calc(100vh-32px)] border-[8px] md:border-[12px] border-white rounded-[2rem] md:rounded-[3rem] bg-crema relative overflow-hidden shadow-2xl">

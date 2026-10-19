@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrar producto — SARALU</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        screens: {
+          'sm': '640px',
+          'md': '768px',
+          'lg': '1024px',
+          'xl': '1280px',
+          '2xl': '1536px',
+          '3xl': '1920px',
+          '4xl': '2560px',
+        },
+        extend: {
+          colors: {
+            mantequilla: "#ffd97a",
+            chocolate: "#4a3528",
+            crema: "#fdf8e7",
+            rosa: "#f4b8c8",
+            rosaClaro: "#fbe3ea",
+            cafe: "#8b6f5c",
+            azul: "#b1c8ea",
+          },
+          fontFamily: {
+            display: ['"Fredoka"', 'system-ui', 'sans-serif'],
+            script: ['"Pacifico"', 'cursive'],
+            body: ['"Nunito"', 'sans-serif'],
+          },
+          boxShadow: {
+            soft: "0 8px 30px -14px rgba(74, 53, 40, 0.20)",
+            lift: "0 24px 55px -25px rgba(74, 53, 40, 0.30)",
+          },
+          letterSpacing: {
+            widest2: "0.3em",
+          },
+          borderRadius: {
+            '4xl': '2rem',
+            '5xl': '2.5rem',
+            '6xl': '3rem',
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body class="bg-white font-body text-base lg:text-lg text-chocolate antialiased p-2 md:p-4">
+
+  <div class="min-h-[calc(100vh-16px)] md:min-h-[calc(100vh-32px)] border-[8px] md:border-[12px] border-white rounded-[2rem] md:rounded-[3rem] bg-crema relative overflow-hidden shadow-2xl">
+
+    {# HEADER #}
+    <header class="bg-crema shadow-sm rounded-b-[2rem] lg:rounded-b-[3rem] border-b border-chocolate/10">
+      <div class="mx-auto w-full max-w-[1500px] px-4 sm:px-7 lg:px-10 py-4 lg:py-5">
+        <div class="flex items-center justify-between gap-4">
+          
+          <a href="{% url 'home' %}" class="group flex items-center gap-3 lg:gap-4 shrink-0">
+            <span class="relative grid h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 place-items-center overflow-hidden rounded-2xl bg-mantequilla ring-1 ring-mantequilla/30 transition duration-300 group-hover:-translate-y-0.5 group-hover:ring-rosa">
+              <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-1" />
+            </span>
+            <span class="flex flex-col leading-none">
+              <span class="font-script text-2xl lg:text-3xl text-chocolate">Saralu</span>
+              <span class="hidden lg:block mt-1 text-[9px] font-semibold uppercase tracking-widest2 text-chocolate/55">Repostería artesanal</span>
+            </span>
+          </a>
+
+          <a href="{% url 'catalogo' %}"
+             class="inline-flex items-center gap-2 rounded-2xl bg-chocolate px-4 py-2.5 lg:px-5 lg:py-3 text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Volver al catálogo
+          </a>
+        </div>
+      </div>
+    </header>
+
+    {# MAIN #}
+    <main class="relative mx-auto w-full max-w-[1100px] px-4 sm:px-7 lg:px-10 py-10 lg:py-16">
+
+      <span class="absolute top-20 right-10 text-rosa text-3xl animate-pulse">✦</span>
+      <span class="absolute bottom-20 left-10 text-mantequilla text-2xl animate-bounce">✦</span>
+
+      <div class="text-center mb-10">
+        <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+          <span class="h-2 w-2 rounded-full bg-rosa"></span>
+          Catálogo
+        </span>
+        <h1 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-chocolate">
+          Registrar <span class="font-script text-rosa">producto</span>
+        </h1>
+        <p class="mt-3 max-w-2xl mx-auto text-sm lg:text-base text-cafe">
+          Completa los datos del postre o torta que quieres publicar en el catálogo.
+        </p>
+      </div>
+
+      {% if messages %}
+        <div class="mb-6 space-y-2">
+          {% for message in messages %}
+            <div class="rounded-2xl px-5 py-4 text-sm font-semibold bg-mantequilla text-chocolate border border-chocolate/20 shadow-soft">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="rounded-[2rem] bg-white/70 backdrop-blur ring-1 ring-chocolate/10 shadow-soft p-6 lg:p-10 space-y-6">
+        {% csrf_token %}
+
+        {# Nombre #}
+        <div>
+          <label for="nombre" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+            Nombre <span class="text-rosa">*</span>
+          </label>
+          <input type="text" name="nombre" id="nombre" required
+                 placeholder="Ej. Torta de chocolate"
+                 class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+        </div>
+
+        {# Descripción #}
+        <div>
+          <label for="descripcion" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+            Descripción <span class="text-rosa">*</span>
+          </label>
+          <textarea name="descripcion" id="descripcion" rows="3" required
+                    placeholder="Ingredientes, sabor, presentación…"
+                    class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition min-h-[110px]"></textarea>
+        </div>
+
+        {# Precio y Categoría #}
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="precio" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+              Precio <span class="text-rosa">*</span>
+            </label>
+            <input type="number" name="precio" id="precio" step="0.01" min="0.01" required
+                   placeholder="0.00"
+                   class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+          </div>
+
+          <div>
+            <label for="categoria" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+              Categoría
+            </label>
+            <select name="categoria" id="categoria"
+                    class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition">
+              <option value="">— Sin categoría —</option>
+              {% for c in categorias %}
+                <option value="{{ c.id }}">{{ c.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        {# Imagen #}
+        <div>
+          <label for="imagen" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+            Imagen principal
+          </label>
+          <input type="file" name="imagen" id="imagen" accept="image/*"
+                 class="block w-full text-sm text-cafe cursor-pointer file:mr-4 file:rounded-full file:border-0 file:bg-chocolate file:px-5 file:py-2.5 file:text-sm file:font-bold file:text-mantequilla hover:file:bg-cafe file:cursor-pointer" />
+        </div>
+
+        {# Stock y Porciones #}
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="stock" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+              Stock
+            </label>
+            <input type="number" name="stock" id="stock" min="0" value="10"
+                   class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+          </div>
+
+          <div>
+            <label for="porciones" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+              Porciones por unidad
+            </label>
+            <input type="number" name="porciones" id="porciones" min="1" value="1"
+                   class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+          </div>
+        </div>
+
+        {# Destacados #}
+        <div>
+          <p class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-3">
+            Etiquetas del producto
+          </p>
+          <div class="grid sm:grid-cols-3 gap-3">
+            <label class="flex items-center gap-3 rounded-xl bg-rosaClaro/50 px-4 py-3 cursor-pointer hover:bg-rosaClaro transition">
+              <input type="checkbox" name="destacado" class="h-5 w-5 rounded border-chocolate/30 text-chocolate focus:ring-chocolate" />
+              <span class="text-sm font-semibold">Destacado</span>
+            </label>
+            <label class="flex items-center gap-3 rounded-xl bg-rosaClaro/50 px-4 py-3 cursor-pointer hover:bg-rosaClaro transition">
+              <input type="checkbox" name="mas_vendido" class="h-5 w-5 rounded border-chocolate/30 text-chocolate focus:ring-chocolate" />
+              <span class="text-sm font-semibold">Más vendido</span>
+            </label>
+            <label class="flex items-center gap-3 rounded-xl bg-rosaClaro/50 px-4 py-3 cursor-pointer hover:bg-rosaClaro transition">
+              <input type="checkbox" name="es_nuevo" class="h-5 w-5 rounded border-chocolate/30 text-chocolate focus:ring-chocolate" />
+              <span class="text-sm font-semibold">Nuevo</span>
+            </label>
+          </div>
+        </div>
+
+        {# Botones #}
+        <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-chocolate/10">
+          <button type="submit"
+                  class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-8 py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+            Guardar producto
+          </button>
+          <a href="{% url 'catalogo' %}"
+             class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-chocolate/20 px-8 py-3.5 text-sm lg:text-base font-bold text-chocolate hover:bg-chocolate/5 hover:-translate-y-0.5 transition-all">
+            Cancelar
+          </a>
+        </div>
+      </form>
+
+    </main>
+
+  </div>
+</body>
+</html>

@@ -133,4 +133,39 @@ def detalle_producto_view(request, producto_id):
         'form': form,
     }
     return render(request, 'detalle_producto.html', contexto)
+
+def nuevo_producto(request):
+  categorias = Categoria.objects.all()
+
+  if request.method == "POST":
+    nombre = request.POST.get('nombre')
+    descripcion = request.POST.get('descripcion')
+    precio = request.POST.get('precio')
+    categoria_id = request.POST.get('categoria')
+    imagen = request.FILES.get('imagen')
+    stock = request.POST.get('stock')
+    porciones = request.POST.get('porciones')
+    destacado = request.POST.get('destacado') == 'on'
+    mas_vendido = request.POST.get('mas_vendido') == 'on'
+    es_nuevo = request.POST.get('es_nuevo') == 'on'
+
+    if nombre and descripcion and precio:
+      producto = Producto(
+        nombre=nombre,
+        descripcion=descripcion,
+        precio=precio,
+        imagen=imagen,
+        stock=int(stock) if stock else 10,
+        porciones=int(porciones) if porciones else 1,
+        destacado=destacado,
+        mas_vendido=mas_vendido,
+        es_nuevo=es_nuevo,
+        categoria_id=categoria_id if categoria_id else None,
+      )
+      producto.save()
+
+      messages.success(request, f'Producto "{producto.nombre}" registrado correctamente.')
+      return redirect('catalogo')
+
+  return render(request, 'nuevo-producto.html', {'categorias': categorias})
     

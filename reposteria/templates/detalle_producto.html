@@ -10,19 +10,36 @@
   <script>
     tailwind.config = {
       theme: {
+        screens: {
+          'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px', '3xl': '1920px', '4xl': '2560px',
+        },
         extend: {
           colors: {
+            mantequilla: "#ffd97a",
+            chocolate: "#4a3528",
+            crema: "#fdf8e7",
+            rosa: "#f4b8c8",
+            rosaClaro: "#fbe3ea",
+            cafe: "#8b6f5c",
             azul: "#b1c8ea",
-            mantequilla: "#ffebaa",
-            chocolate: "#382322",
-            crema: "#fdebde",
           },
           fontFamily: {
-            display: ['"Fraunces"', 'serif'],
-            body: ['"Manrope"', 'sans-serif'],
+            display: ['"Fredoka"', 'system-ui', 'sans-serif'],
+            script: ['"Pacifico"', 'cursive'],
+            body: ['"Nunito"', 'sans-serif'],
           },
           boxShadow: {
-            soft: "0 10px 30px -12px rgba(56, 35, 34, 0.25)",
+            soft: "0 8px 30px -14px rgba(74, 53, 40, 0.20)",
+            lift: "0 24px 55px -25px rgba(74, 53, 40, 0.30)",
+            panel: "20px 0 50px -20px rgba(74, 53, 40, 0.35)",
+            glow: "0 12px 40px -12px rgba(255, 217, 122, 0.55)",
+            navbar: "0 18px 45px -25px rgba(74, 53, 40, 0.55)",
+          },
+          letterSpacing: {
+            widest2: "0.3em",
+          },
+          borderRadius: {
+            '4xl': '2rem', '5xl': '2.5rem', '6xl': '3rem',
           },
         },
       },
@@ -31,263 +48,383 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 
-<body class="bg-crema font-body text-chocolate antialiased flex flex-col min-h-screen">
+<body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4 flex flex-col min-h-screen">
 
-  {# NAVBAR #}
-  <header class="sticky top-0 z-50 border-b border-chocolate/10 bg-crema/85 backdrop-blur-md">
-    <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3.5">
-      <a href="{% url 'home' %}" class="flex items-center gap-3 shrink-0">
-        <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-chocolate/15 bg-mantequilla shadow-soft">
-          <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-cover" />
-        </span>
-        <span class="flex flex-col leading-none">
-          <span class="font-display text-2xl font-black tracking-tight">SARALU</span>
-          <span class="text-[10px] font-semibold uppercase tracking-[0.35em] text-chocolate/50">Repostería</span>
-        </span>
+  {# ============================================================ #}
+  {# MENSAJES FLOTANTES (TOASTS)                                  #}
+  {# ============================================================ #}
+  {% if messages %}
+  <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+    {% for message in messages %}
+      <div id="toast-{{ forloop.counter }}" class="pointer-events-auto flex items-center justify-between gap-4 rounded-2xl border border-chocolate/10 bg-mantequilla/95 backdrop-blur-md px-5 py-4 text-chocolate shadow-lift transition-all duration-500 transform translate-y-0 opacity-100">
+        <div class="flex items-center gap-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-chocolate text-mantequilla">
+            {% if message.tags == 'success' %}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {% endif %}
+          </span>
+          <p class="text-sm lg:text-base font-bold leading-tight">{{ message }}</p>
+        </div>
+        <button onclick="document.getElementById('toast-{{ forloop.counter }}').remove()" class="shrink-0 text-chocolate/40 hover:text-chocolate transition-colors" aria-label="Cerrar mensaje">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Borde blanco redondeado alrededor de toda la página -->
+  <div class="flex-grow min-h-[calc(100vh-16px)] md:min-h-[calc(100vh-32px)] border-[8px] md:border-[12px] border-white rounded-[2rem] md:rounded-[3rem] bg-crema relative overflow-hidden shadow-2xl flex flex-col">
+
+    {# ============================================================ #}
+    {# NAVBAR                                                        #}
+    {# ============================================================ #}
+    <header class="relative z-20">
+      <div class="bg-crema shadow-sm rounded-b-[2rem] lg:rounded-b-[3rem] border-b border-chocolate/10">
+        <div class="mx-auto w-full max-w-[1900px] px-4 sm:px-7 lg:px-10 2xl:px-14 3xl:px-20 py-4 lg:py-5">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 lg:gap-6">
+              <a href="{% url 'home' %}" class="group flex items-center gap-3 lg:gap-4 shrink-0">
+                <span class="relative grid h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 3xl:h-20 3xl:w-20 place-items-center overflow-hidden rounded-2xl bg-mantequilla ring-1 ring-mantequilla/30 transition duration-300 group-hover:-translate-y-0.5 group-hover:ring-rosa">
+                  <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-1" />
+                </span>
+                <span class="flex flex-col leading-none">
+                  <span class="font-script text-2xl lg:text-3xl 3xl:text-4xl text-chocolate">Saralu</span>
+                  <span class="hidden lg:block mt-1 text-[9px] 3xl:text-[11px] font-semibold uppercase tracking-widest2 text-chocolate/55">Repostería artesanal</span>
+                </span>
+              </a>
+            </div>
+            
+            <nav class="hidden lg:block">
+              <ul class="flex items-center gap-1 xl:gap-2 text-sm xl:text-base 3xl:text-lg font-bold text-chocolate">
+                <li><a href="{% url 'home' %}" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Inicio</a></li>
+                <li><a href="{% url 'catalogo' %}" class="inline-flex rounded-full px-4 py-2.5 bg-mantequilla transition-all">Catálogo</a></li>
+                <li><a href="{% url 'home' %}#mas-vendidos" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Más vendidos</a></li>
+                <li><a href="{% url 'home' %}#es_nuevo" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Novedades</a></li>
+              </ul>
+            </nav>
+
+            <div class="flex items-center gap-2 lg:gap-2.5 shrink-0">
+              <a href="#" class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all" aria-label="Carrito de compras">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-[22px] lg:w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+              </a>
+              
+              {% if user.is_authenticated %}
+                <div class="hidden md:inline-flex items-center gap-2 rounded-2xl bg-chocolate/10 ring-1 ring-chocolate/20 px-4 py-2.5 text-xs lg:text-sm font-bold text-chocolate">
+                  <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+                  {{ user.first_name|default:user.username }}
+                </div>
+              {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="hidden md:inline-flex items-center gap-2 rounded-2xl border border-chocolate/50 px-4 py-2.5 text-xs lg:text-sm font-bold text-chocolate hover:bg-chocolate hover:text-crema transition-all">
+                  Iniciar sesión
+                </a>
+              {% endif %}
+              
+              <a href="{% url 'catalogo' %}" class="hidden lg:inline-flex items-center gap-2 rounded-2xl bg-chocolate px-5 py-3 text-sm 3xl:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
+                Ver catálogo
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mx-auto max-w-[1700px] px-8">
+        <div class="h-px bg-chocolate/10"></div>
+      </div>
+    </header>
+
+    {# ============================================================ #}
+    {# CONTENIDO PRINCIPAL                                           #}
+    {# ============================================================ #}
+    <main class="flex-grow relative mx-auto w-full max-w-[1900px] px-4 sm:px-7 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-16">
+      
+      <!-- Botón Volver -->
+      <a href="{% url 'catalogo' %}" class="group inline-flex items-center gap-2 text-sm font-bold text-chocolate/60 hover:text-chocolate transition mb-8">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        Volver al catálogo
       </a>
 
-      <ul class="hidden lg:flex items-center gap-7 text-sm font-semibold">
-        <li><a href="{% url 'home' %}" class="hover:text-chocolate/70 transition">Inicio</a></li>
-        <li><a href="{% url 'catalogo' %}" class="text-chocolate underline decoration-mantequilla decoration-4 underline-offset-4">Catálogo</a></li>
-        <li><a href="{% url 'home' %}#mas-vendidos" class="hover:text-chocolate/70 transition">Más vendidos</a></li>
-        <li><a href="{% url 'home' %}#nuevos" class="hover:text-chocolate/70 transition">Novedades</a></li>
-      </ul>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+          
+          <!-- SECCIÓN: GALERÍA -->
+          <div class="relative w-full rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden bg-rosaClaro/40 shadow-soft ring-1 ring-chocolate/10 group">
+              {% if producto.imagen %}
+                  <img src="{{ producto.imagen.url }}" alt="Imagen de {{ producto.nombre }}" class="w-full h-[30rem] lg:h-[40rem] object-cover transition duration-700 group-hover:scale-105">
+              {% else %}
+                  <div class="w-full h-[30rem] lg:h-[40rem] flex items-center justify-center">
+                      <span class="font-display text-lg font-bold text-chocolate/40">Sin imagen</span>
+                  </div>
+              {% endif %}
+              
+              <!-- Destellos decorativos -->
+              <span class="absolute top-6 right-6 text-mantequilla text-3xl animate-pulse z-10">✦</span>
+              <span class="absolute bottom-6 left-6 text-rosa text-2xl animate-bounce z-10">✦</span>
+          </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-          <form action="{% url 'logout' %}" method="post" class="block">
-            {% csrf_token %}
-            <button type="submit"
-                    class="group relative flex w-full items-center justify-center gap-2.5 rounded-3xl bg-chocolate px-4 py-3.5 3xl:py-4 text-base lg:text-lg 3xl:text-xl font-semibold text-mantequilla shadow-soft hover:bg-cafe transition overflow-hidden">
-              <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6" fill="none"
-                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              Cerrar sesión
-            </button>
-          </form>
+          <!-- SECCIÓN: INFORMACIÓN DEL PRODUCTO -->
+          <div class="flex flex-col justify-center py-2 lg:py-6">
+              {% if producto.categoria %}
+                  <span class="inline-flex items-center gap-2 bg-mantequilla px-4 py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate w-max mb-5 shadow-sm">
+                      <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
+                      {{ producto.categoria.nombre }}
+                  </span>
+              {% endif %}
+
+              <h1 class="font-display text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold leading-[1.05] tracking-tight text-chocolate">
+                  {{ producto.nombre }}
+              </h1>
+              
+              <p class="font-display text-3xl lg:text-4xl font-bold mt-4 text-cafe">${{ producto.precio|floatformat:0 }}</p>
+
+              <!-- Descripción -->
+              <div class="mt-8 bg-white p-6 lg:p-8 rounded-[2rem] shadow-sm ring-1 ring-chocolate/10 relative">
+                  <h3 class="font-display text-xl font-bold text-chocolate mb-3">Descripción</h3>
+                  <p class="text-sm lg:text-base text-chocolate/80 leading-relaxed">{{ producto.descripcion }}</p>
+              </div>
+
+              <!-- Porciones -->
+              {% if producto.porciones %}
+                  <div class="mt-4 bg-white/60 p-6 rounded-[2rem] ring-1 ring-chocolate/5">
+                      <h3 class="font-display text-lg font-bold text-chocolate mb-2">Rendimiento</h3>
+                       <p class="text-sm lg:text-base text-chocolate/80"><span class="font-bold text-chocolate">Porciones estimadas:</span> {{ producto.porciones }}</p>
+                  </div>
+              {% endif %}
+
+              <!-- Botones de acción (Administración) -->
+              <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                  {% if user.is_staff %}
+                      <!-- Botón Editar (Redirige al form del Admin) -->
+                      <a href="{% url 'editar_producto' producto.id %}' producto.id %}" class="flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                          Editar producto
+                      </a>
+
+                      <!-- Botón Eliminar (Redirige a la confirmación del Admin) -->
+                      <a href="{% url 'eliminar_producto' producto.id %}" class="flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-red-100 px-6 py-4 text-sm lg:text-base font-bold text-red-700 shadow-soft ring-1 ring-red-300 hover:bg-red-200 hover:-translate-y-1 transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          Eliminar producto
+                      </a>
+                  {% endif %}
+              </div>
+          </div>
       </div>
-    </nav>
-  </header>
 
-  {# CONTENIDO PRINCIPAL DEL DETALLE #}
-  <main class="flex-grow mx-auto max-w-7xl px-6 py-10 w-full">
-    <!-- Botón Volver -->
-    <a href="{% url 'catalogo' %}" class="inline-flex items-center text-sm font-bold text-chocolate/60 hover:text-chocolate transition mb-8">
-        &larr; Volver al catálogo
-    </a>
+      <!-- ============================================================ -->
+      <!-- SECCIÓN DE RESEÑAS                                           -->
+      <!-- ============================================================ -->
+      <div class="mt-20 border-t border-chocolate/10 pt-16">
+          <div class="text-center lg:text-left mb-10">
+            <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-3">
+              <span class="h-2 w-2 rounded-full bg-rosa"></span>
+              Lo que dicen de nosotros
+            </span>
+            <h2 class="font-display text-3xl lg:text-4xl font-semibold text-chocolate">Opiniones de clientes</h2>
+          </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-        
-        <!-- SECCIÓN: GALERÍA -->
-        <div class="flex flex-col gap-4">
-            <!-- Imagen Principal -->
-            {% if producto.imagen %}
-                <img src="{{ producto.imagen.url }}" alt="Imagen de {{ producto.nombre }}" class="w-full h-[30rem] object-cover rounded-3xl shadow-soft">
-            {% else %}
-                <div class="w-full h-[30rem] bg-mantequilla/40 rounded-3xl flex items-center justify-center">
-                    <span class="font-display text-lg font-bold text-chocolate/40">Sin imagen</span>
-                </div>
-            {% endif %}
+          <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 lg:gap-12">
+              
+              <!-- COLUMNA IZQUIERDA: Formulario o Login -->
+              {% if user.is_staff %}
+              {% else %}
+              <div class="bg-crema p-6 md:p-8 rounded-[2rem] shadow-soft ring-1 ring-chocolate/10 h-max order-2 lg:order-1">
+                  {% if user.is_authenticated %}
+                      
+                      <h3 class="font-display text-xl font-bold mb-5 text-chocolate">
+                          {% if resena_usuario %}Edita tu reseña{% else %}Deja tu reseña{% endif %}
+                      </h3>
+                      
+                      <!-- Formulario para Guardar o Editar -->
+                      <form method="POST" class="flex flex-col gap-4">
+                          {% csrf_token %}
+                          <input type="hidden" name="accion" value="guardar">
+                          
+                          <div class="[&_select]:w-full [&_select]:rounded-2xl [&_select]:border-2 [&_select]:border-chocolate/10 [&_select]:bg-white [&_select]:p-4 [&_select]:text-chocolate [&_select]:focus:border-chocolate [&_select]:focus:outline-none">
+                              <label class="block text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60 mb-2" for="{{ form.calificacion.id_for_label }}">{{ form.calificacion.label }}</label>
+                              {{ form.calificacion }}
+                          </div>
+                          
+                          <div class="[&_textarea]:w-full [&_textarea]:rounded-2xl [&_textarea]:border-2 [&_textarea]:border-chocolate/10 [&_textarea]:bg-white [&_textarea]:p-4 [&_textarea]:text-chocolate [&_textarea]:focus:border-chocolate [&_textarea]:focus:outline-none [&_textarea]:resize-none">
+                              <label class="block text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60 mb-2" for="{{ form.comentario.id_for_label }}">{{ form.comentario.label }}</label>
+                              {{ form.comentario }}
+                          </div>
+
+                          <div class="mt-2">
+                              <button type="submit" class="w-full rounded-full bg-chocolate px-6 py-3.5 text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+                                  {% if resena_usuario %}Actualizar reseña{% else %}Publicar reseña{% endif %}
+                              </button>
+                          </div>
+                      </form>
+
+                      <!-- Formulario separado para Eliminar -->
+                      {% if resena_usuario %}
+                      <form method="POST" class="mt-5 border-t border-chocolate/10 pt-5 text-center" onsubmit="return confirm('¿Estás seguro de que deseas eliminar tu reseña? Esta acción no se puede deshacer.');">
+                          {% csrf_token %}
+                          <input type="hidden" name="accion" value="eliminar">
+                          <button type="submit" class="text-xs font-bold text-cafe/60 hover:text-red-500 transition underline decoration-transparent hover:decoration-red-500 underline-offset-4">
+                              Eliminar mi reseña
+                          </button>
+                      </form>
+                      {% endif %}
+
+                  {% else %}
+                      <!-- Petición de Login -->
+                      <div class="text-center py-6">
+                          <span class="grid h-14 w-14 place-items-center rounded-full bg-mantequilla text-chocolate mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                          </span>
+                          <h3 class="font-display font-bold text-lg mb-2 text-chocolate">¿Ya probaste este producto?</h3>
+                          <p class="text-sm text-chocolate/70 mb-6">Para dejar una reseña, por favor inicia sesión o regístrate en nuestra plataforma.</p>
+                          <a href="{% url 'login' %}?next={{ request.path }}" class="inline-block rounded-full bg-chocolate px-8 py-3 text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition">
+                              Iniciar sesión
+                          </a>
+                      </div>
+                  {% endif %}
+              </div>
+              {% endif %}
+
+              <!-- COLUMNA DERECHA: Lista de reseñas -->
+              <div class="flex flex-col gap-5 order-1 lg:order-2">
+                  <div class="flex items-center justify-between border-b border-chocolate/10 pb-3">
+                    <h3 class="font-display text-xl font-bold text-chocolate">Reseñas publicadas</h3>
+                    <span class="bg-mantequilla text-chocolate px-3 py-1 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-widest2">{{ resenas.count }}</span>
+                  </div>
+                  
+                  <div class="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                      {% for resena in resenas %}
+                          <div class="bg-white p-5 lg:p-6 rounded-[2rem] ring-1 ring-chocolate/10 shadow-sm relative">
+                              <div class="flex items-start justify-between mb-3">
+                                  <div class="flex items-center gap-3">
+                                    <span class="grid h-10 w-10 place-items-center rounded-full bg-rosaClaro font-display font-bold text-chocolate">
+                                      {{ resena.usuario.username|first|upper }}
+                                    </span>
+                                    <span class="font-bold text-chocolate">{{ resena.usuario.username }}</span>
+                                  </div>
+                                  <span class="text-mantequilla drop-shadow-sm font-black tracking-widest text-lg">
+                                      {% if resena.calificacion == 1 %}★☆☆☆☆
+                                      {% elif resena.calificacion == 2 %}★★☆☆☆
+                                      {% elif resena.calificacion == 3 %}★★★☆☆
+                                      {% elif resena.calificacion == 4 %}★★★★☆
+                                      {% elif resena.calificacion == 5 %}★★★★★
+                                      {% endif %}
+                                  </span>
+                              </div>
+                              <p class="text-sm lg:text-base text-chocolate/80 leading-relaxed">{{ resena.comentario }}</p>
+                              
+                              <!-- Respuestas de la dueña -->
+                              {% if resena.respuestas.all %}
+                                  <div class="mt-4 bg-crema p-4 rounded-2xl border border-chocolate/5 relative">
+                                      <div class="absolute -top-2 left-6 w-4 h-4 bg-crema border-t border-l border-chocolate/5 transform rotate-45"></div>
+                                      {% for respuesta in resena.respuestas.all %}
+                                          <p class="text-[10px] lg:text-xs font-black text-cafe uppercase tracking-widest2 mb-1">Respuesta de SARALU:</p>
+                                          <p class="text-sm text-chocolate/70">{{ respuesta.respuesta }}</p>
+                                      {% endfor %}
+                                  </div>
+                              {% endif %}
+
+                              <!-- Botón para responder (solo staff) -->
+                              {% if user.is_staff %}
+                                  <button type="button" 
+                                          onclick="document.getElementById('form-respuesta-{{ resena.id }}').classList.toggle('hidden')"
+                                          class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-chocolate/60 hover:text-chocolate transition">
+                                      💬 <span>Responder</span>
+                                  </button>
+
+                                  <!-- Formulario oculto para responder -->
+                                  <form id="form-respuesta-{{ resena.id }}" 
+                                        method="POST" 
+                                        class="hidden mt-3 flex flex-col gap-2 bg-crema/50 p-4 rounded-2xl border border-chocolate/10 shadow-inner">
+                                      {% csrf_token %}
+                                      <input type="hidden" name="accion" value="responder">
+                                      <input type="hidden" name="resena_id" value="{{ resena.id }}">
+                                      <textarea name="respuesta" 
+                                                rows="2" 
+                                                placeholder="Escribe tu respuesta..."
+                                                class="w-full rounded-xl border-2 border-chocolate/10 bg-white p-3 text-sm text-chocolate focus:border-chocolate focus:outline-none resize-none transition"
+                                                required></textarea>
+                                      <button type="submit" 
+                                              class="self-end rounded-full bg-chocolate px-5 py-2 text-xs font-bold text-mantequilla hover:bg-cafe transition">
+                                          Enviar respuesta
+                                      </button>
+                                  </form>
+                              {% endif %}
+                          </div>
+                      {% empty %}
+                          <div class="text-center py-12 bg-white/50 rounded-[2rem] border border-dashed border-chocolate/20">
+                              <span class="grid h-12 w-12 place-items-center rounded-full bg-mantequilla text-chocolate mx-auto mb-3 text-xl">+</span>
+                              <p class="text-chocolate/50 font-bold">Nadie ha comentado aún.</p>
+                              <p class="text-sm text-chocolate/40 mt-1">¡Anímate a ser el primero!</p>
+                          </div>
+                      {% endfor %}
+                  </div>
+              </div>
+          </div>
+      </div>
+    </main>
+
+    {# ============================================================ #}
+    {# FOOTER                                                        #}
+    {# ============================================================ #}
+    <footer class="relative overflow-hidden bg-rosaClaro mx-4 lg:mx-8 mt-10 mb-8 rounded-[2rem] lg:rounded-[3rem]">
+      <span class="pointer-events-none absolute top-6 left-10 text-mantequilla text-2xl animate-pulse z-10">✦</span>
+      <span class="pointer-events-none absolute bottom-6 right-10 text-rosa text-xl animate-bounce z-10">✦</span>
+
+      <div class="mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-8">
+          <div class="flex items-center justify-center md:justify-start gap-3">
+            <span class="grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla">
+              <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-1" />
+            </span>
+            <div>
+              <p class="font-script text-2xl lg:text-3xl text-chocolate leading-none">Saralu</p>
+              <p class="mt-1 text-[9px] uppercase tracking-widest2 font-bold text-cafe">Repostería artesanal</p>
+            </div>
+          </div>
+
+          <p class="text-center text-xs lg:text-sm text-cafe">
+            © {% now "Y" %} SARALU Repostería. <br class="sm:hidden" /> Todos los derechos reservados.
+          </p>
+
+          <div class="flex justify-center md:justify-end gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-cafe">
+            <a href="{% url 'catalogo' %}" class="hover:text-chocolate transition">Catálogo</a>
+            <a href="#" class="hover:text-chocolate transition">Términos</a>
+            <a href="#" class="hover:text-chocolate transition">Contacto</a>
+          </div>
         </div>
 
-        <!-- SECCIÓN: INFORMACIÓN DEL PRODUCTO -->
-        <div class="flex flex-col justify-center">
-            {% if producto.categoria %}
-                <span class="inline-block bg-mantequilla px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider text-chocolate w-max mb-4">
-                    {{ producto.categoria.nombre }}
-                </span>
-            {% endif %}
-
-            <h1 class="font-display text-4xl md:text-5xl font-black leading-tight">{{ producto.nombre }}</h1>
-            <p class="text-3xl text-green-600 font-bold mt-4">${{ producto.precio|floatformat:0 }}</p>
-
-            <!-- Descripción -->
-            <div class="mt-8">
-                <h3 class="font-bold text-lg border-b border-chocolate/10 pb-2 mb-3">Descripción</h3>
-                <p class="text-chocolate/80 leading-relaxed">{{ producto.descripcion }}</p>
-            </div>
-
-            <!-- Porciones -->
-            {% if producto.porciones %}
-                <div class="mt-6">
-                    <h3 class="font-bold text-lg border-b border-chocolate/10 pb-2 mb-3">Rendimiento</h3>
-                     <p class="text-chocolate/80"><span class="font-semibold">Porciones estimadas:</span> {{ producto.porciones }}</p>
-                </div>
-            {% endif %}
-
-            <!-- Botón de acción -->
-            <div class="mt-10">
-                  <a href="{% url 'eliminar_producto' producto.id %}"
-                     onclick="return confirm('¿Esta seguro de eliminar el proyecto?')"
-                     class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
-                    Eliminar Producto
-                  </a>
-                  <a href="{% url 'editar_producto' producto.id %}"
-                     class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
-                    Editar Producto
-                  </a>
-            </div>
+        <div class="mt-8 border-t border-chocolate/10 pt-5 text-center">
+          <p class="text-[10px] lg:text-xs font-semibold uppercase tracking-widest2 text-cafe/60">Hecho con dedicación · SARALU · v1.0</p>
         </div>
-    </div>
+      </div>
+    </footer>
+  </div>
 
-    <!--SECCIÓN DE RESEÑAS (HU-012)-->
-    <div class="mt-16 border-t border-chocolate/10 pt-10">
-        <h2 class="font-display text-3xl font-black text-chocolate mb-8">Opiniones de clientes</h2>
-
-        <!-- Mensajes de éxito o eliminación -->
-        {% if messages %}
-            <div class="mb-6 flex flex-col gap-2">
-                {% for message in messages %}
-                    <div class="p-4 rounded-xl text-sm font-bold {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-mantequilla text-chocolate{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <!-- COLUMNA IZQUIERDA: Formulario o Login -->
-             {% if user.is_staff %}
-             {% else %}
-            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-soft border border-chocolate/5 h-max">
-                {% if user.is_authenticated %}
-                    
-                    <h3 class="font-bold text-xl mb-4 text-chocolate">
-                        {% if resena_usuario %}Edita tu reseña{% else %}Deja tu reseña{% endif %}
-                    </h3>
-                    
-                    <!-- Formulario para Guardar o Editar -->
-                    <form method="POST" class="flex flex-col gap-4">
-                        {% csrf_token %}
-                        <!-- Variable oculta para que views.py sepa qué hacer -->
-                        <input type="hidden" name="accion" value="guardar">
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-chocolate/80 mb-1" for="{{ form.calificacion.id_for_label }}">{{ form.calificacion.label }}</label>
-                            {{ form.calificacion }}
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-chocolate/80 mb-1" for="{{ form.comentario.id_for_label }}">{{ form.comentario.label }}</label>
-                            {{ form.comentario }}
-                        </div>
-
-                        <div class="mt-2">
-                            <button type="submit" class="w-full md:w-auto rounded-full bg-chocolate px-6 py-3 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
-                                {% if resena_usuario %}Actualizar reseña{% else %}Publicar reseña{% endif %}
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Formulario separado para Eliminar -->
-                    {% if resena_usuario %}
-                    <form method="POST" class="mt-4 border-t border-chocolate/10 pt-4" onsubmit="return confirm('¿Estás seguro de que deseas eliminar tu reseña? Esta acción no se puede deshacer.');">
-                        {% csrf_token %}
-                        <!-- Variable oculta para que views.py elimine -->
-                        <input type="hidden" name="accion" value="eliminar">
-                        <button type="submit" class="text-sm font-bold text-red-500 hover:text-red-700 transition underline">
-                            Eliminar mi reseña
-                        </button>
-                    </form>
-                    {% endif %}
-
-                {% else %}
-                    <!-- Petición de Login para usuarios anónimos -->
-                    <div class="text-center py-8">
-                        <h3 class="font-bold text-lg mb-2 text-chocolate">¿Ya probaste este producto?</h3>
-                        <p class="text-sm text-chocolate/70 mb-6">Para dejar una reseña, por favor inicia sesión o regístrate en nuestra plataforma.</p>
-                        <a href="{% url 'login' %}?next={{ request.path }}" class="inline-block rounded-full bg-chocolate px-8 py-3 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
-                            Iniciar sesión
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-            {% endif %}
-
-            <!-- COLUMNA DERECHA: Lista de reseñas -->
-            <div class="flex flex-col gap-6">
-                <h3 class="font-bold text-xl text-chocolate border-b border-chocolate/10 pb-3">Reseñas publicadas ({{ resenas.count }})</h3>
-                
-                <div class="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-2">
-                    {% for resena in resenas %}
-                        <div class="bg-crema/40 p-5 rounded-2xl border border-chocolate/5">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="font-bold text-chocolate">{{ resena.usuario.username }}</span>
-                                <span class="text-yellow-500 drop-shadow-sm font-black tracking-widest text-lg">
-                                    <!-- Truco visual para mostrar estrellitas según la calificación -->
-                                    {% if resena.calificacion == 1 %}★☆☆☆☆
-                                    {% elif resena.calificacion == 2 %}★★☆☆☆
-                                    {% elif resena.calificacion == 3 %}★★★☆☆
-                                    {% elif resena.calificacion == 4 %}★★★★☆
-                                    {% elif resena.calificacion == 5 %}★★★★★
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <p class="text-sm text-chocolate/80 leading-relaxed">{{ resena.comentario }}</p>
-                            
-                            <!-- Respuestas de la dueña (del modelo RespuestaResena) -->
-                            {% if resena.respuestas.all %}
-                                <div class="mt-4 bg-white p-4 rounded-xl border border-chocolate/10 shadow-sm relative">
-                                    <div class="absolute -top-2 left-4 w-4 h-4 bg-white border-t border-l border-chocolate/10 transform rotate-45"></div>
-                                    {% for respuesta in resena.respuestas.all %}
-                                        <p class="text-xs font-black text-chocolate mb-1">Respuesta de SARALU:</p>
-                                        <p class="text-xs text-chocolate/70">{{ respuesta.respuesta }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-
-                            <!-- Botón para responder (solo staff) -->
-                            {% if user.is_staff %}
-                                <button type="button" 
-                                        onclick="document.getElementById('form-respuesta-{{ resena.id }}').classList.toggle('hidden')"
-                                        class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-chocolate/60 hover:text-chocolate transition hover:scale-105 transform">
-                                    💬 <span>Responder</span>
-                                </button>
-
-                                <!-- Formulario oculto para responder -->
-                                <form id="form-respuesta-{{ resena.id }}" 
-                                      method="POST" 
-                                      class="hidden mt-3 flex flex-col gap-2 bg-white p-3 rounded-xl border border-chocolate/10 shadow-sm">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="accion" value="responder">
-                                    <input type="hidden" name="resena_id" value="{{ resena.id }}">
-                                    <textarea name="respuesta" 
-                                              rows="2" 
-                                              placeholder="Escribe tu respuesta..."
-                                              class="w-full rounded-lg border border-chocolate/20 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-mantequilla resize-none"
-                                              required></textarea>
-                                    <button type="submit" 
-                                            class="self-end rounded-full bg-chocolate px-4 py-1.5 text-xs font-bold text-crema hover:bg-chocolate/90 transition">
-                                        Enviar respuesta
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    {% empty %}
-                        <div class="text-center py-10">
-                            <p class="text-chocolate/50 italic">Nadie ha comentado aún. ¡Anímate a ser el primero!</p>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-  </main>
-
-  {# FOOTER #}
-  <footer class="border-t border-chocolate/10 bg-crema mt-auto">
-    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-chocolate/70 md:flex-row">
-      <p class="font-display text-lg font-black text-chocolate">SARALU</p>
-      <p>© {% now "Y" %} SARALU Repostería.</p>
-    </div>
-  </footer>
-
+  <!-- Scripts -->
+  <script>
+    // Auto-cierre de notificaciones
+    document.addEventListener("DOMContentLoaded", function() {
+      const toasts = document.querySelectorAll('[id^="toast-"]');
+      toasts.forEach(function(toast) {
+        setTimeout(function() {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-4', 'opacity-0');
+          setTimeout(function() { toast.remove(); }, 500);
+        }, 5000);
+      });
+    });
+  </script>
+  
+  <style>
+    /* Scrollbar sutil para la lista de reseñas */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(74, 53, 40, 0.2); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(74, 53, 40, 0.4); }
+  </style>
 </body>
 </html>

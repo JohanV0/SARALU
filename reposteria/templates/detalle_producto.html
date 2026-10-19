@@ -57,10 +57,21 @@
       </ul>
 
       <div class="flex items-center gap-2 sm:gap-3">
-        <a href="{% url 'login' %}"
-           class="inline-flex items-center gap-2 rounded-full border-2 border-chocolate/80 px-4 py-2 text-sm font-bold hover:bg-chocolate hover:text-crema transition">
-          Iniciar sesión
-        </a>
+          <form action="{% url 'logout' %}" method="post" class="block">
+            {% csrf_token %}
+            <button type="submit"
+                    class="group relative flex w-full items-center justify-center gap-2.5 rounded-3xl bg-chocolate px-4 py-3.5 3xl:py-4 text-base lg:text-lg 3xl:text-xl font-semibold text-mantequilla shadow-soft hover:bg-cafe transition overflow-hidden">
+              <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Cerrar sesión
+            </button>
+          </form>
       </div>
     </nav>
   </header>
@@ -113,9 +124,16 @@
 
             <!-- Botón de acción -->
             <div class="mt-10">
-                <button type="button" class="block w-full text-center rounded-full bg-chocolate px-8 py-4 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
-                    Contactar para pedir
-                </button>
+                  <a href="{% url 'eliminar_producto' producto.id %}"
+                     onclick="return confirm('¿Esta seguro de eliminar el proyecto?')"
+                     class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+                    Eliminar Producto
+                  </a>
+                  <a href="{% url 'editar_producto' producto.id %}"
+                     onclick="return confirm('¿Esta seguro de eliminar el proyecto?')"
+                     class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+                    Editar Producto
+                  </a>
             </div>
         </div>
     </div>

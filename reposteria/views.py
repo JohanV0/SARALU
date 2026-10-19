@@ -17,6 +17,9 @@ def home(request):
 def es_usuario(user):
     return user.is_authenticated and not user.is_staff
 
+def admin(user):
+    return user.is_authenticated and user.is_staff
+
 
 def catalogo_view(request):
     categoria_id = request.GET.get('categoria')
@@ -114,6 +117,7 @@ def eliminar_producto(request,producto_id):
     return redirect('catalogo')
 
 @login_required
+@user_passes_test(admin)
 def editar_producto(request,producto_id):
     producto = Producto.objects.get(id=producto_id)
     categorias = Categoria.objects.all()

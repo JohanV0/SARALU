@@ -124,9 +124,16 @@
 
             <!-- Botón de acción -->
             <div class="mt-10">
-                <button type="button" class="block w-full text-center rounded-full bg-chocolate px-8 py-4 text-sm font-bold text-crema shadow-soft hover:bg-chocolate/90 transition">
-                    Contactar para pedir
-                </button>
+                  <a href="{% url 'eliminar_producto' producto.id %}"
+                     onclick="return confirm('¿Esta seguro de eliminar el proyecto?')"
+                     class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+                    Eliminar Producto
+                  </a>
+                  <a href="{% url 'editar_producto' producto.id %}"
+                     onclick="return confirm('¿Esta seguro de eliminar el proyecto?')"
+                     class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+                    Editar Producto
+                  </a>
             </div>
         </div>
     </div>

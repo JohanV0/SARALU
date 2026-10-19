@@ -11,32 +11,6 @@ def home(request):
         'destacados':  Producto.objects.filter(destacado=True),
         'mas_vendidos': Producto.objects.filter(mas_vendido=True),
         'es_nuevos':      Producto.objects.filter(es_nuevo=True),
-    }) 
-
-def es_usuario(user):
-    return user.is_authenticated and not user.is_staff
-
-
-def catalogo_view(request):
-    categoria_id = request.GET.get('categoria')
-    productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
-    categorias = Categoria.objects.all()
-
-    if categoria_id:
-        productos = productos.filter(categoria_id=categoria_id)
-
-    contexto = {
-        'productos': productos,
-        'categorias': categorias,
-        'categoria_actual': int(categoria_id) if categoria_id else None,
-    }
-    return render(request, 'catalogo.html', contexto)
-
-def home(request):
-    return render(request, 'home.html', {
-        'destacados':  Producto.objects.filter(destacado=True),
-        'mas_vendidos': Producto.objects.filter(mas_vendido=True),
-        'es_nuevos':      Producto.objects.filter(es_nuevo=True),
     })
 
 
@@ -58,7 +32,6 @@ def catalogo_view(request):
         'categoria_actual': int(categoria_id) if categoria_id else None,
     }
     return render(request, 'catalogo.html', contexto)
-
 
 def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(
@@ -134,3 +107,8 @@ def detalle_producto_view(request, producto_id):
     }
     return render(request, 'detalle_producto.html', contexto)
     
+@login_required
+def eliminar_producto(request,producto_id):
+    producto = Producto.objects.get(id=producto_id)
+    producto.delete()
+    return redirect('catalogo')

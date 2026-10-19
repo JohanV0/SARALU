@@ -29,7 +29,7 @@ class Producto(models.Model):
     )
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True)
     stock = models.PositiveIntegerField(default=10)
-    estado_producto = models.BooleanField(default=True)
+    estado_activo = models.BooleanField(default=True)
     porciones = models.PositiveIntegerField(default=1)
     destacado = models.BooleanField(default=False)
     mas_vendido = models.BooleanField(default=False)

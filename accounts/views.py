@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.auth.decorators import user_passes_test, permission_required, login_required
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
+from django.contrib.auth import views as auth_views
 
 def register(request):
     datos = ''
@@ -110,3 +111,40 @@ def cambiar_contrasena(request):
     return render(request, 'cambiar_contrasena.html', {
         'errores': errores
     })
+
+
+class PasswordResetView(auth_views.PasswordResetView):
+    """Paso 1: el usuario escribe su correo y se le envía el enlace."""
+    template_name = 'password_reset_form.html'
+    email_template_name = 'password_reset_email.html'
+    subject_template_name = 'password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            'Si el correo está registrado, te enviamos un enlace para restablecer la contraseña.'
+        )
+        return response
+
+
+class PasswordResetDoneView(auth_views.PasswordResetDoneView):
+    """Paso 2: página que dice 'revisa tu correo'."""
+    template_name = 'password_reset_done.html'
+
+
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    """Paso 3: el usuario define la nueva contraseña. Django valida el token."""
+    template_name = 'password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, 'Tu contraseña ha sido restablecida con éxito.')
+        return response
+
+
+class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    """Paso 4: página final de éxito."""
+    template_name = 'password_reset_complete.html'

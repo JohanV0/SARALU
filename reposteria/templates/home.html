@@ -106,39 +106,53 @@
       {# === CARRUSEL MÓVIL / GRID DESKTOP === #}
       <div class="flex md:grid md:grid-cols-4 gap-4 lg:gap-6 3xl:gap-8 items-stretch md:items-start overflow-x-auto snap-x snap-mandatory overscroll-x-contain scroll-smooth pb-4 -mx-6 px-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {% for producto in mas_vendidos %}
-          <div class="snap-start shrink-0 w-[85%] sm:w-[45%] md:w-auto group rounded-[1.7rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft md:hover:-translate-y-2 md:hover:shadow-lift transition-all flex flex-col">
-            {# ---- Imagen + info → clickeables hacia el detalle ---- #}
-            <a href="{% url 'producto_detalle' producto.id %}" class="block">
-              <div class="relative overflow-hidden rounded-[1.35rem] bg-rosaClaro">
-                {% if producto.imagen %}
-                  <img
-                    src="{{ producto.imagen.url }}"
-                    alt="{{ producto.nombre }}"
-                    class="h-52 sm:h-52 lg:h-56 2xl:h-60 3xl:h-72 4xl:h-80 w-full object-cover transition duration-700 group-hover:scale-105"
-                  />
-                {% endif %}
-                <span class="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-full bg-mantequilla font-display text-sm font-bold text-chocolate shadow-soft">
-                  {{ forloop.counter }}
-                </span>
-              </div>
-              <div class="pt-4 px-1">
-                <h3 class="font-display text-base lg:text-lg 3xl:text-xl font-semibold truncate text-chocolate">
-                  {{ producto.nombre }}
-                </h3>
-                <p class="mt-1 text-sm font-bold text-cafe">
-                  ${{ producto.precio|floatformat:0 }}
-                </p>
-              </div>
-            </a>
-            {# ---- Botón carrito (flujo aparte) ---- #}
-            <form method="post" action="#" class="mt-4">
-              {% csrf_token %}
-              <button type="submit"
-                      class="w-full rounded-full bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla hover:bg-cafe transition">
-                Añadir al carrito
-              </button>
-            </form>
-          </div>
+          {# --- FILTRO PARA CLIENTES: Ocultar si está AGOTADO --- #}
+          {% if producto.estado == 'AGOTADO' and not request.user.is_staff %}
+            {# No hace nada, salta al siguiente #}
+          {% else %}
+            <div class="snap-start shrink-0 w-[85%] sm:w-[45%] md:w-auto group rounded-[1.7rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft md:hover:-translate-y-2 md:hover:shadow-lift transition-all flex flex-col">
+              {# ---- Imagen + info → clickeables hacia el detalle ---- #}
+              <a href="{% url 'producto_detalle' producto.id %}" class="block">
+                <div class="relative overflow-hidden rounded-[1.35rem] bg-rosaClaro">
+                  {% if producto.imagen %}
+                    <img
+                      src="{{ producto.imagen.url }}"
+                      alt="{{ producto.nombre }}"
+                      class="h-52 sm:h-52 lg:h-56 2xl:h-60 3xl:h-72 4xl:h-80 w-full object-cover transition duration-700 group-hover:scale-105 {% if producto.estado == 'AGOTADO' %}opacity-60 grayscale-[50%]{% endif %}"
+                    />
+                  {% endif %}
+                  
+                  {# --- BADGE DE AGOTADO PARA EL ADMIN --- #}
+                  {% if producto.estado == 'AGOTADO' %}
+                    <span class="absolute top-3 right-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-soft z-10">
+                      Agotado
+                    </span>
+                  {% endif %}
+
+                  <span class="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-full bg-mantequilla font-display text-sm font-bold text-chocolate shadow-soft">
+                    {{ forloop.counter }}
+                  </span>
+                </div>
+                <div class="pt-4 px-1">
+                  <h3 class="font-display text-base lg:text-lg 3xl:text-xl font-semibold truncate text-chocolate">
+                    {{ producto.nombre }}
+                  </h3>
+                  <p class="mt-1 text-sm font-bold text-cafe">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+                </div>
+              </a>
+              {# ---- Botón carrito (flujo aparte) ---- #}
+              <form method="post" action="#" class="mt-4">
+                {% csrf_token %}
+                <button type="submit"
+                        class="w-full rounded-full bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla hover:bg-cafe transition {% if producto.estado == 'AGOTADO' %}opacity-50 cursor-not-allowed{% endif %}"
+                        {% if producto.estado == 'AGOTADO' %}disabled{% endif %}>
+                  {% if producto.estado == 'AGOTADO' %}Sin stock{% else %}Añadir al carrito{% endif %}
+                </button>
+              </form>
+            </div>
+          {% endif %}
         {% empty %}
           <div class="w-full md:col-span-full rounded-[2rem] bg-crema px-6 py-20 text-center shadow-soft">
             <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-mantequilla text-chocolate">
@@ -197,80 +211,102 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 3xl:gap-8 lg:auto-rows-[300px]">
       {% for producto in destacados %}
-        {% if forloop.first %}
-          {# ---- Destacado grande: toda la card clickeable ---- #}
-          <a href="{% url 'producto_detalle' producto.id %}"
-             class="group relative block overflow-hidden rounded-[2rem] bg-chocolate lg:col-span-2 lg:row-span-2 sm:col-span-2 min-h-[500px] lg:min-h-0">
-            {% if producto.imagen %}
-              <img
-                src="{{ producto.imagen.url }}"
-                alt="{{ producto.nombre }}"
-                class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
-              />
-            {% endif %}
-            <div class="absolute inset-0 bg-gradient-to-t from-chocolate/95 via-chocolate/35 to-transparent"></div>
-            <span class="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-mantequilla px-4 py-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate">
-              <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
-              Destacado
-            </span>
-            <div class="absolute inset-x-0 bottom-0 p-6 md:p-8 3xl:p-10 text-crema">
-              <h3 class="font-display text-2xl md:text-3xl lg:text-4xl 3xl:text-5xl font-semibold leading-tight">
-                {{ producto.nombre }}
-              </h3>
-              <p class="mt-3 max-w-xl text-sm md:text-base text-crema/75 line-clamp-2">
-                {{ producto.descripcion }}
-              </p>
-              <div class="mt-6 flex items-center justify-between gap-4">
-                <p class="font-display text-xl md:text-2xl lg:text-3xl font-bold text-mantequilla">
-                  ${{ producto.precio|floatformat:0 }}
-                </p>
-                <span class="inline-flex items-center gap-2 rounded-full bg-crema px-5 py-2.5 text-sm font-bold text-chocolate shadow-soft">
-                  Ver producto →
-                </span>
-              </div>
-            </div>
-          </a>
+        {# --- FILTRO PARA CLIENTES: Ocultar si está AGOTADO --- #}
+        {% if producto.estado == 'AGOTADO' and not request.user.is_staff %}
+          {# No se muestra #}
         {% else %}
-          <div class="group relative flex flex-col overflow-hidden rounded-[2rem] bg-rosaClaro transition hover:-translate-y-2 hover:shadow-lift">
-            {# ---- Imagen del producto → detalle ---- #}
+          {% if forloop.first %}
+            {# ---- Destacado grande: toda la card clickeable ---- #}
             <a href="{% url 'producto_detalle' producto.id %}"
-               class="relative block overflow-hidden flex-1 min-h-[170px]">
+               class="group relative block overflow-hidden rounded-[2rem] bg-chocolate lg:col-span-2 lg:row-span-2 sm:col-span-2 min-h-[500px] lg:min-h-0">
               {% if producto.imagen %}
                 <img
                   src="{{ producto.imagen.url }}"
                   alt="{{ producto.nombre }}"
-                  class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]"
+                  class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04] {% if producto.estado == 'AGOTADO' %}opacity-60 grayscale-[50%]{% endif %}"
                 />
               {% endif %}
-            </a>
-            <div class="flex flex-col justify-between p-5">
-              <div class="flex items-start justify-between gap-3">
-                {# ---- Título del producto → detalle ---- #}
-                <a href="{% url 'producto_detalle' producto.id %}" class="min-w-0">
-                  <h3 class="font-display text-lg lg:text-xl font-semibold truncate text-chocolate hover:text-cafe transition">
-                    {{ producto.nombre }}
-                  </h3>
-                </a>
-                <p class="font-display text-base lg:text-lg font-bold whitespace-nowrap text-chocolate">
-                  ${{ producto.precio|floatformat:0 }}
+              
+              {# --- BADGE DE AGOTADO PARA EL ADMIN --- #}
+              {% if producto.estado == 'AGOTADO' %}
+                <span class="absolute top-5 right-5 z-20 rounded-full bg-red-600 px-4 py-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-white shadow-soft">
+                  Agotado
+                </span>
+              {% endif %}
+
+              <div class="absolute inset-0 bg-gradient-to-t from-chocolate/95 via-chocolate/35 to-transparent"></div>
+              <span class="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-mantequilla px-4 py-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate z-20">
+                <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
+                Destacado
+              </span>
+              <div class="absolute inset-x-0 bottom-0 p-6 md:p-8 3xl:p-10 text-crema">
+                <h3 class="font-display text-2xl md:text-3xl lg:text-4xl 3xl:text-5xl font-semibold leading-tight">
+                  {{ producto.nombre }}
+                </h3>
+                <p class="mt-3 max-w-xl text-sm md:text-base text-crema/75 line-clamp-2">
+                  {{ producto.descripcion }}
                 </p>
+                <div class="mt-6 flex items-center justify-between gap-4">
+                  <p class="font-display text-xl md:text-2xl lg:text-3xl font-bold text-mantequilla">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+                  <span class="inline-flex items-center gap-2 rounded-full bg-crema px-5 py-2.5 text-sm font-bold text-chocolate shadow-soft {% if producto.estado == 'AGOTADO' %}opacity-50{% endif %}">
+                    Ver producto →
+                  </span>
+                </div>
               </div>
-              <form method="post" action="#" class="mt-4">
-                {% csrf_token %}
-                <button type="submit"
-                        class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-4 py-2.5 text-sm font-bold text-mantequilla hover:bg-cafe transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-                       stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="21" r="1" />
-                    <circle cx="20" cy="21" r="1" />
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                  </svg>
-                  Añadir
-                </button>
-              </form>
+            </a>
+          {% else %}
+            <div class="group relative flex flex-col overflow-hidden rounded-[2rem] bg-rosaClaro transition hover:-translate-y-2 hover:shadow-lift {% if producto.estado == 'AGOTADO' %}opacity-80{% endif %}">
+              
+              {# --- BADGE DE AGOTADO PARA EL ADMIN (Small Card) --- #}
+              {% if producto.estado == 'AGOTADO' %}
+                <span class="absolute top-4 right-4 z-20 rounded-full bg-red-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest2 text-white shadow-soft">
+                  Agotado
+                </span>
+              {% endif %}
+
+              {# ---- Imagen del producto → detalle ---- #}
+              <a href="{% url 'producto_detalle' producto.id %}"
+                 class="relative block overflow-hidden flex-1 min-h-[170px]">
+                {% if producto.imagen %}
+                  <img
+                    src="{{ producto.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.06] {% if producto.estado == 'AGOTADO' %}grayscale-[50%]{% endif %}"
+                  />
+                {% endif %}
+              </a>
+              <div class="flex flex-col justify-between p-5">
+                <div class="flex items-start justify-between gap-3">
+                  {# ---- Título del producto → detalle ---- #}
+                  <a href="{% url 'producto_detalle' producto.id %}" class="min-w-0">
+                    <h3 class="font-display text-lg lg:text-xl font-semibold truncate text-chocolate hover:text-cafe transition">
+                      {{ producto.nombre }}
+                    </h3>
+                  </a>
+                  <p class="font-display text-base lg:text-lg font-bold whitespace-nowrap text-chocolate">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+                </div>
+                <form method="post" action="#" class="mt-4">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-4 py-2.5 text-sm font-bold text-mantequilla hover:bg-cafe transition {% if producto.estado == 'AGOTADO' %}opacity-50 cursor-not-allowed{% endif %}"
+                          {% if producto.estado == 'AGOTADO' %}disabled{% endif %}>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    {% if producto.estado == 'AGOTADO' %}Agotado{% else %}Añadir{% endif %}
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
+          {% endif %}
         {% endif %}
       {% empty %}
         <div class="col-span-full flex flex-col items-center justify-center rounded-[2rem] bg-rosaClaro/50 px-6 py-20 text-center">
@@ -313,49 +349,66 @@
 
       <div class="space-y-5 3xl:space-y-7">
         {% for producto in es_nuevos %}
-          <div class="group relative grid grid-cols-1 md:grid-cols-[320px_1fr] 3xl:grid-cols-[420px_1fr] rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema overflow-hidden shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
-            {# ---- Imagen → detalle ---- #}
-            <a href="{% url 'producto_detalle' producto.id %}"
-               class="relative overflow-hidden">
-              {% if producto.imagen %}
-                <img
-                  src="{{ producto.imagen.url }}"
-                  alt="{{ producto.nombre }}"
-                  class="h-60 md:h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
+          {# --- FILTRO PARA CLIENTES: Ocultar si está AGOTADO --- #}
+          {% if producto.estado == 'AGOTADO' and not request.user.is_staff %}
+            {# No se muestra #}
+          {% else %}
+            <div class="group relative grid grid-cols-1 md:grid-cols-[320px_1fr] 3xl:grid-cols-[420px_1fr] rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema overflow-hidden shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
+              
+              {# --- BADGE DE AGOTADO PARA EL ADMIN (Horizontal Card) --- #}
+              {% if producto.estado == 'AGOTADO' %}
+                <span class="absolute top-5 right-5 z-20 rounded-full bg-red-600 px-4 py-2 text-xs font-bold uppercase tracking-widest2 text-white shadow-soft">
+                  Agotado
+                </span>
               {% endif %}
-              <span class="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-rosa px-3 py-1.5 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate shadow-soft">
-                <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
-                Nuevo
-              </span>
-            </a>
-            <div class="flex flex-col justify-between p-6 md:p-8 3xl:p-10">
-              <div>
-                {# ---- Título → detalle ---- #}
-                <a href="{% url 'producto_detalle' producto.id %}">
-                  <h3 class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-semibold text-chocolate hover:text-cafe transition">
-                    {{ producto.nombre }}
-                  </h3>
-                </a>
-                <p class="mt-3 max-w-2xl text-base lg:text-lg text-cafe line-clamp-3">
-                  {{ producto.descripcion }}
-                </p>
-              </div>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mt-7">
-                <p class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
-                  ${{ producto.precio|floatformat:0 }}
-                </p>
-                <form method="post" action="#">
-                  {% csrf_token %}
-                  <button type="submit"
-                          class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 lg:px-7 lg:py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
-                    Añadir al carrito
-                    <span>→</span>
-                  </button>
-                </form>
+
+              {# ---- Imagen → detalle ---- #}
+              <a href="{% url 'producto_detalle' producto.id %}"
+                 class="relative overflow-hidden">
+                {% if producto.imagen %}
+                  <img
+                    src="{{ producto.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    class="h-60 md:h-full w-full object-cover transition duration-700 group-hover:scale-105 {% if producto.estado == 'AGOTADO' %}opacity-60 grayscale-[50%]{% endif %}"
+                  />
+                {% endif %}
+                <span class="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-rosa px-3 py-1.5 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate shadow-soft z-10">
+                  <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
+                  Nuevo
+                </span>
+              </a>
+              <div class="flex flex-col justify-between p-6 md:p-8 3xl:p-10">
+                <div>
+                  {# ---- Título → detalle ---- #}
+                  <a href="{% url 'producto_detalle' producto.id %}">
+                    <h3 class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-semibold text-chocolate hover:text-cafe transition">
+                      {{ producto.nombre }}
+                    </h3>
+                  </a>
+                  <p class="mt-3 max-w-2xl text-base lg:text-lg text-cafe line-clamp-3">
+                    {{ producto.descripcion }}
+                  </p>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mt-7">
+                  <p class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+                  <form method="post" action="#">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 lg:px-7 lg:py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe transition {% if producto.estado == 'AGOTADO' %}opacity-50 cursor-not-allowed{% endif %}"
+                            {% if producto.estado == 'AGOTADO' %}disabled{% endif %}>
+                      {% if producto.estado == 'AGOTADO' %}
+                        Sin stock
+                      {% else %}
+                        Añadir al carrito <span>→</span>
+                      {% endif %}
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
+          {% endif %}
         {% empty %}
           <div class="rounded-[2rem] bg-crema/80 px-6 py-20 text-center shadow-soft">
             <h3 class="font-display text-xl lg:text-2xl font-semibold text-chocolate">

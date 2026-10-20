@@ -20,7 +20,6 @@ def es_usuario(user):
 def admin(user):
     return user.is_authenticated and user.is_staff
 
-
 def catalogo_view(request):
     categoria_id = request.GET.get('categoria')
     productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
@@ -118,45 +117,51 @@ def eliminar_producto(request,producto_id):
 
 @login_required
 @user_passes_test(admin)
-def editar_producto(request,producto_id):
-    producto = Producto.objects.get(id=producto_id)
+def editar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
     categorias = Categoria.objects.all()
 
     if request.method == 'POST':
         nombre = request.POST.get("nombre")
         descripcion = request.POST.get("descripcion")
         precio = request.POST.get("precio")
-        imagen = request.POST.get("imagen")
         stock = request.POST.get("stock")
         porciones = request.POST.get("porciones")
         ventas = request.POST.get("ventas")
         categoria_id = request.POST.get("categoria")
-        estado_activo = 'estado'      in request.POST
-        destacado     = 'destacado'   in request.POST
-        mas_vendido   = 'mas_vendido' in request.POST
-        es_nuevo      = 'nuevo'       in request.POST
+        estado = request.POST.get("estado")  # 'DISPONIBLE' o 'AGOTADO'
+        
+        # Leemos los checkboxes correctamente según el HTML
+        destacado = 'destacado' in request.POST
+        mas_vendido = 'mas_vendido' in request.POST
+        es_nuevo = 'es_nuevo' in request.POST
 
-        if not (nombre and descripcion and precio and stock and porciones and ventas and categoria_id):
-            
+        if not (nombre and precio and stock and porciones and categoria_id):
             messages.error(request, "Faltan campos obligatorios.")
-            return render(request, "editar-producto.html", {
+            return render(request, "editar_producto.html", {
                 "producto": producto,
                 "categorias": categorias,
             })
 
+        # Asignamos los valores al producto
         producto.nombre = nombre
-        producto.descripcion = descripcion
+        producto.descripcion = descripcion or ""
         producto.precio = float(precio)
         producto.stock = int(stock)
         producto.porciones = int(porciones)
-        producto.ventas = int(ventas)
-        producto.estado_activo = estado_activo
+        producto.ventas = int(ventas) if ventas else 0
+        
+        # CORRECCIÓN AQUÍ: estado en vez de estado_activo
+        producto.estado = estado if estado else 'DISPONIBLE'
+        
         producto.destacado = destacado
         producto.mas_vendido = mas_vendido
         producto.es_nuevo = es_nuevo
-        producto.categoria     = get_object_or_404(Categoria, id=categoria_id)
-        producto.save()
+        
+        if categoria_id:
+            producto.categoria = get_object_or_404(Categoria, id=categoria_id)
 
+        # Guardamos la imagen si se subió una nueva
         if request.FILES.get('imagen'):
             producto.imagen = request.FILES['imagen']
 
@@ -164,10 +169,11 @@ def editar_producto(request,producto_id):
         messages.success(request, "Producto actualizado correctamente.")
         return redirect("producto_detalle", producto_id=producto.id)
 
-    return render(request,"editar-producto.html",{
-        "producto":producto,
-        "categorias":categorias,
-        })
+    # CORRECCIÓN AQUÍ: nombre del archivo con guion bajo
+    return render(request, "editar-producto.html", {
+        "producto": producto,
+        "categorias": categorias,
+    })
   
 def nuevo_producto(request):
   categorias = Categoria.objects.all()
@@ -203,6 +209,12 @@ def nuevo_producto(request):
       return redirect('catalogo')
 
   return render(request, 'nuevo-producto.html', {'categorias': categorias})
+
+@login_required
+@user_passes_test(admin)
+def lista_productos(request):
+    productos = Producto.objects.all()
+    return render(request,'lista_productos.html',{"productos":productos})
 
 @login_required
 def armar_pedido_view(request):
@@ -304,3 +316,16 @@ def agregar_al_carrito(request, producto_id):
     messages.success(request, f"¡{producto.nombre} agregado al carrito!")
     # Lo mandamos a ver su carrito
     return redirect('ver_carrito')
+
+def avanzar_estado_categoria(request, producto_id):
+    categorias = get_object_or_404(Producto, id=producto_id)
+
+    if categorias.estado == 'DISPONIBLE':
+        categorias.estado = 'AGOTADO'
+        categorias.save()
+    elif categorias.estado == 'AGOTADO':
+        categorias.estado = 'DISPONIBLE'
+        categorias.save()
+    
+    
+    return redirect('lista_productos')

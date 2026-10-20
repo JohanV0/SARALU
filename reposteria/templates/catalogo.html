@@ -70,7 +70,7 @@
           <div>
             <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50"><span class="text-mantequilla">★</span> Catálogo</p>
             <div class="grid grid-cols-2 gap-3 3xl:gap-4">
-              <a href="#" class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+              <a href="{% url 'nuevo_producto' %}" class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
                 <span class="pointer-events-none absolute top-3 right-3 text-mantequilla text-base rotate-12">★</span>
                 <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-rosa group-hover:bg-crema transition">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4" /></svg>
@@ -80,7 +80,7 @@
                   <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Añadir al menú</p>
                 </div>
               </a>
-              <a href="#" class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+              <a href="{% url 'lista_productos' %}" class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
                 <span class="pointer-events-none absolute top-3 right-3 text-mantequilla text-base rotate-12">★</span>
                 <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-rosa group-hover:bg-crema transition">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -145,10 +145,10 @@
             Todos
           </a>
           {% for cat in categorias %}
-            <a href="?categoria={{ cat.id }}"
+            <a href="?categoria={{ cat.categoria }}"
                class="inline-flex items-center rounded-full border-2 px-6 py-3 text-xs lg:text-sm font-bold uppercase tracking-widest2 transition-all duration-200 ease-out shadow-sm
-                      {% if categoria_actual == cat.id %} border-chocolate bg-chocolate text-mantequilla shadow-soft {% else %} border-chocolate/20 bg-white text-chocolate hover:border-chocolate hover:bg-mantequilla/50 {% endif %}">
-              {{ cat.nombre }}
+                      {% if categoria_actual == cat.categoria %} border-chocolate bg-chocolate text-mantequilla shadow-soft {% else %} border-chocolate/20 bg-white text-chocolate hover:border-chocolate hover:bg-mantequilla/50 {% endif %}">
+              {{ cat.get_categoria_display|default:cat.categoria }}
             </a>
           {% endfor %}
         </div>
@@ -162,13 +162,15 @@
       <div class="mb-8 flex items-end justify-between border-b border-chocolate/10 pb-4">
         <p class="text-sm lg:text-base font-semibold text-cafe">
           {% if productos %}
-            Mostrando <span class="text-chocolate font-bold">{{ productos|length }}</span> producto{{ productos|length|pluralize:"s" }}
+            Mostrando <span class="text-chocolate font-bold" id="contador-productos">{{ productos|length }}</span> producto{{ productos|length|pluralize:"s" }}
           {% endif %}
         </p>
       </div>
+      
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start">
         {% for producto in productos %}
-          <article class="group flex flex-col h-full overflow-hidden rounded-[2rem] bg-white shadow-soft ring-1 ring-chocolate/5 transition-all hover:-translate-y-2 hover:shadow-lift">
+          {# El if forloop.counter > 4 oculta los productos a partir del quinto #}
+          <article class="group flex flex-col h-full overflow-hidden rounded-[2rem] bg-white shadow-soft ring-1 ring-chocolate/5 transition-all hover:-translate-y-2 hover:shadow-lift {% if forloop.counter > 4 %}hidden producto-oculto{% endif %}">
             
             <div class="relative h-56 md:h-64 w-full overflow-hidden bg-rosaClaro">
               {% if producto.imagen %}
@@ -182,7 +184,7 @@
               {% endif %}
               {% if producto.categoria %}
                 <span class="absolute left-4 top-4 rounded-full bg-mantequilla px-3 py-1 text-[11px] font-black uppercase tracking-widest2 text-chocolate shadow-soft">
-                  {{ producto.categoria.nombre }}
+                  {{ producto.categoria.get_categoria_display|default:producto.categoria.categoria }}
                 </span>
               {% endif %}
             </div>
@@ -193,22 +195,25 @@
               {% endif %}
               {% if producto.porciones %}
                 <p class="mt-3 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/50">
-                  {{ producto.porciones }}
+                  {{ producto.porciones }} porciones
                 </p>
               {% endif %}
               <div class="mt-auto flex items-center justify-between pt-6">
                 <p class="font-display text-xl lg:text-2xl font-bold text-chocolate">${{ producto.precio|floatformat:0 }}</p>
-                <a href="{% url 'producto_detalle' producto.id %}"
-                  class="rounded-full m-2 bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft transition hover:bg-cafe hover:-translate-y-0.5">
-                    Ver detalle
-                </a>
-                {% if user.is_authenticated and user.is_staff %}
-                <a href="{% url 'eliminar_producto' producto.id %}"
-                  onclick="return confirm('¿Seguro que desea eliminar este producto?')"
-                  class="rounded-full bg-chocolate px-5 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft transition hover:bg-cafe hover:-translate-y-0.5">
-                    Eliminar Producto
-                {% endif %}
-                </a>
+                
+                <div class="flex items-center gap-2">
+                  <a href="{% url 'producto_detalle' producto.id %}"
+                    class="rounded-full bg-chocolate px-4 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft transition hover:bg-cafe hover:-translate-y-0.5">
+                      Ver detalle
+                  </a>
+                  {% if user.is_authenticated and user.is_staff %}
+                  <a href="{% url 'eliminar_producto' producto.id %}"
+                    onclick="return confirm('¿Seguro que desea eliminar este producto?')"
+                    class="rounded-full bg-red-500/10 text-red-600 px-4 py-2.5 text-xs lg:text-sm font-bold shadow-soft transition hover:bg-red-500 hover:text-white hover:-translate-y-0.5">
+                      Eliminar
+                  </a>
+                  {% endif %}
+                </div>
               </div>
             </div>
           </article>
@@ -227,6 +232,20 @@
           </div>
         {% endfor %}
       </div>
+
+      {# BOTÓN PARA MOSTRAR MÁS PRODUCTOS #}
+      {% if productos|length > 4 %}
+        <div id="contenedor-ver-mas" class="mt-12 flex justify-center w-full">
+          <button type="button" onclick="mostrarMasProductos()" 
+                  class="group inline-flex items-center justify-center gap-2 rounded-full bg-white border-2 border-chocolate/10 px-8 py-4 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-mantequilla hover:border-mantequilla hover:-translate-y-1 transition-all">
+            Ver todos los productos ({{ productos|length }})
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+      {% endif %}
+
     </section>
     {# ============================================================ #}
     {# CTA FINAL                                                      #}
@@ -274,21 +293,36 @@
         document.body.classList.add('overflow-hidden');
       }
     }
+
+    // Función para mostrar todos los productos ocultos
+    function mostrarMasProductos() {
+      // 1. Buscar todas las tarjetas ocultas
+      const productosOcultos = document.querySelectorAll('.producto-oculto');
+      
+      // 2. Mostrarlas
+      productosOcultos.forEach(producto => {
+        producto.classList.remove('hidden');
+        // Opcional: quitamos la clase para que no vuelvan a ocultarse si se filtra de nuevo
+        producto.classList.remove('producto-oculto'); 
+      });
+
+      // 3. Ocultar el botón de "Ver todos"
+      document.getElementById('contenedor-ver-mas').style.display = 'none';
+    }
+
     // Script para ocultar automáticamente los mensajes de Django después de 4 segundos
     document.addEventListener("DOMContentLoaded", function() {
       const messageContainer = document.getElementById('django-messages');
       if (messageContainer) {
         setTimeout(() => {
-          // Efecto de desvanecimiento
           messageContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
           messageContainer.style.opacity = '0';
           messageContainer.style.transform = 'translateY(-10px)';
           
-          // Eliminar del DOM después de la animación
           setTimeout(() => {
             messageContainer.remove();
           }, 500);
-        }, 4000); // 4000 milisegundos = 4 segundos
+        }, 4000); 
       }
     });
   </script>

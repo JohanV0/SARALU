@@ -1,188 +1,203 @@
-{%load static%}
+{% load static %}
 <!DOCTYPE html>
-<html lang="es" class="">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión — SARALU</title>
 
-    <!-- Tipografías: una elegante para títulos y una limpia para el resto -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    // Caja de crayones: los 4 colores de la paleta
-                    colors: {
-                        azul: "#b1c8ea",
-                        mantequilla: "#ffebaa",
-                        chocolate: "#382322",
-                        crema: "#fdebde",
-                    },
-                    fontFamily: {
-                        titulo: ['"Playfair Display"', "serif"],
-                        cuerpo: ["Inter", "sans-serif"],
-                    },
-                },
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        screens: {
+          'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px',
+          '2xl': '1536px', '3xl': '1920px', '4xl': '2560px',
+        },
+        extend: {
+          colors: {
+            mantequilla: "#ffd97a", chocolate: "#4a3528", crema: "#fdf8e7",
+            rosa: "#f4b8c8", rosaClaro: "#fbe3ea", cafe: "#8b6f5c", azul: "#b1c8ea",
+          },
+          fontFamily: {
+            display: ['"Fredoka"', 'system-ui', 'sans-serif'],
+            script: ['"Pacifico"', 'cursive'],
+            body: ['"Nunito"', 'sans-serif'],
+          },
+          boxShadow: {
+            soft: "0 8px 30px -14px rgba(74, 53, 40, 0.20)",
+            lift: "0 24px 55px -25px rgba(74, 53, 40, 0.30)",
+            glow: "0 12px 40px -12px rgba(255, 217, 122, 0.55)",
+          },
+          letterSpacing: { widest2: "0.3em" },
+          keyframes: {
+            float: {
+              "0%,100%": { transform: "translateY(0) rotate(var(--r,0deg))" },
+              "50%": { transform: "translateY(-16px) rotate(calc(var(--r,0deg) + 14deg))" },
             },
-        };
+            twinkle: {
+              "0%,100%": { opacity: ".4", transform: "scale(.85)" },
+              "50%": { opacity: "1", transform: "scale(1.2)" },
+            },
+          },
+          animation: {
+            float: "float 6s ease-in-out infinite",
+            twinkle: "twinkle 2.6s ease-in-out infinite",
+          },
+        },
+      },
+    };
+  </script>
 
-        // Aplica el tema guardado ANTES de dibujar la página (por defecto: claro)
-        if (localStorage.getItem("tema") === "dark") {
-            document.documentElement.classList.add("dark");
-        }
-    </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 
-<body class="relative flex min-h-[100dvh] items-center justify-center px-4 py-16
-             font-cuerpo antialiased
-             bg-azul text-chocolate
-             dark:bg-chocolate dark:text-crema
-             transition-colors duration-500">
+<body class="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-crema px-4 py-16 font-body antialiased text-chocolate selection:bg-rosaClaro selection:text-chocolate">
 
-    <!-- Manchas de color de fondo -->
-    <div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-        <div class="absolute -top-32 -left-32 h-96 w-96 rounded-full
-                    bg-mantequilla/70 dark:bg-azul/20 blur-3xl"></div>
-        <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full
-                    bg-crema/70 dark:bg-mantequilla/15 blur-3xl"></div>
+  <!-- ===== FONDO: logo disimulado ===== -->
+  <div class="pointer-events-none fixed inset-0" aria-hidden="true">
+    <!-- Logo grande, tenue, difuminado y desvanecido en los bordes -->
+    <div class="absolute inset-0 bg-center bg-no-repeat opacity-[0.40] blur-[2px] mix-blend-multiply
+                [-webkit-mask-image:radial-gradient(circle,black_30%,transparent_68%)]
+                [mask-image:radial-gradient(circle,black_30%,transparent_68%)]"
+         style="background-image:url('{% static 'img/logo.png' %}'); background-size:min(1200px,160vw) auto;">
+    </div>
+    <!-- Manchas de color -->
+    <div class="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-rosa/35 blur-3xl"></div>
+    <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-mantequilla/50 blur-3xl"></div>
+    <div class="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-azul/30 blur-3xl"></div>
+  </div>
+
+  <!-- ===== Chispitas de dona flotando + estrellas ===== -->
+  <div class="pointer-events-none fixed inset-0" aria-hidden="true">
+    <span class="absolute top-[14%] left-[10%] h-1.5 w-5 rounded-full bg-rosa animate-float" style="--r:35deg"></span>
+    <span class="absolute top-[26%] right-[12%] h-1.5 w-5 rounded-full bg-mantequilla animate-float" style="--r:-30deg; animation-delay:-2s"></span>
+    <span class="absolute bottom-[22%] left-[14%] h-1.5 w-5 rounded-full bg-azul animate-float" style="--r:70deg; animation-delay:-4s"></span>
+    <span class="absolute bottom-[12%] right-[18%] h-1.5 w-5 rounded-full bg-rosa animate-float" style="--r:-60deg; animation-delay:-1s"></span>
+    <span class="absolute top-[48%] left-[5%] h-1.5 w-4 rounded-full bg-mantequilla animate-float" style="--r:10deg; animation-delay:-3s"></span>
+    <span class="absolute top-[8%] right-[30%] h-1.5 w-4 rounded-full bg-azul animate-float" style="--r:-15deg; animation-delay:-5s"></span>
+
+    <span class="absolute top-20 left-[18%] text-mantequilla text-3xl animate-twinkle">✦</span>
+    <span class="absolute bottom-24 right-[10%] text-rosa text-2xl animate-twinkle" style="animation-delay:-1s">✦</span>
+    <span class="absolute top-[40%] right-[6%] text-azul text-xl animate-twinkle" style="animation-delay:-2s">✦</span>
+    <span class="absolute bottom-[30%] left-[8%] text-rosa text-xl animate-twinkle" style="animation-delay:-.5s">✦</span>
+  </div>
+
+  <!-- ===== Tarjeta ===== -->
+  <div class="relative z-10 mt-10 w-full max-w-md">
+
+    <!-- Osito del logo asomando sobre la tarjeta -->
+    <div class="absolute -top-14 left-1/2 z-20 h-28 w-28 -translate-x-1/2 overflow-hidden rounded-full bg-crema ring-4 ring-white shadow-lift">
+      <!-- Si el osito no queda centrado, ajusta left/top -->
+      <img src="{% static 'img/logo.png' %}" alt="Logo SARALU"
+           class="absolute max-w-none"
+           style="width:287px; left:-25px; top:-84px;" />
     </div>
 
-    <!-- Botón de tema -->
-    <button
-        type="button"
-        id="btn-tema"
-        aria-label="Cambiar tema"
-        class="fixed top-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full
-               bg-crema text-chocolate ring-1 ring-chocolate/20 shadow-md shadow-chocolate/10
-               dark:bg-mantequilla dark:text-chocolate dark:ring-0
-               hover:scale-110 transition">
+    <main class="relative rounded-[2.5rem] bg-white/65 px-6 pb-9 pt-20 shadow-lift ring-1 ring-white/80 backdrop-blur-xl sm:px-10
+                 outline outline-2 outline-dashed outline-rosa/60 outline-offset-[-14px]">
 
-        <!-- Sol: solo se ve en modo oscuro (para pasar a claro) -->
-        <svg class="hidden dark:block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-        </svg>
-
-        <!-- Luna: solo se ve en modo claro (para pasar a oscuro) -->
-        <svg class="block dark:hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-        </svg>
-    </button>
-
-    <!-- Tarjeta -->
-    <main class="relative z-10 mx-auto my-auto w-full max-w-md rounded-3xl p-6 sm:p-10
-                 bg-crema ring-1 ring-chocolate/10 shadow-2xl shadow-chocolate/30
-                 dark:bg-white/[0.06] dark:ring-white/10 dark:shadow-black/50
-                 backdrop-blur-xl">
-
-        <!-- Logo y título -->
-        <div class="text-center mb-8">
-            <div class="mx-auto mb-6 flex h-36 w-36 items-center justify-center overflow-hidden rounded-full
-                        bg-mantequilla ring-4 ring-azul">
-                <img src="{% static 'img/logo.png' %}" alt="Logo Saralu" class="h-full w-full object-contain p-3">
-            </div>
-            <h1 class="font-titulo text-3xl font-bold tracking-tight text-chocolate dark:text-crema">Te da la Bienvenida </h1>
+      <!-- Título -->
+      <div class="mb-8 text-center">
+        <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
+          <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+          <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
+            Repostería artesanal
+          </span>
         </div>
 
-        <!-- Errores de Django (usuario o contraseña incorrectos) -->
-        {% if form.errors %}
-        <div class="mb-5 rounded-xl px-4 py-3 text-sm
-                    bg-red-100 text-red-700 ring-1 ring-red-200
-                    dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30">
-            Usuario o contraseña incorrectos.
+        <h1 class="mt-5 font-display text-4xl sm:text-5xl font-semibold leading-[1.1] tracking-tight text-chocolate">
+          Te da la<br />
+          <span class="font-script text-rosa text-5xl sm:text-6xl inline-block mt-2 pb-2 leading-[1.3]">
+            bienvenida
+          </span>
+        </h1>
+        <p class="mt-1 text-sm text-cafe">Ingresa para endulzar tu día.</p>
+      </div>
+
+      <!-- Errores de Django -->
+      {% if form.errors %}
+      <div class="mb-5 rounded-2xl bg-rosaClaro px-4 py-3 text-center text-sm font-bold text-chocolate">
+        Usuario o contraseña incorrectos.
+      </div>
+      {% endif %}
+
+      <form action="{% url 'login' %}" method="post" class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Usuario -->
+        <div>
+          <label for="username" class="mb-1.5 ml-4 block text-[11px] font-bold uppercase tracking-widest2 text-cafe">Nombre</label>
+          <div class="group relative">
+            <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe/50 transition-colors group-focus-within:text-rosa"
+                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            <input
+              type="text"
+              name="username"
+              id="username"
+              placeholder="Nombre del usuario"
+              autofocus
+              value="{{ form.username.value|default:'' }}"
+              class="w-full rounded-full bg-white/85 py-3.5 pl-12 pr-5 text-sm text-chocolate placeholder-cafe/50
+                     shadow-soft ring-1 ring-transparent transition
+                     focus:outline-none focus:ring-2 focus:ring-rosa" />
+          </div>
         </div>
-        {% endif %}
 
-        <form action="{% url 'login' %}" method="post" class="space-y-5">
-            {% csrf_token %}
+        <!-- Contraseña -->
+        <div>
+          <label for="password" class="mb-1.5 ml-4 block text-[11px] font-bold uppercase tracking-widest2 text-cafe">Contraseña</label>
+          <div class="group relative">
+            <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe/50 transition-colors group-focus-within:text-rosa"
+                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              placeholder="Ingrese su contraseña"
+              required
+              class="w-full rounded-full bg-white/85 py-3.5 pl-12 pr-5 text-sm text-chocolate placeholder-cafe/50
+                     shadow-soft ring-1 ring-transparent transition
+                     focus:outline-none focus:ring-2 focus:ring-rosa" />
+          </div>
 
-            <!-- Usuario -->
-            <div>
-                <label for="username" class="mb-1.5 block text-sm font-medium">Nombre</label>
-                <div class="group relative">
-                    <svg class="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2
-                                text-chocolate/40 dark:text-crema/40
-                                group-focus-within:text-chocolate dark:group-focus-within:text-azul transition-colors"
-                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                    </svg>
-                    <input
-                        type="text"
-                        name="username"
-                        id="username"
-                        placeholder="Nombre del usuario"
-                        autofocus
-                        value="{{ form.username.value|default:'' }}"
-                        class="w-full rounded-xl py-3 pl-11 pr-4 text-sm
-                               bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
-                               dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
-                               focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
-                </div>
-            </div>
+          <div class="mt-2 text-right">
+            <a href="{% url 'password_reset' %}" class="text-xs font-bold text-cafe transition-colors hover:text-chocolate">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+        </div>
 
-            <!-- Contraseña -->
-            <div>
-                <label for="password" class="mb-1.5 block text-sm font-medium">Contraseña</label>
-                <div class="group relative">
-                    <svg class="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2
-                                text-chocolate/40 dark:text-crema/40
-                                group-focus-within:text-chocolate dark:group-focus-within:text-azul transition-colors"
-                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                    <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        placeholder="Ingrese su contraseña"
-                        required
-                        class="w-full rounded-xl py-3 pl-11 pr-4 text-sm
-                               bg-white text-chocolate placeholder-chocolate/40 ring-1 ring-chocolate/25
-                               dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
-                               focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
-                </div>
+        <button
+          type="submit"
+          class="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 text-sm font-bold text-mantequilla
+                 shadow-soft transition-all hover:-translate-y-1 hover:bg-cafe active:scale-[0.98]">
+          Ingresar
+          <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
 
-                <!-- Olvidaste tu contraseña, pegado a la caja de contraseña -->
-                <div class="mt-2 text-right">
-                    <a href="{% url 'password_reset' %}" class="text-xs font-medium text-chocolate/60 hover:text-chocolate
-                                       dark:text-crema/60 dark:hover:text-azul transition-colors">
-                        ¿Olvidaste tu contraseña?
-                    </a>
-                </div>
-            </div>
+        <p class="text-center text-sm text-cafe">
+          ¿No tienes cuenta?
+          <a href="{% url 'register' %}"
+             class="font-bold text-chocolate underline decoration-rosa decoration-2 underline-offset-4 transition-colors hover:text-cafe">
+            Regístrate
+          </a>
+        </p>
+      </form>
 
-            <button
-                type="submit"
-                class="w-full rounded-xl py-3 font-semibold
-                       bg-chocolate text-mantequilla shadow-lg shadow-chocolate/25
-                       hover:bg-chocolate/90
-                       dark:bg-mantequilla dark:text-chocolate dark:shadow-none
-                       dark:hover:bg-mantequilla/90
-                       active:scale-[0.98] transition">
-                Ingresar sesión
-            </button>
-
-            <!-- Enlace de registro, como texto aparte debajo del botón -->
-            <p class="text-center text-sm text-chocolate/70 dark:text-crema/70">
-                ¿No tienes cuenta?
-                <a href="{% url 'register' %}" class="font-semibold text-chocolate underline underline-offset-2
-                                                        hover:text-chocolate/70
-                                                        dark:text-mantequilla dark:hover:text-mantequilla/80 transition-colors">
-                    Regístrate
-                </a>
-            </p>
-        </form>
+      <div class="mt-6 text-center">
+        <a href="{% url 'home' %}"
+           class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest2 text-cafe/70 transition-colors hover:text-chocolate">
+          <span aria-hidden="true">←</span> Volver al inicio
+        </a>
+      </div>
     </main>
-
-    <script>
-        document.getElementById("btn-tema").addEventListener("click", function () {
-            const esOscuro = document.documentElement.classList.toggle("dark");
-            localStorage.setItem("tema", esOscuro ? "dark" : "light");
-        });
-    </script>
+  </div>
 </body>
 </html>

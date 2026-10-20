@@ -17,6 +17,9 @@ def home(request):
 def es_usuario(user):
     return user.is_authenticated and not user.is_staff
 
+def admin(user):
+    return user.is_authenticated and user.is_staff
+
 
 def catalogo_view(request):
     categoria_id = request.GET.get('categoria')
@@ -112,6 +115,59 @@ def eliminar_producto(request,producto_id):
     producto = Producto.objects.get(id=producto_id)
     producto.delete()
     return redirect('catalogo')
+
+@login_required
+@user_passes_test(admin)
+def editar_producto(request,producto_id):
+    producto = Producto.objects.get(id=producto_id)
+    categorias = Categoria.objects.all()
+
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion")
+        precio = request.POST.get("precio")
+        imagen = request.POST.get("imagen")
+        stock = request.POST.get("stock")
+        porciones = request.POST.get("porciones")
+        ventas = request.POST.get("ventas")
+        categoria_id = request.POST.get("categoria")
+        estado_activo = 'estado'      in request.POST
+        destacado     = 'destacado'   in request.POST
+        mas_vendido   = 'mas_vendido' in request.POST
+        es_nuevo      = 'nuevo'       in request.POST
+
+        if not (nombre and descripcion and precio and stock and porciones and ventas and categoria_id):
+            
+            messages.error(request, "Faltan campos obligatorios.")
+            return render(request, "editar-producto.html", {
+                "producto": producto,
+                "categorias": categorias,
+            })
+
+        producto.nombre = nombre
+        producto.descripcion = descripcion
+        producto.precio = float(precio)
+        producto.stock = int(stock)
+        producto.porciones = int(porciones)
+        producto.ventas = int(ventas)
+        producto.estado_activo = estado_activo
+        producto.destacado = destacado
+        producto.mas_vendido = mas_vendido
+        producto.es_nuevo = es_nuevo
+        producto.categoria     = get_object_or_404(Categoria, id=categoria_id)
+        producto.save()
+
+        if request.FILES.get('imagen'):
+            producto.imagen = request.FILES['imagen']
+
+        producto.save()
+        messages.success(request, "Producto actualizado correctamente.")
+        return redirect("producto_detalle", producto_id=producto.id)
+
+    return render(request,"editar-producto.html",{
+        "producto":producto,
+        "categorias":categorias,
+        })
   
 def nuevo_producto(request):
   categorias = Categoria.objects.all()
@@ -202,9 +258,6 @@ def armar_pedido_view(request):
         'subtotal': subtotal,
     }
     return render(request, 'armar_pedido.html', contexto)
-
-
-# HU-024: CARRITO DE COMPRAS
 
 @login_required
 def ver_carrito_view(request):

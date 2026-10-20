@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido
+from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido, ItemCarrito
 from .forms import ResenaForm
 
 def home(request):
@@ -16,6 +16,9 @@ def home(request):
 
 def es_usuario(user):
     return user.is_authenticated and not user.is_staff
+
+def admin(user):
+    return user.is_authenticated and user.is_staff
 
 
 def catalogo_view(request):
@@ -112,6 +115,59 @@ def eliminar_producto(request,producto_id):
     producto = Producto.objects.get(id=producto_id)
     producto.delete()
     return redirect('catalogo')
+
+@login_required
+@user_passes_test(admin)
+def editar_producto(request,producto_id):
+    producto = Producto.objects.get(id=producto_id)
+    categorias = Categoria.objects.all()
+
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion")
+        precio = request.POST.get("precio")
+        imagen = request.POST.get("imagen")
+        stock = request.POST.get("stock")
+        porciones = request.POST.get("porciones")
+        ventas = request.POST.get("ventas")
+        categoria_id = request.POST.get("categoria")
+        estado_activo = 'estado'      in request.POST
+        destacado     = 'destacado'   in request.POST
+        mas_vendido   = 'mas_vendido' in request.POST
+        es_nuevo      = 'nuevo'       in request.POST
+
+        if not (nombre and descripcion and precio and stock and porciones and ventas and categoria_id):
+            
+            messages.error(request, "Faltan campos obligatorios.")
+            return render(request, "editar-producto.html", {
+                "producto": producto,
+                "categorias": categorias,
+            })
+
+        producto.nombre = nombre
+        producto.descripcion = descripcion
+        producto.precio = float(precio)
+        producto.stock = int(stock)
+        producto.porciones = int(porciones)
+        producto.ventas = int(ventas)
+        producto.estado_activo = estado_activo
+        producto.destacado = destacado
+        producto.mas_vendido = mas_vendido
+        producto.es_nuevo = es_nuevo
+        producto.categoria     = get_object_or_404(Categoria, id=categoria_id)
+        producto.save()
+
+        if request.FILES.get('imagen'):
+            producto.imagen = request.FILES['imagen']
+
+        producto.save()
+        messages.success(request, "Producto actualizado correctamente.")
+        return redirect("producto_detalle", producto_id=producto.id)
+
+    return render(request,"editar-producto.html",{
+        "producto":producto,
+        "categorias":categorias,
+        })
   
 def nuevo_producto(request):
   categorias = Categoria.objects.all()
@@ -162,22 +218,19 @@ def armar_pedido_view(request):
     # CRITERIO 1: Calculamos el total
     subtotal = sum(item.subtotal() for item in items_carrito)
 
-    # ============================================================
     # PASO 3: GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
-    # ============================================================
     if request.method == 'POST':
         tipo_entrega = request.POST.get('tipo_entrega')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
         
-        # Unimos la fecha y hora para guardarlas en el campo "comentarios"
         nota_horario = f"Fecha de entrega: {fecha} | Hora: {hora}"
 
         # Acción 1: Creamos el Pedido oficial
         nuevo_pedido = Pedido.objects.create(
             cliente=request.user,
-            nombre_contacto=request.user.username, # Usamos su nombre de usuario
-            telefono_contacto="", # Se deja vacío por ahora
+            nombre_contacto=request.user.username, 
+            telefono_contacto="", 
             domicilio=tipo_entrega,
             subtotal=subtotal,
             total=subtotal,
@@ -199,11 +252,55 @@ def armar_pedido_view(request):
         # Acción 4: Mensaje de éxito y lo mandamos al inicio
         messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
         return redirect('home')
-
-    # ============================================================
-
+    
     contexto = {
         'items': items_carrito,
         'subtotal': subtotal,
     }
     return render(request, 'armar_pedido.html', contexto)
+
+@login_required
+def ver_carrito_view(request):
+    # Buscamos el carrito del usuario
+    carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
+    items = carrito.items.all()
+    
+    # CRITERIO 2: Calculamos el total acumulado
+    total = sum(item.subtotal() for item in items)
+    
+    contexto = {
+        'items': items,
+        'total': total
+    }
+    # CRITERIO 1 y 3 se resolverán en el HTML (carrito.html)
+    return render(request, 'carrito.html', contexto)
+
+@login_required
+def eliminar_item_carrito(request, item_id):
+    # CRITERIO 4: Eliminar un producto del carrito
+    # Buscamos el item asegurándonos que pertenezca al carrito de este usuario por seguridad
+    item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
+    nombre_producto = item.producto.nombre
+    item.delete()
+    
+    messages.success(request, f"Eliminaste {nombre_producto} de tu carrito.")
+    return redirect('ver_carrito')
+
+@require_POST
+@login_required
+def agregar_al_carrito(request, producto_id):
+    # Función extra para que dejes de usar el administrador de Django
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
+    
+    # Revisamos si el postre ya está en el carrito
+    item, creado = ItemCarrito.objects.get_or_create(carrito=carrito, producto=producto)
+    
+    if not creado:
+        # Si ya estaba, le sumamos 1 a la cantidad
+        item.cantidad += 1
+        item.save()
+        
+    messages.success(request, f"¡{producto.nombre} agregado al carrito!")
+    # Lo mandamos a ver su carrito
+    return redirect('ver_carrito')

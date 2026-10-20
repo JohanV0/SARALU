@@ -21,10 +21,8 @@
     {# ============================================================ #}
     {# PANEL ADMIN — Dashboard                                      #}
     {# ============================================================ #}
-
     {% if user.is_authenticated and user.is_staff %}
       <div id="admin-overlay" onclick="toggleAdminPanel()" class="hidden fixed inset-0 z-40 bg-chocolate/40 backdrop-blur-sm"></div>
-
       <aside id="admin-drawer" class="fixed top-0 left-0 z-50 flex h-screen w-[380px] lg:w-[420px] 3xl:w-[500px] 4xl:w-[560px] -translate-x-full flex-col rounded-r-6xl bg-crema shadow-panel transition-transform duration-300 ease-out">
         <div class="relative overflow-hidden rounded-tr-6xl bg-rosa px-6 lg:px-7 3xl:px-9 pb-5 3xl:pb-7 pt-7 3xl:pt-9 text-chocolate shrink-0">
           <div class="pointer-events-none absolute -top-12 -right-12 h-40 3xl:h-56 w-40 3xl:w-56 rounded-full bg-mantequilla/40 blur-3xl"></div>
@@ -32,7 +30,6 @@
           
           <span class="pointer-events-none absolute top-8 right-16 text-mantequilla text-xl 3xl:text-2xl rotate-12">★</span>
           <span class="pointer-events-none absolute bottom-20 right-8 text-mantequilla/80 text-sm 3xl:text-base -rotate-12">★</span>
-
           <div class="relative flex items-start justify-between">
             <div>
               <p class="text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/60">Panel de</p>
@@ -44,7 +41,6 @@
               </svg>
             </button>
           </div>
-
           <div class="relative mt-5 3xl:mt-7 flex items-center gap-3 rounded-3xl bg-crema/70 p-3 3xl:p-4 backdrop-blur-sm">
             <span class="relative grid h-12 w-12 lg:h-13 lg:w-13 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-full bg-mantequilla font-display text-xl lg:text-2xl 3xl:text-3xl font-bold text-chocolate">
               {{ user.first_name|first|default:user.username|first|upper }}
@@ -57,7 +53,6 @@
             <span class="rounded-full bg-chocolate px-3 py-1 3xl:px-3.5 3xl:py-1.5 text-[10px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-mantequilla">Admin</span>
           </div>
         </div>
-
         <nav class="flex-1 overflow-y-auto px-5 3xl:px-7 py-5 3xl:py-7 space-y-6 3xl:space-y-8">
           <a href="{% url 'home' %}" class="group relative flex items-center gap-4 rounded-4xl bg-mantequilla px-5 py-5 3xl:px-6 3xl:py-6 shadow-soft hover:-translate-y-1 hover:shadow-glow transition-all overflow-hidden">
             <span class="pointer-events-none absolute top-2 right-16 text-chocolate/20 text-lg rotate-12">★</span>
@@ -72,7 +67,6 @@
               <p class="text-sm lg:text-base 3xl:text-lg text-chocolate/60 mt-1">Resumen general del día</p>
             </div>
           </a>
-
           <div>
             <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50"><span class="text-mantequilla">★</span> Catálogo</p>
             <div class="grid grid-cols-2 gap-3 3xl:gap-4">
@@ -99,7 +93,6 @@
             </div>
           </div>
         </nav>
-
         <div class="border-t border-chocolate/10 bg-crema px-5 3xl:px-7 py-4 3xl:py-5 shrink-0">
           <form action="{% url 'logout' %}" method="post" class="block">
             {% csrf_token %}
@@ -123,7 +116,6 @@
       <span class="absolute top-12 left-8 text-mantequilla text-2xl rotate-12 animate-pulse">✦</span>
       <span class="absolute bottom-10 right-10 text-rosa text-xl -rotate-12 animate-bounce">✦</span>
       <span class="absolute top-1/2 left-1/4 text-azul text-lg">✦</span>
-
       <div class="relative mx-auto w-full max-w-[1900px] text-center">
         <span class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
           <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
@@ -136,18 +128,14 @@
             catálogo.
           </span>
         </h1>
-
         <p class="mx-auto mt-6 max-w-xl text-base md:text-lg lg:text-xl leading-relaxed text-cafe">
           Tortas, cupcakes, galletas y postres artesanales. Encuentra tu favorito y personalízalo a tu gusto.
         </p>
       </div>
     </section>
-
-
     {# ============================================================ #}
     {# FILTROS POR CATEGORÍA                                          #}
     {# ============================================================ #}
-
     {% if categorias %}
       <section class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 pb-10">
         <div class="flex flex-wrap items-center justify-center gap-3 md:gap-4">
@@ -156,7 +144,6 @@
                     {% if not categoria_actual %} border-chocolate bg-chocolate text-mantequilla shadow-soft {% else %} border-chocolate/20 bg-white text-chocolate hover:border-chocolate hover:bg-mantequilla/50 {% endif %}">
             Todos
           </a>
-
           {% for cat in categorias %}
             <a href="?categoria={{ cat.id }}"
                class="inline-flex items-center rounded-full border-2 px-6 py-3 text-xs lg:text-sm font-bold uppercase tracking-widest2 transition-all duration-200 ease-out shadow-sm
@@ -167,12 +154,9 @@
         </div>
       </section>
     {% endif %}
-
-
     {# ============================================================ #}
     {# GRID DE PRODUCTOS                                              #}
     {# ============================================================ #}
-
     <section class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 pb-20 lg:pb-28">
       
       <div class="mb-8 flex items-end justify-between border-b border-chocolate/10 pb-4">
@@ -182,45 +166,48 @@
           {% endif %}
         </p>
       </div>
-
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start">
         {% for producto in productos %}
           <article class="group flex flex-col h-full overflow-hidden rounded-[2rem] bg-white shadow-soft ring-1 ring-chocolate/5 transition-all hover:-translate-y-2 hover:shadow-lift">
             
             <div class="relative h-56 md:h-64 w-full overflow-hidden bg-rosaClaro">
               {% if producto.imagen %}
-                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                <a href="{% url 'producto_detalle' producto.id %}">
+                  <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                </a>
               {% else %}
                 <div class="grid h-full w-full place-items-center bg-mantequilla/40">
                   <span class="font-display text-sm font-bold text-chocolate/40">Sin imagen</span>
                 </div>
               {% endif %}
-
               {% if producto.categoria %}
                 <span class="absolute left-4 top-4 rounded-full bg-mantequilla px-3 py-1 text-[11px] font-black uppercase tracking-widest2 text-chocolate shadow-soft">
                   {{ producto.categoria.nombre }}
                 </span>
               {% endif %}
             </div>
-
             <div class="flex flex-1 flex-col p-6">
               <h3 class="font-display text-lg lg:text-xl font-semibold leading-snug text-chocolate">{{ producto.nombre }}</h3>
-
               {% if producto.descripcion %}
                 <p class="mt-2 line-clamp-2 text-sm lg:text-base text-cafe">{{ producto.descripcion }}</p>
               {% endif %}
-
               {% if producto.porciones %}
                 <p class="mt-3 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/50">
                   {{ producto.porciones }}
                 </p>
               {% endif %}
-
               <div class="mt-auto flex items-center justify-between pt-6">
                 <p class="font-display text-xl lg:text-2xl font-bold text-chocolate">${{ producto.precio|floatformat:0 }}</p>
                 <a href="{% url 'producto_detalle' producto.id %}"
-                  class="rounded-full bg-chocolate px-5 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft transition hover:bg-cafe hover:-translate-y-0.5">
+                  class="rounded-full m-2 bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft transition hover:bg-cafe hover:-translate-y-0.5">
                     Ver detalle
+                </a>
+                {% if user.is_authenticated and user.is_staff %}
+                <a href="{% url 'eliminar_producto' producto.id %}"
+                  onclick="return confirm('¿Seguro que desea eliminar este producto?')"
+                  class="rounded-full bg-chocolate px-5 py-2.5 text-xs lg:text-sm font-bold text-mantequilla shadow-soft transition hover:bg-cafe hover:-translate-y-0.5">
+                    Eliminar Producto
+                {% endif %}
                 </a>
               </div>
             </div>
@@ -241,20 +228,16 @@
         {% endfor %}
       </div>
     </section>
-
     {# ============================================================ #}
     {# CTA FINAL                                                      #}
     {# ============================================================ #}
-
     <section class="relative overflow-hidden bg-chocolate py-20 lg:py-24 text-crema mx-4 lg:mx-8 mb-8 rounded-[2rem] lg:rounded-[3rem]">
       
       <!-- Destellos brillantes -->
       <span class="absolute top-10 left-10 text-mantequilla text-3xl animate-pulse z-10">✦</span>
       <span class="absolute bottom-10 right-10 text-rosa text-2xl animate-bounce z-10">✦</span>
-
       <div class="pointer-events-none absolute -top-48 -right-48 h-[600px] w-[600px] rounded-full bg-rosa/20 blur-3xl"></div>
       <div class="pointer-events-none absolute -bottom-48 -left-48 h-[600px] w-[600px] rounded-full bg-mantequilla/15 blur-3xl"></div>
-
       <div class="relative mx-auto w-full max-w-[1500px] px-6 lg:px-10 text-center">
         <div class="mx-auto max-w-4xl">
           <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[0.98]">
@@ -281,7 +264,6 @@
       const drawer = document.getElementById('admin-drawer');
       const overlay = document.getElementById('admin-overlay');
       const isOpen = !drawer.classList.contains('-translate-x-full');
-
       if (isOpen) {
         drawer.classList.add('-translate-x-full');
         overlay.classList.add('hidden');
@@ -292,7 +274,6 @@
         document.body.classList.add('overflow-hidden');
       }
     }
-
     // Script para ocultar automáticamente los mensajes de Django después de 4 segundos
     document.addEventListener("DOMContentLoaded", function() {
       const messageContainer = document.getElementById('django-messages');
@@ -311,6 +292,5 @@
       }
     });
   </script>
-
 </body>
 {% endblock %}

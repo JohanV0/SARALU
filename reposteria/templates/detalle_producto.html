@@ -33,7 +33,6 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
         Volver al catálogo
       </a>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           
           <!-- SECCIÓN: GALERÍA -->
@@ -50,7 +49,6 @@
               <span class="absolute top-6 right-6 text-mantequilla text-3xl animate-pulse z-10">✦</span>
               <span class="absolute bottom-6 left-6 text-rosa text-2xl animate-bounce z-10">✦</span>
           </div>
-
           <!-- SECCIÓN: INFORMACIÓN DEL PRODUCTO -->
           <div class="flex flex-col justify-center py-2 lg:py-6">
               {% if producto.categoria %}
@@ -59,19 +57,16 @@
                       {{ producto.categoria.nombre }}
                   </span>
               {% endif %}
-
               <h1 class="font-display text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold leading-[1.05] tracking-tight text-chocolate">
                   {{ producto.nombre }}
               </h1>
               
               <p class="font-display text-3xl lg:text-4xl font-bold mt-4 text-cafe">${{ producto.precio|floatformat:0 }}</p>
-
               <!-- Descripción -->
               <div class="mt-8 bg-white p-6 lg:p-8 rounded-[2rem] shadow-sm ring-1 ring-chocolate/10 relative">
                   <h3 class="font-display text-xl font-bold text-chocolate mb-3">Descripción</h3>
                   <p class="text-sm lg:text-base text-chocolate/80 leading-relaxed">{{ producto.descripcion }}</p>
               </div>
-
               <!-- Porciones -->
               {% if producto.porciones %}
                   <div class="mt-4 bg-white/60 p-6 rounded-[2rem] ring-1 ring-chocolate/5">
@@ -79,26 +74,31 @@
                        <p class="text-sm lg:text-base text-chocolate/80"><span class="font-bold text-chocolate">Porciones estimadas:</span> {{ producto.porciones }}</p>
                   </div>
               {% endif %}
-
-              <!-- Botones de acción (Administración) -->
-              <div class="mt-8 flex flex-col sm:flex-row gap-4">
+              <!-- BOTONES DE ACCIÓN-->
+               <div class="mt-8">
                   {% if user.is_staff %}
-                      <!-- Botón Editar (Redirige al form del Admin) -->
-                      <a href="{% url 'editar_producto' producto.id %}' producto.id %}" class="flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                          Editar producto
+                    <!-- Botones de administración (Solo para tu equipo) -->
+                    <div class="flex flex-col sm:flex-row gap-4">
+                      <a href="#" class="flex-1 group flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+                        ✏️ Editar producto
                       </a>
-
-                      <!-- Botón Eliminar (Redirige a la confirmación del Admin) -->
-                      <a href="{% url 'eliminar_producto' producto.id %}" class="flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-red-100 px-6 py-4 text-sm lg:text-base font-bold text-red-700 shadow-soft ring-1 ring-red-300 hover:bg-red-200 hover:-translate-y-1 transition-all">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                          Eliminar producto
+                      <a href="#" onclick="return confirm('¿Estás seguro de eliminarlo?');" class="flex-1 group flex items-center justify-center gap-2 rounded-full border-2 border-red-500 text-red-500 px-6 py-4 text-base lg:text-lg font-bold hover:bg-red-500 hover:text-white hover:-translate-y-1 transition-all">
+                        🗑️ Eliminar
                       </a>
+                    </div>
+                  {% else %}
+        
+                    <!-- Botón de compra (Solo para clientes) -->
+                    <form method="POST" action="{% url 'agregar_al_carrito' producto.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="w-full group flex items-center justify-center gap-2 rounded-full bg-chocolate px-8 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 hover:shadow-lift transition-all">
+                        Añadir al carrito 🛒
+                      </button>
+                    </form>
                   {% endif %}
-              </div>
+                </div>
           </div>
       </div>
-
       <!-- ============================================================ -->
       <!-- SECCIÓN DE RESEÑAS                                           -->
       <!-- ============================================================ -->
@@ -110,7 +110,6 @@
             </span>
             <h2 class="font-display text-3xl lg:text-4xl font-semibold text-chocolate">Opiniones de clientes</h2>
           </div>
-
           <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 lg:gap-12">
               
               <!-- COLUMNA IZQUIERDA: Formulario o Login -->
@@ -137,14 +136,12 @@
                               <label class="block text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60 mb-2" for="{{ form.comentario.id_for_label }}">{{ form.comentario.label }}</label>
                               {{ form.comentario }}
                           </div>
-
                           <div class="mt-2">
                               <button type="submit" class="w-full rounded-full bg-chocolate px-6 py-3.5 text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
                                   {% if resena_usuario %}Actualizar reseña{% else %}Publicar reseña{% endif %}
                               </button>
                           </div>
                       </form>
-
                       <!-- Formulario separado para Eliminar -->
                       {% if resena_usuario %}
                       <form method="POST" class="mt-5 border-t border-chocolate/10 pt-5 text-center" onsubmit="return confirm('¿Estás seguro de que deseas eliminar tu reseña? Esta acción no se puede deshacer.');">
@@ -155,7 +152,6 @@
                           </button>
                       </form>
                       {% endif %}
-
                   {% else %}
                       <!-- Petición de Login -->
                       <div class="text-center py-6">
@@ -171,7 +167,6 @@
                   {% endif %}
               </div>
               {% endif %}
-
               <!-- COLUMNA DERECHA: Lista de reseñas -->
               <div class="flex flex-col gap-5 order-1 lg:order-2">
                   <div class="flex items-center justify-between border-b border-chocolate/10 pb-3">
@@ -221,7 +216,6 @@
                                       {% endfor %}
                                   </div>
                               {% endif %}
-
                               <!-- Botón para responder (solo staff) -->
                               {% if user.is_staff %}
                                   <button type="button" 
@@ -229,7 +223,6 @@
                                           class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-chocolate/60 hover:text-chocolate transition">
                                       💬 <span>Responder</span>
                                   </button>
-
                                   <!-- Formulario oculto para responder -->
                                   <form id="form-respuesta-{{ resena.id }}" 
                                         method="POST" 

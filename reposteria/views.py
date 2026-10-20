@@ -110,7 +110,7 @@ def detalle_producto_view(request, producto_id):
     }
     return render(request, 'detalle_producto.html', contexto)
   
-  @login_required
+@login_required
 def eliminar_producto(request,producto_id):
     producto = Producto.objects.get(id=producto_id)
     producto.delete()

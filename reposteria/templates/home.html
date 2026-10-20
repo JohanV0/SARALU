@@ -60,89 +60,418 @@
 </head>
 
 <body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4">
-  
-  {# ============================================================ #}
-  {# MENSAJES FLOTANTES (CORREGIDOS)                              #}
-  {# ============================================================ #}
-  {% if messages %}
-  <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
-    {% for message in messages %}
-      <div id="toast-{{ forloop.counter }}" class="pointer-events-auto flex items-center justify-between gap-4 rounded-2xl border border-chocolate/10 bg-mantequilla/95 backdrop-blur-md px-5 py-4 text-chocolate shadow-lift transition-all duration-500 transform translate-y-0 opacity-100">
-        <div class="flex items-center gap-3">
-          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-chocolate text-mantequilla">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </span>
-          <p class="text-sm lg:text-base font-bold leading-tight">{{ message }}</p>
-        </div>
-        <button onclick="document.getElementById('toast-{{ forloop.counter }}').remove()" class="shrink-0 text-chocolate/40 hover:text-chocolate transition-colors" aria-label="Cerrar mensaje">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
   <!-- Borde blanco redondeado alrededor de toda la página -->
   <div class="min-h-[calc(100vh-16px)] md:min-h-[calc(100vh-32px)] border-[8px] md:border-[12px] border-white rounded-[2rem] md:rounded-[3rem] bg-crema relative overflow-hidden shadow-2xl">
 
     {# ============================================================ #}
-    {# PANEL ADMIN — Dashboard (Se mantiene igual)                  #}
+    {# PANEL ADMIN — Dashboard                                      #}
     {# ============================================================ #}
 
     {% if user.is_authenticated and user.is_staff %}
-      <div id="admin-overlay" onclick="toggleAdminPanel()" class="hidden fixed inset-0 z-40 bg-chocolate/40 backdrop-blur-sm"></div>
-      <aside id="admin-drawer" class="fixed top-0 left-0 z-50 flex h-screen w-[380px] lg:w-[420px] 3xl:w-[500px] 4xl:w-[560px] -translate-x-full flex-col rounded-r-6xl bg-crema shadow-panel transition-transform duration-300 ease-out">
-        <!-- ... CONTENIDO DEL PANEL ADMIN ... -->
+
+      <div id="admin-overlay"
+           onclick="toggleAdminPanel()"
+           class="hidden fixed inset-0 z-40 bg-chocolate/40 backdrop-blur-sm"></div>
+
+      <aside id="admin-drawer"
+             class="fixed top-0 left-0 z-50 flex h-screen w-[380px] lg:w-[420px] 3xl:w-[500px] 4xl:w-[560px] -translate-x-full flex-col rounded-r-6xl bg-crema shadow-panel transition-transform duration-300 ease-out">
+
+        <div class="relative overflow-hidden rounded-tr-6xl bg-rosa px-6 lg:px-7 3xl:px-9 pb-5 3xl:pb-7 pt-7 3xl:pt-9 text-chocolate shrink-0">
+          <div class="pointer-events-none absolute -top-12 -right-12 h-40 3xl:h-56 w-40 3xl:w-56 rounded-full bg-mantequilla/40 blur-3xl"></div>
+          <div class="pointer-events-none absolute -bottom-16 -left-12 h-40 3xl:h-56 w-40 3xl:w-56 rounded-full bg-rosaClaro/60 blur-3xl"></div>
+
+          <span class="pointer-events-none absolute top-8 right-16 text-mantequilla text-lg 3xl:text-xl rotate-12">★</span>
+
+          <div class="relative flex items-start justify-between">
+            <div>
+              <p class="text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/60">Panel de</p>
+              <p class="font-script text-3xl lg:text-4xl 3xl:text-5xl text-chocolate leading-none mt-2">Saralu</p>
+            </div>
+            <button type="button"
+                    onclick="toggleAdminPanel()"
+                    class="grid h-9 w-9 lg:h-10 lg:w-10 3xl:h-12 3xl:w-12 place-items-center rounded-full bg-crema/60 text-chocolate/70 hover:bg-crema hover:text-chocolate transition"
+                    aria-label="Cerrar panel">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 3xl:h-6 3xl:w-6" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="relative mt-5 3xl:mt-7 flex items-center gap-3 rounded-3xl bg-crema/70 p-3 3xl:p-4 backdrop-blur-sm">
+            <span class="relative grid h-12 w-12 lg:h-13 lg:w-13 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-full bg-mantequilla font-display text-xl lg:text-2xl 3xl:text-3xl font-bold text-chocolate">
+              {{ user.first_name|first|default:user.username|first|upper }}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="text-lg lg:text-xl 3xl:text-2xl font-bold leading-tight truncate">{{ user.first_name|default:user.username }}</p>
+              <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 truncate">Administradora</p>
+            </div>
+            <span class="rounded-full bg-chocolate px-3 py-1 3xl:px-3.5 3xl:py-1.5 text-[10px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-mantequilla">
+              Admin
+            </span>
+          </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-5 3xl:px-7 py-5 3xl:py-7 space-y-6 3xl:space-y-8">
+
+          <a href="#" {# → {% url 'admin_panel' %} #}
+             class="group relative flex items-center gap-4 rounded-4xl bg-mantequilla px-5 py-5 3xl:px-6 3xl:py-6 shadow-soft hover:-translate-y-1 hover:shadow-glow transition-all overflow-hidden">
+            <span class="pointer-events-none absolute top-3 right-16 text-chocolate/20 text-base rotate-12">★</span>
+
+            <span class="grid h-16 w-16 lg:h-17 lg:w-17 3xl:h-20 3xl:w-20 shrink-0 place-items-center rounded-3xl bg-chocolate text-mantequilla">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 3xl:h-9 3xl:w-9" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="font-display font-bold leading-tight text-chocolate text-xl lg:text-2xl 3xl:text-3xl">Panel principal</p>
+              <p class="text-sm lg:text-base 3xl:text-lg text-chocolate/60 mt-1">Resumen general del día</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate/40 group-hover:text-chocolate group-hover:translate-x-0.5 transition-all shrink-0"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </a>
+
+          <div>
+            <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">
+              <span class="text-mantequilla">★</span> Catálogo
+            </p>
+
+            <div class="grid grid-cols-2 gap-3 3xl:gap-4">
+
+              <a href="{% url 'nuevo_producto' %}"
+                 class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-rosa group-hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 4v16m8-8H4" />
+                  </svg>
+                </span>
+                <div class="mt-auto">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Registrar producto</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Añadir al menú</p>
+                </div>
+              </a>
+
+              <a href="#" {# → {% url 'producto_lista' %} #+}
+                 class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-rosa group-hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </span>
+                <div class="mt-auto">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Gestionar productos</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Editar y activar</p>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">
+              <span class="text-mantequilla">★</span> Agenda
+            </p>
+
+            <div class="grid grid-cols-2 gap-3 3xl:gap-4">
+
+              <a href="#" {# → {% url 'cupos_diarios' %} #}
+                 class="group relative flex flex-col gap-3 rounded-4xl bg-mantequilla/60 p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-mantequilla hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-mantequilla group-hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </span>
+                <div class="mt-auto">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Cupos diarios</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Disponibilidad</p>
+                </div>
+              </a>
+
+              <a href="#" {# → {% url 'bloquear_fechas' %} #}
+                 class="group relative flex flex-col gap-3 rounded-4xl bg-mantequilla/60 p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-mantequilla hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-mantequilla group-hover:bg-crema transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                  </svg>
+                </span>
+                <div class="mt-auto">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Bloquear fechas</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Días cerrados</p>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">
+              <span class="text-mantequilla">★</span> Pedidos
+            </p>
+
+            <div class="grid grid-cols-2 gap-3 3xl:gap-4">
+
+              <a href="#" {# → {% url 'pedidos_pendientes' %} #}
+                 class="group relative flex flex-col gap-3 rounded-4xl bg-crema ring-1 ring-chocolate/10 p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:ring-chocolate/25 hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-chocolate text-mantequilla">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="2" />
+                    <path d="M9 12h6M9 16h6" />
+                  </svg>
+                </span>
+                <div class="mt-auto">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Pendientes</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Por confirmar</p>
+                </div>
+              </a>
+
+              <a href="#" {# → {% url 'pedidos_lista' %} #}
+                 class="group relative flex flex-col gap-3 rounded-4xl bg-crema ring-1 ring-chocolate/10 p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:ring-chocolate/25 hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-chocolate text-mantequilla">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h10" />
+                  </svg>
+                </span>
+                <div class="mt-auto">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Todos los pedidos</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Historial</p>
+                </div>
+              </a>
+
+              <a href="#" {# → {% url 'pedidos_estado' %} #}
+                 class="group relative col-span-2 flex items-center gap-4 rounded-4xl bg-crema ring-1 ring-chocolate/10 px-5 py-4 3xl:px-6 3xl:py-5 shadow-soft hover:ring-chocolate/25 hover:-translate-y-1 transition-all overflow-hidden">
+                <span class="pointer-events-none absolute top-2 right-20 text-mantequilla text-sm rotate-12">★</span>
+                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-3xl bg-chocolate text-mantequilla">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                  </svg>
+                </span>
+                <div class="flex-1 min-w-0">
+                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Cambiar estado</p>
+                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Actualizar seguimiento</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6 text-chocolate/40 group-hover:text-chocolate group-hover:translate-x-0.5 transition-all shrink-0"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">
+              <span class="text-mantequilla">★</span> Reseñas
+            </p>
+
+            <a href="#" {# → {% url 'resenas_lista' %} #}
+               class="group relative flex items-center gap-4 rounded-4xl bg-azul/50 px-5 py-4 3xl:px-6 3xl:py-5 shadow-soft hover:bg-azul/70 hover:-translate-y-1 transition-all overflow-hidden">
+              <span class="pointer-events-none absolute top-2 right-16 text-mantequilla text-base rotate-12">★</span>
+              <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-3xl bg-azul group-hover:bg-crema transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+              </span>
+              <div class="flex-1 min-w-0">
+                <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Responder reseñas</p>
+                <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Contesta a tus clientes</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6 text-chocolate/40 group-hover:text-chocolate group-hover:translate-x-0.5 transition-all shrink-0"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </a>
+          </div>
+
+          <div>
+            <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">
+              <span class="text-mantequilla">★</span> Reportes
+            </p>
+
+            <a href="#" {# → {% url 'historial_ventas' %} #}
+               class="group relative flex items-center gap-4 rounded-4xl bg-crema ring-1 ring-chocolate/10 px-5 py-4 3xl:px-6 3xl:py-5 shadow-soft hover:ring-chocolate/25 hover:-translate-y-1 transition-all overflow-hidden">
+              <span class="pointer-events-none absolute top-2 right-16 text-mantequilla text-base rotate-12">★</span>
+              <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-3xl bg-chocolate text-mantequilla">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="20" x2="12" y2="10" />
+                  <line x1="18" y1="20" x2="18" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="16" />
+                </svg>
+              </span>
+              <div class="flex-1 min-w-0">
+                <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Historial de ventas</p>
+                <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Estadísticas y totales</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6 text-chocolate/40 group-hover:text-chocolate group-hover:translate-x-0.5 transition-all shrink-0"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </a>
+          </div>
+
+        </nav>
+
+        <div class="border-t border-chocolate/10 bg-crema px-5 3xl:px-7 py-4 3xl:py-5 shrink-0">
+          <form action="{% url 'logout' %}" method="post" class="block">
+            {% csrf_token %}
+            <button type="submit"
+                    class="group relative flex w-full items-center justify-center gap-2.5 rounded-3xl bg-chocolate px-4 py-3.5 3xl:py-4 text-base lg:text-lg 3xl:text-xl font-semibold text-mantequilla shadow-soft hover:bg-cafe transition overflow-hidden">
+              <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Cerrar sesión
+            </button>
+          </form>
+          <p class="mt-3 text-center text-[10px] lg:text-xs 3xl:text-sm font-semibold uppercase tracking-widest2 text-chocolate/40">
+            SARALU · v1.0
+          </p>
+        </div>
       </aside>
     {% endif %}
+
 
     {# ============================================================ #}
     {# NAVBAR                                                        #}
     {# ============================================================ #}
+
     <header class="relative z-20">
+
       <div class="bg-crema shadow-sm rounded-b-[2rem] lg:rounded-b-[3rem] border-b border-chocolate/10">
+
         <div class="mx-auto w-full max-w-[1900px] px-4 sm:px-7 lg:px-10 2xl:px-14 3xl:px-20 py-4 lg:py-5">
-          <div class="flex items-center justify-between gap-4">
+
+          <div class="flex items-center justify-between gap-3">
+
+            <!-- Izquierda: Botón Admin + Logo -->
             <div class="flex items-center gap-3 lg:gap-6">
+              
               {% if user.is_authenticated and user.is_staff %}
-                <button type="button" onclick="toggleAdminPanel()" class="group grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-chocolate text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all shrink-0" aria-label="Abrir panel de administración">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-[22px] lg:w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                <button type="button"
+                        onclick="toggleAdminPanel()"
+                        class="group grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-chocolate text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all shrink-0"
+                        aria-label="Abrir panel de administración">
+                  <svg xmlns="http://www.w3.org/2000/svg"
+                       class="h-5 w-5 lg:h-[22px] lg:w-[22px]"
+                       fill="none"
+                       viewBox="0 0 24 24"
+                       stroke="currentColor"
+                       stroke-width="2.2"
+                       stroke-linecap="round"
+                       stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
                   </svg>
                 </button>
               {% endif %}
-              <a href="#" class="group flex items-center gap-3 lg:gap-4 shrink-0">
+
+              <a href="#" {# → {% url 'home' %} #}
+                 class="group flex items-center gap-3 lg:gap-4 shrink-0">
                 <span class="relative grid h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 3xl:h-20 3xl:w-20 place-items-center overflow-hidden rounded-2xl bg-mantequilla ring-1 ring-mantequilla/30 transition duration-300 group-hover:-translate-y-0.5 group-hover:ring-rosa">
-                  <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-1" />
+                  <img
+                    src="{% static 'img/logo.png' %}"
+                    alt="Logo SARALU"
+                    class="h-full w-full object-contain p-1"
+                  />
                 </span>
                 <span class="flex flex-col leading-none">
-                  <span class="font-script text-2xl lg:text-3xl 3xl:text-4xl text-chocolate">Saralu</span>
-                  <span class="hidden lg:block mt-1 text-[9px] 3xl:text-[11px] font-semibold uppercase tracking-widest2 text-chocolate/55">Repostería artesanal</span>
+                  <span class="font-script text-2xl lg:text-3xl 3xl:text-4xl text-chocolate">
+                    Saralu
+                  </span>
+                  <span class="hidden lg:block mt-1 text-[9px] 3xl:text-[11px] font-semibold uppercase tracking-widest2 text-chocolate/55">
+                    Repostería artesanal
+                  </span>
                 </span>
               </a>
             </div>
+
+            <!-- Centro: Enlaces de navegación -->
             <nav class="hidden lg:block">
               <ul class="flex items-center gap-1 xl:gap-2 text-sm xl:text-base 3xl:text-lg font-bold text-chocolate">
-                <li><a href="#inicio" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Inicio</a></li>
-                <li><a href="#mas-vendidos" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Más vendidos</a></li>
-                <li><a href="#catalogo-destacado" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Destacados</a></li>
-                <li><a href="#es_nuevo" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Novedades</a></li>
+                <li>
+                  <a href="#inicio" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">
+                    Inicio
+                  </a>
+                </li>
+                <li>
+                  <a href="#mas-vendidos" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">
+                    Más vendidos
+                  </a>
+                </li>
+                <li>
+                  <a href="#catalogo-destacado" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">
+                    Destacados
+                  </a>
+                </li>
+                <li>
+                  <a href="#es_nuevo" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">
+                    Novedades
+                  </a>
+                </li>
               </ul>
             </nav>
+
+            <!-- Derecha: Carrito, Usuario y Botón Catálogo -->
             <div class="flex items-center gap-2 lg:gap-2.5 shrink-0">
-              <a href="#" class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all" aria-label="Carrito de compras">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-[22px] lg:w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              <a href="#" {# → {% url 'carrito' %} #}
+                 class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all"
+                 aria-label="Carrito de compras">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="h-5 w-5 lg:h-[22px] lg:w-[22px]"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2.2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
                 {% if carrito_count %}
-                  <span class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rosa px-1 text-[10px] font-bold text-chocolate ring-2 ring-crema">{{ carrito_count }}</span>
+                  <span class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rosa px-1 text-[10px] font-bold text-chocolate ring-2 ring-crema">
+                    {{ carrito_count }}
+                  </span>
                 {% endif %}
               </a>
+
               {% if user.is_authenticated %}
                 <!-- Menú de usuario — funciona en móvil y escritorio -->
                 <div class="relative" id="user-menu-wrapper">
@@ -224,70 +553,713 @@
                   </div>
                 </div>
               {% else %}
-                <a href="{% url 'login' %}" class="hidden md:inline-flex items-center gap-2 rounded-2xl border border-chocolate/50 px-4 py-2.5 text-xs lg:text-sm font-bold text-chocolate hover:bg-chocolate hover:text-crema transition-all">Iniciar sesión</a>
+                <a href="{% url 'login' %}"
+                   class="inline-flex items-center gap-2 rounded-2xl border border-chocolate/50 px-3 py-2.5 sm:px-4 text-base lg:text-lg font-bold text-chocolate hover:bg-chocolate hover:text-crema transition-all">
+                  Iniciar sesión
+                </a>
               {% endif %}
-              <a href="{% url 'catalogo' %}" class="hidden lg:inline-flex items-center gap-2 rounded-2xl bg-chocolate px-5 py-3 text-sm 3xl:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">Ver catálogo</a>
+
+              <a href="{% url 'catalogo' %}"
+                 class="hidden lg:inline-flex items-center gap-2 rounded-2xl bg-chocolate px-5 py-3 text-sm 3xl:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
+                Ver catálogo
+              </a>
             </div>
+
           </div>
+
         </div>
+
       </div>
+
       <div class="mx-auto max-w-[1700px] px-8">
         <div class="h-px bg-chocolate/10"></div>
       </div>
+
     </header>
+
 
     {# ============================================================ #}
     {# HERO                                                          #}
     {# ============================================================ #}
+
     <section id="inicio" class="relative overflow-hidden bg-crema pt-10 pb-16 lg:pt-16 lg:pb-24 px-6 sm:px-10 lg:px-20 3xl:px-32">
+      
       <span class="absolute top-20 left-6 text-mantequilla text-2xl rotate-12 animate-pulse">✦</span>
       <span class="absolute bottom-20 right-6 text-rosa text-xl -rotate-12 animate-bounce">✦</span>
       <span class="absolute top-1/2 left-1/4 text-azul text-lg">✦</span>
+
       <div class="relative mx-auto w-full max-w-[1900px]">
         <div class="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+
           <div class="text-center lg:text-left order-2 lg:order-1 lg:pl-10 xl:pl-16">
             <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
               <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
-              <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">Repostería hecha con cariño</span>
+              <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
+                Repostería hecha con cariño
+              </span>
             </div>
+
             <h1 class="mt-6 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] xl:text-[5.5rem] 3xl:text-[7rem] font-semibold leading-[1.1] tracking-tight text-chocolate">
-              Pequeños<br />momentos,<br />
-              <span class="font-script text-rosa text-6xl sm:text-7xl md:text-8xl lg:text-[5.5rem] xl:text-[6.5rem] 3xl:text-[8rem] inline-block mt-4 lg:mt-6">grandes sabores.</span>
+              Pequeños<br />
+              momentos,<br />
+              <span class="font-script text-rosa text-6xl sm:text-7xl md:text-8xl lg:text-[5.5rem] xl:text-[6.5rem] 3xl:text-[8rem] inline-block mt-4 lg:mt-6 pb-4 lg:pb-8 3xl:pb-10 leading-[1.3]">
+                grandes sabores.
+              </span>
             </h1>
-            <p class="mt-6 max-w-xl mx-auto lg:mx-0 text-base md:text-lg lg:text-xl leading-relaxed text-cafe">
+
+            <p class="mt-4 lg:mt-6 max-w-xl mx-auto lg:mx-0 text-base md:text-lg lg:text-xl leading-relaxed text-cafe">
               En SARALU creamos repostería artesanal pensada para convertir cualquier momento en algo especial. Postres preparados con dedicación, ingredientes seleccionados y mucho amor.
             </p>
+
             <div class="mt-8 flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
               <a href="#catalogo-destacado" class="group inline-flex items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
                 Ver Destacados
                 <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
               </a>
-              <a href="#mas-vendidos" class="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-gray-50 hover:-translate-y-1 transition-all">Ver favoritos</a>
+              <a href="#mas-vendidos" class="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-gray-50 hover:-translate-y-1 transition-all">
+                Ver favoritos
+              </a>
+            </div>
+
+            <div class="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-cafe font-semibold">
+              <span class="flex items-center gap-2">
+                <span class="grid h-6 w-6 place-items-center rounded-full bg-mantequilla text-[10px] text-chocolate">★</span>
+                Artesanal
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="grid h-6 w-6 place-items-center rounded-full bg-rosaClaro text-[10px] text-chocolate">♥</span>
+                Hecho con amor
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="grid h-6 w-6 place-items-center rounded-full bg-azul text-[10px] text-chocolate">✓</span>
+                Calidad
+              </span>
             </div>
           </div>
+
           <div class="relative flex justify-center lg:justify-end w-full px-4 sm:px-0 order-1 lg:order-2 mb-8 lg:mb-0">
             <div class="relative w-full max-w-[500px] lg:max-w-[700px] xl:max-w-[900px]">
+              
               <div class="absolute top-1/4 -right-12 h-72 w-72 rounded-full bg-rosa/50 blur-3xl"></div>
               <div class="absolute bottom-1/4 -left-12 h-72 w-72 rounded-full bg-rosa/40 blur-3xl"></div>
+
               <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="relative w-full h-auto object-contain z-10" />
+              
               <span class="absolute -top-5 -right-5 text-rosa text-5xl animate-pulse z-20 drop-shadow-md">✦</span>
               <span class="absolute bottom-10 -left-8 text-rosa text-4xl animate-bounce z-20 drop-shadow-md">✦</span>
+              <span class="absolute top-1/2 -right-8 text-mantequilla text-3xl z-20 drop-shadow-md">✦</span>
+              <span class="absolute bottom-20 right-12 text-rosa text-2xl animate-pulse z-20 drop-shadow-md">✦</span>
+              <span class="absolute top-1/4 -left-4 text-rosa text-2xl z-20 drop-shadow-md">✦</span>
             </div>
           </div>
+
         </div>
       </div>
     </section>
 
-    {# (El resto de tus secciones se mantienen igual...) #}
+
+    {# ============================================================ #}
+    {# MÁS VENDIDOS                                                   #}
+    {# ============================================================ #}
+
+    <section id="mas-vendidos" class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
+      <div class="absolute inset-0 bg-rosaClaro/45 rounded-[2rem] lg:rounded-[3rem]"></div>
+      
+      <span class="absolute top-10 left-10 text-mantequilla text-3xl animate-pulse z-10">✦</span>
+      <span class="absolute bottom-20 right-10 text-rosa text-2xl animate-bounce z-10">✦</span>
+      <span class="absolute top-1/3 right-1/4 text-azul text-xl z-10">✦</span>
+      <span class="absolute bottom-1/4 left-1/3 text-chocolate/30 text-lg z-10">✦</span>
+
+      <div class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20">
+
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12 lg:mb-14">
+
+          <div>
+
+            <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+              <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+              Favoritos de la casa
+            </span>
+
+            <h2 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold tracking-tight text-chocolate">
+              Productos más vendidos
+            </h2>
+
+            <p class="mt-3 max-w-2xl text-sm lg:text-base text-cafe">
+              Los favoritos de nuestros clientes, preparados para endulzar cualquier ocasión.
+            </p>
+
+          </div>
+
+          <a href="{% url 'catalogo' %}"
+             class="group inline-flex items-center gap-3 text-sm lg:text-base font-bold text-chocolate hover:text-cafe transition">
+
+            Ver catálogo
+
+            <span class="grid h-9 w-9 place-items-center rounded-full bg-chocolate text-mantequilla transition group-hover:translate-x-1">
+              →
+            </span>
+
+          </a>
+
+        </div>
+
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 3xl:gap-8 items-start">
+
+          {% for producto in mas_vendidos %}
+
+            <div class="group rounded-[1.7rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft hover:-translate-y-2 hover:shadow-lift transition-all flex flex-col">
+
+              <a href="#" {# → {% url 'producto_detalle' producto.id %} #}>
+
+                <div class="relative overflow-hidden rounded-[1.35rem] bg-rosaClaro">
+
+                  {% if producto.imagen %}
+
+                    <img
+                      src="{{ producto.imagen.url }}"
+                      alt="{{ producto.nombre }}"
+                      class="h-44 sm:h-52 lg:h-56 2xl:h-60 3xl:h-72 4xl:h-80 w-full object-cover transition duration-700 group-hover:scale-105"
+                    />
+
+                  {% endif %}
+
+                  <span class="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-full bg-mantequilla font-display text-sm font-bold text-chocolate shadow-soft">
+                    {{ forloop.counter }}
+                  </span>
+
+                </div>
+
+                <div class="pt-4 px-1">
+
+                  <h3 class="font-display text-base lg:text-lg 3xl:text-xl font-semibold truncate text-chocolate">
+                    {{ producto.nombre }}
+                  </h3>
+
+                  <p class="mt-1 text-sm font-bold text-cafe">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+
+                </div>
+
+              </a>
+
+              <form method="post" action="#" {# → {% url 'agregar_carrito' producto.id %} #} class="mt-4">
+
+                {% csrf_token %}
+
+                <button
+                  type="submit"
+                  class="w-full rounded-full bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla hover:bg-cafe transition">
+                  Añadir al carrito
+                </button>
+
+              </form>
+
+            </div>
+
+          {% empty %}
+
+            <div class="col-span-full rounded-[2rem] bg-crema px-6 py-20 text-center shadow-soft">
+
+              <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-mantequilla text-chocolate">
+                +
+              </div>
+
+              <h3 class="mt-5 font-display text-xl lg:text-2xl font-semibold text-chocolate">
+                Sin productos disponibles
+              </h3>
+
+              <p class="mt-2 text-sm lg:text-base text-cafe">
+                Todavía no hay productos vendidos.
+              </p>
+
+            </div>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    {# ============================================================ #}
+    {# CATÁLOGO DESTACADO                                             #}
+    {# ============================================================ #}
+
+    <section id="catalogo-destacado"
+             class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-20 lg:py-24 3xl:py-32">
+      
+      <span class="absolute top-20 right-10 text-rosa text-3xl animate-pulse">✦</span>
+      <span class="absolute bottom-40 left-10 text-mantequilla text-2xl animate-bounce">✦</span>
+      <span class="absolute top-1/2 right-1/3 text-azul text-xl">✦</span>
+
+      <div class="mb-12 lg:mb-14 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+
+        <div>
+
+          <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+            <span class="h-2 w-2 rounded-full bg-rosa"></span>
+            Selección SARALU
+          </span>
+
+          <h2 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold tracking-tight text-chocolate">
+            Catálogo destacado
+          </h2>
+
+          <p class="mt-3 max-w-2xl text-sm lg:text-base text-cafe">
+            Una selección de nuestras creaciones para que encuentres tu próximo postre favorito.
+          </p>
+
+        </div>
+
+        <a href="#" {# → {% url 'catalogo' %} #}
+           class="group inline-flex items-center gap-3 text-sm lg:text-base font-bold text-chocolate">
+
+          Ver todo
+
+          <span class="grid h-9 w-9 place-items-center rounded-full bg-rosaClaro text-chocolate transition group-hover:translate-x-1">
+            →
+          </span>
+
+        </a>
+
+      </div>
+
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 3xl:gap-8 lg:auto-rows-[300px]">
+
+        {% for producto in destacados %}
+
+          {% if forloop.first %}
+
+            <a href="#" {# → {% url 'producto_detalle' producto.id %} #}
+               class="group relative block overflow-hidden rounded-[2rem] bg-chocolate lg:col-span-2 lg:row-span-2 sm:col-span-2 min-h-[500px] lg:min-h-0">
+
+              {% if producto.imagen %}
+
+                <img
+                  src="{{ producto.imagen.url }}"
+                  alt="{{ producto.nombre }}"
+                  class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                />
+
+              {% endif %}
+
+              <div class="absolute inset-0 bg-gradient-to-t from-chocolate/95 via-chocolate/35 to-transparent"></div>
+
+              <span class="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-mantequilla px-4 py-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate">
+                <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
+                Destacado
+              </span>
+
+              <div class="absolute inset-x-0 bottom-0 p-6 md:p-8 3xl:p-10 text-crema">
+
+                <h3 class="font-display text-2xl md:text-3xl lg:text-4xl 3xl:text-5xl font-semibold leading-tight">
+                  {{ producto.nombre }}
+                </h3>
+
+                <p class="mt-3 max-w-xl text-sm md:text-base text-crema/75 line-clamp-2">
+                  {{ producto.descripcion }}
+                </p>
+
+                <div class="mt-6 flex items-center justify-between gap-4">
+
+                  <p class="font-display text-xl md:text-2xl lg:text-3xl font-bold text-mantequilla">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+
+                  <span class="inline-flex items-center gap-2 rounded-full bg-crema px-5 py-2.5 text-sm font-bold text-chocolate shadow-soft">
+                    Ver producto
+                    →
+                  </span>
+
+                </div>
+
+              </div>
+
+            </a>
+
+          {% else %}
+
+            <div class="group relative flex flex-col overflow-hidden rounded-[2rem] bg-rosaClaro transition hover:-translate-y-2 hover:shadow-lift">
+
+              <a href="#" {# → {% url 'producto_detalle' producto.id %} #}
+                 class="relative block overflow-hidden flex-1 min-h-[170px]">
+
+                {% if producto.imagen %}
+
+                  <img
+                    src="{{ producto.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]"
+                  />
+
+                {% endif %}
+
+              </a>
+
+              <div class="flex flex-col justify-between p-5">
+
+                <div class="flex items-start justify-between gap-3">
+
+                  <a href="#" {# → {% url 'producto_detalle' producto.id %} #} class="min-w-0">
+
+                    <h3 class="font-display text-lg lg:text-xl font-semibold truncate text-chocolate hover:text-cafe transition">
+                      {{ producto.nombre }}
+                    </h3>
+
+                  </a>
+
+                  <p class="font-display text-base lg:text-lg font-bold whitespace-nowrap text-chocolate">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+
+                </div>
+
+                <form method="post" action="#" {# → {% url 'agregar_carrito' producto.id %} #} class="mt-4">
+
+                  {% csrf_token %}
+
+                  <button
+                    type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-4 py-2.5 text-sm font-bold text-mantequilla hover:bg-cafe transition">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+
+                    Añadir
+
+                  </button>
+
+                </form>
+
+              </div>
+
+            </div>
+
+          {% endif %}
+
+        {% empty %}
+
+          <div class="col-span-full flex flex-col items-center justify-center rounded-[2rem] bg-rosaClaro/50 px-6 py-20 text-center">
+
+            <span class="grid h-16 w-16 place-items-center rounded-full bg-mantequilla text-chocolate text-2xl">
+              +
+            </span>
+
+            <h3 class="mt-5 font-display text-xl lg:text-2xl font-semibold text-chocolate">
+              Sin productos disponibles
+            </h3>
+
+            <p class="mt-2 max-w-sm text-sm lg:text-base text-cafe">
+              Aún no hemos publicado productos destacados.
+            </p>
+
+          </div>
+
+        {% endfor %}
+
+      </div>
+
+    </section>
+
+
+    {# ============================================================ #}
+    {# PRODUCTOS NUEVOS                                               #}
+    {# ============================================================ #}
+
+    <section id="es_nuevo" class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
+      <div class="absolute inset-0 bg-mantequilla/35 rounded-[2rem] lg:rounded-[3rem]"></div>
+      
+      <span class="absolute top-16 right-20 text-rosa text-3xl animate-pulse z-10">✦</span>
+      <span class="absolute bottom-10 left-10 text-chocolate/30 text-2xl z-10">✦</span>
+      <span class="absolute top-1/2 left-1/4 text-mantequilla text-xl z-10">✦</span>
+
+      <div class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20">
+
+        <div class="mb-12 lg:mb-14">
+
+          <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+            <span class="h-2 w-2 rounded-full bg-rosa"></span>
+            Recién horneados
+          </span>
+
+          <h2 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold tracking-tight text-chocolate">
+            Productos nuevos
+          </h2>
+
+          <p class="mt-3 max-w-2xl text-sm lg:text-base text-cafe">
+            Nuevas creaciones hechas para sorprenderte.
+          </p>
+
+        </div>
+
+
+        <div class="space-y-5 3xl:space-y-7">
+
+          {% for producto in es_nuevo %}
+
+            <div class="group relative grid grid-cols-1 md:grid-cols-[320px_1fr] 3xl:grid-cols-[420px_1fr] rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema overflow-hidden shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
+
+              <a href="#" {# → {% url 'producto_detalle' producto.id %} #}
+                 class="relative overflow-hidden">
+
+                {% if producto.imagen %}
+
+                  <img
+                    src="{{ producto.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    class="h-60 md:h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+
+                {% endif %}
+
+                <span class="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-rosa px-3 py-1.5 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate shadow-soft">
+
+                  <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
+
+                  Nuevo
+
+                </span>
+
+              </a>
+
+
+              <div class="flex flex-col justify-between p-6 md:p-8 3xl:p-10">
+
+                <div>
+
+                  <a href="#" {# → {% url 'producto_detalle' producto.id %} #}>
+
+                    <h3 class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-semibold text-chocolate hover:text-cafe transition">
+                      {{ producto.nombre }}
+                    </h3>
+
+                  </a>
+
+                  <p class="mt-3 max-w-2xl text-base lg:text-lg text-cafe line-clamp-3">
+                    {{ producto.descripcion }}
+                  </p>
+
+                </div>
+
+
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mt-7">
+
+                  <p class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
+                    ${{ producto.precio|floatformat:0 }}
+                  </p>
+
+                  <form method="post" action="#" {# → {% url 'agregar_carrito' producto.id %} #}>
+
+                    {% csrf_token %}
+
+                    <button
+                      type="submit"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 lg:px-7 lg:py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+
+                      Añadir al carrito
+
+                      <span>→</span>
+
+                    </button>
+
+                  </form>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          {% empty %}
+
+            <div class="rounded-[2rem] bg-crema/80 px-6 py-20 text-center shadow-soft">
+
+              <h3 class="font-display text-xl lg:text-2xl font-semibold text-chocolate">
+                Sin productos disponibles
+              </h3>
+
+              <p class="mt-2 text-sm lg:text-base text-cafe">
+                Muy pronto tendremos nuevas delicias.
+              </p>
+
+            </div>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    {# ============================================================ #}
+    {# CTA FINAL                                                      #}
+    {# ============================================================ #}
+
+    <section class="relative overflow-hidden bg-chocolate py-24 lg:py-28 3xl:py-40 text-crema mx-4 lg:mx-8 mb-8 rounded-[2rem] lg:rounded-[3rem]">
+      
+      <span class="absolute top-10 left-10 text-mantequilla text-3xl animate-pulse z-10">✦</span>
+      <span class="absolute bottom-10 right-10 text-rosa text-2xl animate-bounce z-10">✦</span>
+      <span class="absolute top-1/2 right-1/4 text-mantequilla/50 text-xl z-10">✦</span>
+      <span class="absolute bottom-1/3 left-1/4 text-rosa/50 text-lg z-10">✦</span>
+
+      <div class="pointer-events-none absolute -top-48 -right-48 h-[600px] w-[600px] rounded-full bg-rosa/20 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-48 -left-48 h-[600px] w-[600px] rounded-full bg-mantequilla/15 blur-3xl"></div>
+
+      <div class="relative mx-auto w-full max-w-[1500px] px-6 lg:px-10 2xl:px-14 text-center">
+
+        <div class="mx-auto max-w-4xl">
+
+          <span class="inline-flex items-center gap-2 rounded-full border border-mantequilla/25 bg-mantequilla/10 px-4 py-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-mantequilla">
+
+            <span class="h-1.5 w-1.5 rounded-full bg-mantequilla"></span>
+
+            Repostería artesanal
+
+          </span>
+
+
+          <h2 class="font-display mt-7 text-5xl md:text-6xl lg:text-7xl 3xl:text-8xl font-semibold tracking-tight leading-[0.98]">
+
+            ¿Listo para
+
+            <br />
+
+            endulzar
+
+            <span class="font-script text-mantequilla">
+              tu día
+            </span>?
+
+          </h2>
+
+
+          <p class="mx-auto mt-6 max-w-2xl text-base lg:text-lg text-crema/65 leading-relaxed">
+            Descubre nuestras tortas, cupcakes y postres preparados especialmente para ti.
+          </p>
+
+
+          <a href="#" {# → {% url 'catalogo' %} #}
+             class="group mt-9 inline-flex items-center gap-3 rounded-full bg-mantequilla px-8 py-4 lg:px-10 lg:py-5 text-sm lg:text-base font-bold text-chocolate shadow-glow hover:-translate-y-1 transition-all">
+
+            Ver catálogo completo
+
+            <span class="grid h-7 w-7 place-items-center rounded-full bg-chocolate text-mantequilla transition group-hover:translate-x-1">
+              →
+            </span>
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    {# ============================================================ #}
+    {# FOOTER                                                         #}
+    {# ============================================================ #}
+
+    <footer class="relative overflow-hidden bg-rosaClaro mx-4 lg:mx-8 mb-8 rounded-[2rem] lg:rounded-[3rem]">
+      
+      <span class="absolute top-6 left-10 text-mantequilla text-2xl animate-pulse z-10">✦</span>
+      <span class="absolute bottom-6 right-10 text-rosa text-xl animate-bounce z-10">✦</span>
+
+      <div class="mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-12">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-8">
+
+          <div class="flex items-center justify-center md:justify-start gap-3">
+
+            <span class="grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla">
+
+              <img
+                src="{% static 'img/logo.png' %}"
+                alt="Logo SARALU"
+                class="h-full w-full object-contain p-1"
+              />
+
+            </span>
+
+            <div>
+
+              <p class="font-script text-2xl lg:text-3xl text-chocolate leading-none">
+                Saralu
+              </p>
+
+              <p class="mt-1 text-[9px] uppercase tracking-widest2 font-bold text-cafe">
+                Repostería artesanal
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <p class="text-center text-xs lg:text-sm text-cafe">
+            © {% now "Y" %} SARALU Repostería.
+            <br class="sm:hidden" />
+            Todos los derechos reservados.
+          </p>
+
+
+          <div class="flex justify-center md:justify-end gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-cafe">
+
+            <a href="#" class="hover:text-chocolate transition">
+              Catálogo
+            </a>
+
+            <a href="#" class="hover:text-chocolate transition">
+              Términos
+            </a>
+
+            <a href="#" class="hover:text-chocolate transition">
+              Contacto
+            </a>
+
+          </div>
+
+        </div>
+
+        <div class="mt-8 border-t border-chocolate/10 pt-5 text-center">
+
+          <p class="text-[10px] lg:text-xs font-semibold uppercase tracking-widest2 text-cafe/60">
+            Hecho con dedicación · SARALU · v1.0
+          </p>
+
+        </div>
+
+      </div>
+
+    </footer>
 
   </div> <!-- Cierre del borde blanco redondeado -->
 
-  <!-- Scripts -->
+
   <script>
     function toggleAdminPanel() {
       const drawer = document.getElementById('admin-drawer');
       const overlay = document.getElementById('admin-overlay');
       const isOpen = !drawer.classList.contains('-translate-x-full');
+
       if (isOpen) {
         drawer.classList.add('-translate-x-full');
         overlay.classList.add('hidden');
@@ -299,18 +1271,81 @@
       }
     }
 
-    // Script para que las notificaciones (toasts) desaparezcan automáticamente a los 5 segundos
-    document.addEventListener("DOMContentLoaded", function() {
-      const toasts = document.querySelectorAll('[id^="toast-"]');
-      toasts.forEach(function(toast) {
-        setTimeout(function() {
-          toast.classList.remove('translate-y-0', 'opacity-100');
-          toast.classList.add('translate-y-4', 'opacity-0');
-          setTimeout(function() {
-            toast.remove();
-          }, 500); // Espera a que termine la animación para eliminar el elemento
-        }, 5000); // 5000 milisegundos = 5 segundos
-      });
+    function toggleUserMenu(event) {
+      event.stopPropagation();
+
+      const dropdown = document.getElementById('user-menu-dropdown');
+      const chevron  = document.getElementById('user-menu-chevron');
+      const button   = document.getElementById('user-menu-button');
+
+      if (!dropdown) return;
+
+      const isOpen = !dropdown.classList.contains('hidden');
+
+      if (isOpen) {
+        dropdown.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+        button.setAttribute('aria-expanded', 'false');
+      } else {
+        dropdown.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+        button.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function openAdminFromMenu(event) {
+      event.stopPropagation();
+
+      // 1. Cerrar el menú desplegable del usuario
+      const dropdown = document.getElementById('user-menu-dropdown');
+      const chevron  = document.getElementById('user-menu-chevron');
+      const button   = document.getElementById('user-menu-button');
+
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+        button.setAttribute('aria-expanded', 'false');
+      }
+
+      // 2. Abrir el panel de admin
+      const drawer  = document.getElementById('admin-drawer');
+      const overlay = document.getElementById('admin-overlay');
+
+      if (drawer) {
+        drawer.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
+    }
+
+    // Cerrar al hacer clic fuera (funciona también en móvil con touch)
+    document.addEventListener('click', function (e) {
+      const wrapper  = document.getElementById('user-menu-wrapper');
+      const dropdown = document.getElementById('user-menu-dropdown');
+      const chevron  = document.getElementById('user-menu-chevron');
+      const button   = document.getElementById('user-menu-button');
+
+      if (!wrapper || !dropdown) return;
+
+      if (!wrapper.contains(e.target)) {
+        dropdown.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+        button.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Cerrar con la tecla Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const dropdown = document.getElementById('user-menu-dropdown');
+        const chevron  = document.getElementById('user-menu-chevron');
+        const button   = document.getElementById('user-menu-button');
+        if (dropdown) {
+          dropdown.classList.add('hidden');
+          chevron.classList.remove('rotate-180');
+          button.setAttribute('aria-expanded', 'false');
+        }
+      }
     });
   </script>
 

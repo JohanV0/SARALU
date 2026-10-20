@@ -28,17 +28,35 @@
       <div class="relative rounded-[2rem] lg:rounded-[3rem] bg-white/60 ring-1 ring-chocolate/10 shadow-lift p-6 sm:p-8 lg:p-12">
 
         {# Encabezado #}
-        <div class="mb-8 lg:mb-10">
-          <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
-            <span class="h-2 w-2 rounded-full bg-rosa"></span>
-            Editar producto
-          </span>
-          <h1 class="font-display mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-chocolate leading-tight">
-            {{ producto.nombre|default:"Producto" }}
-          </h1>
-          <p class="mt-2 text-sm lg:text-base text-cafe">
-            Actualiza la información del producto. Los cambios se reflejan en el catálogo.
-          </p>
+        <div class="mb-8 lg:mb-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+              <span class="h-2 w-2 rounded-full bg-rosa"></span>
+              Editar producto
+            </span>
+            <h1 class="font-display mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-chocolate leading-tight">
+              {{ producto.nombre|default:"Producto" }}
+            </h1>
+            <p class="mt-2 text-sm lg:text-base text-cafe">
+              Actualiza la información del producto. Los cambios se reflejan en el catálogo.
+            </p>
+          </div>
+
+          {# Botón de Eliminar sutil arriba a la derecha #}
+          <form method="post"
+                action="{% url 'eliminar_producto' producto.id %}"
+                onsubmit="return confirm('¿Seguro que quieres eliminar «{{ producto.nombre|escapejs }}»? Esta acción no se puede deshacer.');"
+                class="shrink-0">
+            {% csrf_token %}
+            <button type="submit"
+                    title="Eliminar producto"
+                    class="group inline-flex items-center justify-center h-11 w-11 rounded-full bg-white ring-1 ring-chocolate/10 text-chocolate/50 hover:text-red-500 hover:bg-red-50 hover:ring-red-200 transition-all shadow-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                    style="font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;">
+                delete
+              </span>
+            </button>
+          </form>
         </div>
 
         {# Formulario #}
@@ -64,7 +82,7 @@
             <label for="id_descripcion" class="flex items-center gap-2 text-sm lg:text-base font-semibold text-chocolate">
               <span class="text-rosa">★</span> Descripción
             </label>
-            <textarea name="descripcion" id="id_descripcion" rows="4" required
+            <textarea name="descripcion" id="id_descripcion" rows="4"
                       placeholder="Hecha para la gente que ama el chocolate..."
                       class="w-full px-4 py-3 bg-crema border border-chocolate/10 rounded-xl text-chocolate placeholder:text-cafe/50 text-sm lg:text-base focus:border-rosa focus:ring-2 focus:ring-rosaClaro transition-all duration-150 resize-y outline-none">{{ producto.descripcion }}</textarea>
             <p class="text-xs text-cafe/70">Máximo 500 caracteres</p>
@@ -114,23 +132,81 @@
             </div>
           </div>
 
-          {# --- Categoría --- #}
+          {# --- Categoría (Select estilizado y compacto) --- #}
           <div class="space-y-1.5">
             <label for="id_categoria" class="flex items-center gap-2 text-sm lg:text-base font-semibold text-chocolate">
               <span class="text-azul">◆</span> Categoría
             </label>
-            <select name="categoria" id="id_categoria" required
-                    class="w-full px-4 py-3 bg-crema border border-chocolate/10 rounded-xl text-chocolate text-sm lg:text-base focus:border-rosa focus:ring-2 focus:ring-rosaClaro transition-all duration-150 outline-none">
-              <option value="">-- Selecciona una categoría --</option>
-              {% for categoria in categorias %}
-                <option value="{{ categoria.id }}"
-                  {% if producto.categoria_id == categoria.id %}selected{% endif %}>
-                  {{ categoria.nombre }}
-                </option>
-              {% endfor %}
-            </select>
+            
+            <div class="relative">
+              <select name="categoria" id="id_categoria" required
+                      class="w-full appearance-none px-4 py-3 bg-crema border border-chocolate/10 rounded-xl text-chocolate text-sm lg:text-base focus:border-rosa focus:ring-2 focus:ring-rosaClaro transition-all duration-150 outline-none cursor-pointer pr-10">
+                <option value="" disabled {% if not producto.categoria %}selected{% endif %}>Selecciona una categoría...</option>
+                
+                {% for categoria in categorias %}
+                  <option value="{{ categoria.id }}" 
+                          {% if producto.categoria_id == categoria.id %}selected{% endif %}>
+                    {{ categoria.get_categoria_display|default:categoria.categoria }}
+                  </option>
+                {% endfor %}
+                
+              </select>
+              
+              {# Flecha personalizada para el select #}
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-chocolate/60">
+                <span class="material-symbols-outlined text-[20px]">expand_more</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-cafe/70">Elige la categoría a la que pertenece el producto.</p>
           </div>
 
+          {# --- Estado (DISPONIBLE / AGOTADO) --- #}
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-sm lg:text-base font-semibold text-chocolate">
+              <span class="text-azul">●</span> Estado del producto
+            </label>
+
+            <div class="flex flex-wrap gap-3">
+              {# Botón Disponible #}
+              <label class="group cursor-pointer">
+                <input type="radio" name="estado" value="DISPONIBLE"
+                       class="peer sr-only"
+                       {% if producto.estado == 'DISPONIBLE' %}checked{% endif %}
+                       required />
+                <span class="inline-flex items-center justify-center gap-2 rounded-full bg-crema ring-1 ring-chocolate/10 px-6 py-3 text-sm font-bold text-chocolate
+                             transition-all
+                             hover:ring-emerald-400 hover:bg-emerald-50
+                             peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:ring-emerald-500 peer-checked:shadow-soft">
+                  <span class="material-symbols-outlined text-[18px] leading-none"
+                        style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">
+                    check_circle
+                  </span>
+                  Disponible
+                </span>
+              </label>
+
+              {# Botón Agotado #}
+              <label class="group cursor-pointer">
+                <input type="radio" name="estado" value="AGOTADO"
+                       class="peer sr-only"
+                       {% if producto.estado == 'AGOTADO' %}checked{% endif %}
+                       required />
+                <span class="inline-flex items-center justify-center gap-2 rounded-full bg-crema ring-1 ring-chocolate/10 px-6 py-3 text-sm font-bold text-chocolate
+                             transition-all
+                             hover:ring-red-400 hover:bg-red-50
+                             peer-checked:bg-red-500 peer-checked:text-white peer-checked:ring-red-500 peer-checked:shadow-soft">
+                  <span class="material-symbols-outlined text-[18px] leading-none"
+                        style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">
+                    cancel
+                  </span>
+                  Agotado
+                </span>
+              </label>
+            </div>
+
+            <p class="text-xs text-cafe/70">Los productos agotados no se pueden comprar desde el catálogo.</p>
+          </div>
           {# --- Imagen --- #}
           <div class="space-y-2">
             <label class="flex items-center gap-2 text-sm lg:text-base font-semibold text-chocolate">
@@ -149,15 +225,8 @@
                    class="block w-full text-sm text-cafe file:mr-4 file:rounded-xl file:border-0 file:bg-mantequilla file:px-4 file:py-2.5 file:font-bold file:text-chocolate hover:file:bg-rosa file:transition-all file:cursor-pointer bg-crema border border-chocolate/10 rounded-xl p-2" />
           </div>
 
-          {# --- Checkboxes (tarjetas) --- #}
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 pt-2">
-            <label class="group flex items-center gap-3 rounded-2xl bg-crema ring-1 ring-chocolate/10 px-4 py-3.5 cursor-pointer hover:ring-rosa hover:bg-rosaClaro/40 transition-all">
-              <input type="checkbox" name="estado" id="id_estado"
-                     {% if producto.estado_activo %}checked{% endif %}
-                     class="h-5 w-5 rounded-md text-rosa border-chocolate/30 focus:ring-rosa focus:ring-offset-0" />
-              <span class="text-sm font-semibold text-chocolate">¿Esta Activo?</span>
-            </label>
-
+          {# --- Checkboxes (Destacado y Más vendido) --- #}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4 pt-2">
             <label class="group flex items-center gap-3 rounded-2xl bg-crema ring-1 ring-chocolate/10 px-4 py-3.5 cursor-pointer hover:ring-rosa hover:bg-rosaClaro/40 transition-all">
               <input type="checkbox" name="destacado" id="id_destacado"
                      {% if producto.destacado %}checked{% endif %}
@@ -171,21 +240,14 @@
                      class="h-5 w-5 rounded-md text-rosa border-chocolate/30 focus:ring-rosa focus:ring-offset-0" />
               <span class="text-sm font-semibold text-chocolate">Más vendido</span>
             </label>
-
-            <label class="group flex items-center gap-3 rounded-2xl bg-crema ring-1 ring-chocolate/10 px-4 py-3.5 cursor-pointer hover:ring-rosa hover:bg-rosaClaro/40 transition-all">
-              <input type="checkbox" name="nuevo" id="id_nuevo"
-                     {% if producto.es_nuevo %}checked{% endif %}
-                     class="h-5 w-5 rounded-md text-rosa border-chocolate/30 focus:ring-rosa focus:ring-offset-0" />
-              <span class="text-sm font-semibold text-chocolate">¿Es nuevo?</span>
-            </label>
           </div>
 
-          {# --- Botones --- #}
-          <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 pt-4 border-t border-chocolate/10">
+          {# --- Botones (Solo Guardar y Cancelar) --- #}
+          <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 pt-6 border-t border-chocolate/10">
 
             {# Guardar #}
             <button type="submit"
-                    class="group inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-7 py-3.5 lg:py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+                    class="group inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-8 py-3.5 lg:py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
               <span class="material-symbols-outlined text-[20px] leading-none"
                     style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">
                 save
@@ -195,29 +257,13 @@
 
             {# Cancelar #}
             <a href="{% url 'producto_detalle' producto.id %}"
-               class="inline-flex items-center justify-center gap-2 rounded-full bg-crema ring-1 ring-chocolate/20 px-7 py-3.5 lg:py-4 text-sm lg:text-base font-bold text-chocolate hover:bg-white hover:-translate-y-1 transition-all">
+               class="inline-flex items-center justify-center gap-2 rounded-full bg-crema ring-1 ring-chocolate/20 px-8 py-3.5 lg:py-4 text-sm lg:text-base font-bold text-chocolate hover:bg-white hover:-translate-y-1 transition-all">
               <span class="material-symbols-outlined text-[20px] leading-none"
                     style="font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;">
                 close
               </span>
               Cancelar
             </a>
-
-            {# Eliminar (a la derecha en desktop) #}
-            <form method="post"
-                  action="{% url 'eliminar_producto' producto.id %}"
-                  onsubmit="return confirm('¿Seguro que quieres eliminar «{{ producto.nombre|escapejs }}»? Esta acción no se puede deshacer.');"
-                  class="sm:ml-auto">
-              {% csrf_token %}
-              <button type="submit"
-                      class="group inline-flex items-center justify-center gap-2 w-full rounded-full bg-rosa/40 ring-1 ring-rosa px-7 py-3.5 lg:py-4 text-sm lg:text-base font-bold text-chocolate hover:bg-rosa hover:-translate-y-1 transition-all">
-                <span class="material-symbols-outlined text-[20px] leading-none"
-                      style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">
-                  delete
-                </span>
-                Eliminar
-              </button>
-            </form>
 
           </div>
 

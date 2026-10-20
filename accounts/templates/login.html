@@ -81,11 +81,13 @@
 
         <!-- Logo y título -->
         <div class="text-center mb-8">
-            <div class="mx-auto mb-6 flex h-36 w-36 items-center justify-center overflow-hidden rounded-full
-                        bg-mantequilla ring-4 ring-azul">
-                <img src="{% static 'img/logo.png' %}" alt="Logo Saralu" class="h-full w-full object-contain p-3">
+            <div class="mx-auto mb-6 flex h-60 w-60 items-center justify-center rounded-full
+                        bg-mantequilla text-chocolate ring-4 ring-azul">
+                <svg class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <img src="{% static 'img/logo.png'%}" alt="Logo Saralu">
+                </svg>
             </div>
-            <h1 class="font-titulo text-3xl font-bold tracking-tight text-chocolate dark:text-crema">Te da la Bienvenida </h1>
+            <h1 class="font-titulo text-3xl font-bold tracking-tight text-chocolate dark:text-crema">Bienvenido</h1>
         </div>
 
         <!-- Errores de Django (usuario o contraseña incorrectos) -->
@@ -145,14 +147,6 @@
                                dark:bg-black/25 dark:text-crema dark:placeholder-crema/40 dark:ring-crema/15
                                focus:outline-none focus:ring-2 focus:ring-chocolate dark:focus:ring-azul transition">
                 </div>
-
-                <!-- Olvidaste tu contraseña, pegado a la caja de contraseña -->
-                <div class="mt-2 text-right">
-                    <a href="{% url 'password_reset' %}" class="text-xs font-medium text-chocolate/60 hover:text-chocolate
-                                       dark:text-crema/60 dark:hover:text-azul transition-colors">
-                        ¿Olvidaste tu contraseña?
-                    </a>
-                </div>
             </div>
 
             <button
@@ -165,16 +159,6 @@
                        active:scale-[0.98] transition">
                 Ingresar sesión
             </button>
-
-            <!-- Enlace de registro, como texto aparte debajo del botón -->
-            <p class="text-center text-sm text-chocolate/70 dark:text-crema/70">
-                ¿No tienes cuenta?
-                <a href="{% url 'register' %}" class="font-semibold text-chocolate underline underline-offset-2
-                                                        hover:text-chocolate/70
-                                                        dark:text-mantequilla dark:hover:text-mantequilla/80 transition-colors">
-                    Regístrate
-                </a>
-            </p>
         </form>
     </main>
 

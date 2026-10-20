@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SARALU — Repostería Artesanal</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -53,12 +52,10 @@
       },
     };
   </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
-
 <body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4">
   
   {# ============================================================ #}
@@ -86,21 +83,17 @@
     {% endfor %}
   </div>
   {% endif %}
-
   <!-- Borde blanco redondeado alrededor de toda la página -->
   <div class="min-h-[calc(100vh-16px)] md:min-h-[calc(100vh-32px)] border-[8px] md:border-[12px] border-white rounded-[2rem] md:rounded-[3rem] bg-crema relative overflow-hidden shadow-2xl">
-
     {# ============================================================ #}
     {# PANEL ADMIN — Dashboard (Se mantiene igual)                  #}
     {# ============================================================ #}
-
     {% if user.is_authenticated and user.is_staff %}
       <div id="admin-overlay" onclick="toggleAdminPanel()" class="hidden fixed inset-0 z-40 bg-chocolate/40 backdrop-blur-sm"></div>
       <aside id="admin-drawer" class="fixed top-0 left-0 z-50 flex h-screen w-[380px] lg:w-[420px] 3xl:w-[500px] 4xl:w-[560px] -translate-x-full flex-col rounded-r-6xl bg-crema shadow-panel transition-transform duration-300 ease-out">
         <!-- ... CONTENIDO DEL PANEL ADMIN ... -->
       </aside>
     {% endif %}
-
     {# ============================================================ #}
     {# NAVBAR                                                        #}
     {# ============================================================ #}
@@ -135,7 +128,7 @@
               </ul>
             </nav>
             <div class="flex items-center gap-2 lg:gap-2.5 shrink-0">
-              <a href="#" class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all" aria-label="Carrito de compras">
+              <a href="{% url 'ver_carrito' %}" class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all" aria-label="Carrito de compras">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-[22px] lg:w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
@@ -162,11 +155,9 @@
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </button>
-
                   <!-- Menú desplegable -->
                   <div id="user-menu-dropdown"
                        class="hidden absolute right-0 mt-2 w-64 sm:w-72 origin-top-right rounded-2xl bg-crema shadow-lift ring-1 ring-chocolate/10 overflow-hidden z-50">
-
                     <div class="px-4 py-3.5 bg-rosaClaro/60 border-b border-chocolate/10">
                       <p class="text-xs lg:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">Cuenta</p>
                       <p class="mt-1.5 text-base lg:text-lg font-bold text-chocolate truncate">
@@ -176,7 +167,6 @@
                         <p class="text-sm lg:text-base text-chocolate/60 truncate">{{ user.email }}</p>
                       {% endif %}
                     </div>
-
                     <a href="{% url 'editar_perfil' %}"
                        class="flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-mantequilla/40 transition">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
@@ -187,7 +177,6 @@
                       </svg>
                       Editar perfil
                     </a>
-
                     {% if user.is_staff %}
                       <button type="button"
                               onclick="openAdminFromMenu(event)"
@@ -203,9 +192,7 @@
                         Panel admin
                       </button>
                     {% endif %}
-
                     <div class="border-t border-chocolate/10"></div>
-
                     <form action="{% url 'logout' %}" method="post">
                       {% csrf_token %}
                       <button type="submit"
@@ -220,7 +207,6 @@
                         Cerrar sesión
                       </button>
                     </form>
-
                   </div>
                 </div>
               {% else %}
@@ -235,7 +221,6 @@
         <div class="h-px bg-chocolate/10"></div>
       </div>
     </header>
-
     {# ============================================================ #}
     {# HERO                                                          #}
     {# ============================================================ #}
@@ -277,11 +262,8 @@
         </div>
       </div>
     </section>
-
     {# (El resto de tus secciones se mantienen igual...) #}
-
   </div> <!-- Cierre del borde blanco redondeado -->
-
   <!-- Scripts -->
   <script>
     function toggleAdminPanel() {
@@ -298,7 +280,6 @@
         document.body.classList.add('overflow-hidden');
       }
     }
-
     // Script para que las notificaciones (toasts) desaparezcan automáticamente a los 5 segundos
     document.addEventListener("DOMContentLoaded", function() {
       const toasts = document.querySelectorAll('[id^="toast-"]');
@@ -313,6 +294,5 @@
       });
     });
   </script>
-
 </body>
 </html>

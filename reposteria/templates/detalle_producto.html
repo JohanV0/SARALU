@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ producto.nombre }} — SARALU</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -45,14 +44,11 @@
       },
     };
   </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
-
 <body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4 flex flex-col min-h-screen">
-
   {# ============================================================ #}
   {# MENSAJES FLOTANTES (TOASTS)                                  #}
   {# ============================================================ #}
@@ -77,10 +73,8 @@
     {% endfor %}
   </div>
   {% endif %}
-
   <!-- Borde blanco redondeado alrededor de toda la página -->
   <div class="flex-grow min-h-[calc(100vh-16px)] md:min-h-[calc(100vh-32px)] border-[8px] md:border-[12px] border-white rounded-[2rem] md:rounded-[3rem] bg-crema relative overflow-hidden shadow-2xl flex flex-col">
-
     {# ============================================================ #}
     {# NAVBAR                                                        #}
     {# ============================================================ #}
@@ -108,9 +102,8 @@
                 <li><a href="{% url 'home' %}#es_nuevo" class="inline-flex rounded-full px-4 py-2.5 hover:bg-mantequilla transition-all">Novedades</a></li>
               </ul>
             </nav>
-
             <div class="flex items-center gap-2 lg:gap-2.5 shrink-0">
-              <a href="#" class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all" aria-label="Carrito de compras">
+              <a href="{% url 'ver_carrito' %}" class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all" aria-label="Carrito de compras">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-[22px] lg:w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
@@ -138,7 +131,6 @@
         <div class="h-px bg-chocolate/10"></div>
       </div>
     </header>
-
     {# ============================================================ #}
     {# CONTENIDO PRINCIPAL                                           #}
     {# ============================================================ #}
@@ -149,7 +141,6 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
         Volver al catálogo
       </a>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           
           <!-- SECCIÓN: GALERÍA -->
@@ -166,7 +157,6 @@
               <span class="absolute top-6 right-6 text-mantequilla text-3xl animate-pulse z-10">✦</span>
               <span class="absolute bottom-6 left-6 text-rosa text-2xl animate-bounce z-10">✦</span>
           </div>
-
           <!-- SECCIÓN: INFORMACIÓN DEL PRODUCTO -->
           <div class="flex flex-col justify-center py-2 lg:py-6">
               {% if producto.categoria %}
@@ -175,19 +165,16 @@
                       {{ producto.categoria.nombre }}
                   </span>
               {% endif %}
-
               <h1 class="font-display text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold leading-[1.05] tracking-tight text-chocolate">
                   {{ producto.nombre }}
               </h1>
               
               <p class="font-display text-3xl lg:text-4xl font-bold mt-4 text-cafe">${{ producto.precio|floatformat:0 }}</p>
-
               <!-- Descripción -->
               <div class="mt-8 bg-white p-6 lg:p-8 rounded-[2rem] shadow-sm ring-1 ring-chocolate/10 relative">
                   <h3 class="font-display text-xl font-bold text-chocolate mb-3">Descripción</h3>
                   <p class="text-sm lg:text-base text-chocolate/80 leading-relaxed">{{ producto.descripcion }}</p>
               </div>
-
               <!-- Porciones -->
               {% if producto.porciones %}
                   <div class="mt-4 bg-white/60 p-6 rounded-[2rem] ring-1 ring-chocolate/5">
@@ -195,26 +182,31 @@
                        <p class="text-sm lg:text-base text-chocolate/80"><span class="font-bold text-chocolate">Porciones estimadas:</span> {{ producto.porciones }}</p>
                   </div>
               {% endif %}
-
-              <!-- Botones de acción (Administración) -->
-              <div class="mt-8 flex flex-col sm:flex-row gap-4">
+              <!-- BOTONES DE ACCIÓN-->
+               <div class="mt-8">
                   {% if user.is_staff %}
-                      <!-- Botón Editar (Redirige al form del Admin) -->
-                      <a href="{% url 'editar_producto' producto.id %}" class="flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                          Editar producto
+                    <!-- Botones de administración (Solo para tu equipo) -->
+                    <div class="flex flex-col sm:flex-row gap-4">
+                      <a href="#" class="flex-1 group flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+                        ✏️ Editar producto
                       </a>
-
-                      <!-- Botón Eliminar (Redirige a la confirmación del Admin) -->
-                      <a href="{% url 'eliminar_producto' producto.id %}" onclick="return confirm('¿Seguro que desea eliminar este producto?')" class="flex w-full sm:w-1/2 items-center justify-center gap-2 rounded-full bg-red-100 px-6 py-4 text-sm lg:text-base font-bold text-red-700 shadow-soft ring-1 ring-red-300 hover:bg-red-200 hover:-translate-y-1 transition-all">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                          Eliminar producto
+                      <a href="#" onclick="return confirm('¿Estás seguro de eliminarlo?');" class="flex-1 group flex items-center justify-center gap-2 rounded-full border-2 border-red-500 text-red-500 px-6 py-4 text-base lg:text-lg font-bold hover:bg-red-500 hover:text-white hover:-translate-y-1 transition-all">
+                        🗑️ Eliminar
                       </a>
+                    </div>
+                  {% else %}
+        
+                    <!-- Botón de compra (Solo para clientes) -->
+                    <form method="POST" action="{% url 'agregar_al_carrito' producto.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="w-full group flex items-center justify-center gap-2 rounded-full bg-chocolate px-8 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 hover:shadow-lift transition-all">
+                        Añadir al carrito 🛒
+                      </button>
+                    </form>
                   {% endif %}
-              </div>
+                </div>
           </div>
       </div>
-
       <!-- ============================================================ -->
       <!-- SECCIÓN DE RESEÑAS                                           -->
       <!-- ============================================================ -->
@@ -226,7 +218,6 @@
             </span>
             <h2 class="font-display text-3xl lg:text-4xl font-semibold text-chocolate">Opiniones de clientes</h2>
           </div>
-
           <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 lg:gap-12">
               
               <!-- COLUMNA IZQUIERDA: Formulario o Login -->
@@ -253,14 +244,12 @@
                               <label class="block text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60 mb-2" for="{{ form.comentario.id_for_label }}">{{ form.comentario.label }}</label>
                               {{ form.comentario }}
                           </div>
-
                           <div class="mt-2">
                               <button type="submit" class="w-full rounded-full bg-chocolate px-6 py-3.5 text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
                                   {% if resena_usuario %}Actualizar reseña{% else %}Publicar reseña{% endif %}
                               </button>
                           </div>
                       </form>
-
                       <!-- Formulario separado para Eliminar -->
                       {% if resena_usuario %}
                       <form method="POST" class="mt-5 border-t border-chocolate/10 pt-5 text-center" onsubmit="return confirm('¿Estás seguro de que deseas eliminar tu reseña? Esta acción no se puede deshacer.');">
@@ -271,7 +260,6 @@
                           </button>
                       </form>
                       {% endif %}
-
                   {% else %}
                       <!-- Petición de Login -->
                       <div class="text-center py-6">
@@ -287,7 +275,6 @@
                   {% endif %}
               </div>
               {% endif %}
-
               <!-- COLUMNA DERECHA: Lista de reseñas -->
               <div class="flex flex-col gap-5 order-1 lg:order-2">
                   <div class="flex items-center justify-between border-b border-chocolate/10 pb-3">
@@ -326,7 +313,6 @@
                                       {% endfor %}
                                   </div>
                               {% endif %}
-
                               <!-- Botón para responder (solo staff) -->
                               {% if user.is_staff %}
                                   <button type="button" 
@@ -334,7 +320,6 @@
                                           class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-chocolate/60 hover:text-chocolate transition">
                                       💬 <span>Responder</span>
                                   </button>
-
                                   <!-- Formulario oculto para responder -->
                                   <form id="form-respuesta-{{ resena.id }}" 
                                         method="POST" 
@@ -366,14 +351,12 @@
           </div>
       </div>
     </main>
-
     {# ============================================================ #}
     {# FOOTER                                                        #}
     {# ============================================================ #}
     <footer class="relative overflow-hidden bg-rosaClaro mx-4 lg:mx-8 mt-10 mb-8 rounded-[2rem] lg:rounded-[3rem]">
       <span class="pointer-events-none absolute top-6 left-10 text-mantequilla text-2xl animate-pulse z-10">✦</span>
       <span class="pointer-events-none absolute bottom-6 right-10 text-rosa text-xl animate-bounce z-10">✦</span>
-
       <div class="mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-12">
         <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-8">
           <div class="flex items-center justify-center md:justify-start gap-3">
@@ -385,25 +368,21 @@
               <p class="mt-1 text-[9px] uppercase tracking-widest2 font-bold text-cafe">Repostería artesanal</p>
             </div>
           </div>
-
           <p class="text-center text-xs lg:text-sm text-cafe">
             © {% now "Y" %} SARALU Repostería. <br class="sm:hidden" /> Todos los derechos reservados.
           </p>
-
           <div class="flex justify-center md:justify-end gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-cafe">
             <a href="{% url 'catalogo' %}" class="hover:text-chocolate transition">Catálogo</a>
             <a href="#" class="hover:text-chocolate transition">Términos</a>
             <a href="#" class="hover:text-chocolate transition">Contacto</a>
           </div>
         </div>
-
         <div class="mt-8 border-t border-chocolate/10 pt-5 text-center">
           <p class="text-[10px] lg:text-xs font-semibold uppercase tracking-widest2 text-cafe/60">Hecho con dedicación · SARALU · v1.0</p>
         </div>
       </div>
     </footer>
   </div>
-
   <!-- Scripts -->
   <script>
     // Auto-cierre de notificaciones

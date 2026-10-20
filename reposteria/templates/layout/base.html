@@ -115,7 +115,7 @@
               </nav>
 
               <div class="flex items-center gap-2 lg:gap-2.5 shrink-0">
-                <a href="#"
+                <a href="{% url 'armar_pedido' %}"
                    class="relative grid h-11 w-11 lg:h-12 lg:w-12 place-items-center rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all"
                    aria-label="Carrito de compras">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-[22px] lg:w-[22px]"
@@ -231,7 +231,7 @@
     {% endblock %}
 
 
-    {# === CONTENIDO DIRECTO — sin <main> wrapper === #}
+    {# === CONTENIDO DIRECTO === #}
     {% block content %}{% endblock %}
 
 
@@ -386,8 +386,7 @@
 
     /* ============================================================ */
     /* NAVBAR — hide on scroll down / show on scroll up              */
-    /* Usa style.transform inline porque el CDN de Tailwind NO       */
-    /* genera CSS para clases agregadas dinámicamente por JS.        */
+    /* Y también: se esconde al abrir el panel admin                 */
     /* ============================================================ */
     (function () {
       const navbar = document.getElementById('main-navbar');
@@ -396,30 +395,38 @@
         return;
       }
 
-      console.log('[SARALU] position navbar =', getComputedStyle(navbar).position);
-      // Debe imprimir "sticky". Si imprime "static", un ancestro tiene overflow.
-
-      const HIDDEN    = 'translateY(-120%)';
-      const SHOWN     = 'translateY(0)';
-      const DELTA     = 6;   // px mínimos de movimiento para reaccionar
-      const NEAR_TOP  = 40;  // si estás a menos de 40px del top → siempre visible
+      const HIDDEN   = 'translateY(-120%)';
+      const SHOWN    = 'translateY(0)';
+      const DELTA    = 6;   // px mínimos de movimiento para reaccionar
+      const NEAR_TOP = 40;  // si estás a menos de 40px del top → siempre visible
 
       let lastY   = window.scrollY;
       let hidden  = false;
       let ticking = false;
 
-      function setHidden(v) {
-        if (hidden === v) return;
-        hidden = v;
-        navbar.style.transform = v ? HIDDEN : SHOWN;
+      // ---------- Control manual de visibilidad ----------
+      function hideNavbar() {
+        if (hidden) return;
+        hidden = true;
+        navbar.style.transform = HIDDEN;
       }
 
+      function showNavbar() {
+        if (!hidden) return;
+        hidden = false;
+        navbar.style.transform = SHOWN;
+      }
+
+      // Exponer globalmente por si se necesita desde admin_panel.html
+      window.__saraluHideNavbar = hideNavbar;
+      window.__saraluShowNavbar = showNavbar;
+
+      // ---------- Scroll handler ----------
       function onScroll() {
         const y = window.scrollY;
 
-        // Zona superior: siempre visible
         if (y <= NEAR_TOP) {
-          setHidden(false);
+          showNavbar();
           lastY = y;
           ticking = false;
           return;
@@ -427,14 +434,13 @@
 
         const delta = y - lastY;
 
-        // Movimientos muy pequeños: ignorar (se acumulan en el siguiente evento)
         if (Math.abs(delta) < DELTA) {
           ticking = false;
           return;
         }
 
-        // Subiendo → mostrar. Bajando → ocultar. (Aunque NO estés arriba.)
-        setHidden(delta > 0);
+        if (delta > 0) hideNavbar();
+        else           showNavbar();
 
         lastY = y;
         ticking = false;
@@ -449,6 +455,28 @@
 
       // Estado inicial
       navbar.style.transform = SHOWN;
+
+      // ---------- Integración con el panel admin ----------
+      // Ocultamos la navbar cuando el drawer se abre (se quita '-translate-x-full'),
+      // y la mostramos cuando se cierra (se vuelve a añadir).
+      const drawer = document.getElementById('admin-drawer');
+
+      if (drawer) {
+        // Comprobación inicial (por si el drawer empezara abierto)
+        if (!drawer.classList.contains('-translate-x-full')) {
+          hideNavbar();
+        }
+
+        const observer = new MutationObserver(() => {
+          const isOpen = !drawer.classList.contains('-translate-x-full');
+          if (isOpen) hideNavbar();
+          else        showNavbar();
+        });
+
+        observer.observe(drawer, { attributes: true, attributeFilter: ['class'] });
+      } else {
+        console.warn('[SARALU] admin-drawer NO existe (usuario no staff o no incluido)');
+      }
     })();
   </script>
 

@@ -1,0 +1,147 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% block title %}SARALU — Repostería Artesanal{% endblock %}
+
+{% block content %}
+<section class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-12 lg:py-20">
+
+  {# ---------- ENCABEZADO ---------- #}
+  <div class="mb-10 lg:mb-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-chocolate/10 pb-6">
+    <div>
+      <p class="text-xs lg:text-sm font-semibold uppercase tracking-[0.2em] text-chocolate/60 mb-2">
+        Panel de administración
+      </p>
+      <h1 class="text-3xl lg:text-5xl font-bold text-cafe leading-tight">
+        Lista de <span class="text-chocolate">Productos</span>
+      </h1>
+      <p class="mt-2 text-sm lg:text-base text-cafe/70">
+        Gestiona, edita y actualiza el estado de tus productos.
+      </p>
+    </div>
+
+    <a href="{% url 'nuevo_producto' %}"
+       class="inline-flex items-center justify-center gap-2 self-start md:self-auto px-6 py-3 rounded-full bg-chocolate text-white text-sm lg:text-base font-semibold shadow-soft hover:bg-chocolate/90 hover:-translate-y-0.5 transition-all">
+      <i class="fa-solid fa-plus"></i>
+      Nuevo producto
+    </a>
+  </div>
+
+  {# ---------- LISTA ---------- #}
+  {% if productos %}
+    <ul class="flex flex-col gap-4">
+
+      {% for producto in productos %}
+        <li>
+          <article class="group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-white p-4 sm:p-5 shadow-soft ring-1 ring-chocolate/5 transition-all hover:-translate-y-1 hover:shadow-lift">
+
+            {# --- Imagen / miniatura --- #}
+            <div class="relative h-40 sm:h-24 w-full sm:w-24 shrink-0 overflow-hidden rounded-[1rem] sm:rounded-[1.25rem] bg-rosaClaro">
+              {% if producto.imagen %}
+                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                     class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+              {% else %}
+                <div class="flex h-full w-full items-center justify-center text-chocolate/30">
+                  <i class="fa-solid fa-cake-candles text-3xl"></i>
+                </div>
+              {% endif %}
+            </div>
+
+            {# --- Info central --- #}
+            <div class="flex flex-1 min-w-0 flex-col gap-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-base lg:text-lg font-bold text-cafe truncate">
+                  {{ producto.nombre|default:"Producto" }}
+                </h2>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
+                  {% if producto.estado == 'DISPONIBLE' %} bg-emerald-100 text-emerald-700
+                  {% else %} bg-chocolate/10 text-chocolate {% endif %}">
+                  {% if producto.estado == 'DISPONIBLE' %}
+                    <i class="fa-solid fa-circle-check"></i>
+                  {% else %}
+                    <i class="fa-solid fa-circle-minus"></i>
+                  {% endif %}
+                  {{ producto.get_estado_display }}
+                </span>
+              </div>
+
+              {% if producto.descripcion %}
+                <p class="text-sm text-cafe/60 line-clamp-1">
+                  {{ producto.descripcion }}
+                </p>
+              {% endif %}
+            </div>
+
+            {# --- Acciones --- #}
+            <div class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:pl-4 sm:border-l sm:border-chocolate/10">
+
+              {# --- Toggle de estado activo/inactivo --- #}
+              <form action="{% url 'avanzar_estado_categoria' producto.id %}" method="post" class="inline-flex">
+                {% csrf_token %}
+                <button type="submit"
+                        role="switch"
+                        aria-checked="{% if producto.estado == 'DISPONIBLE' %}true{% else %}false{% endif %}"
+                        title="{% if producto.estado == 'DISPONIBLE' %}Desactivar producto{% else %}Activar producto{% endif %}"
+                        class="group inline-flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5 text-xs font-semibold transition-all
+                          {% if producto.estado == 'DISPONIBLE' %}
+                            bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100
+                          {% else %}
+                            bg-chocolate/5 text-chocolate/70 ring-1 ring-chocolate/15 hover:bg-chocolate/10
+                          {% endif %}">
+
+                  {# Pista del switch #}
+                  <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-300
+                    {% if producto.estado == 'DISPONIBLE' %} bg-emerald-500 {% else %} bg-chocolate/25 {% endif %}">
+                    {# Perilla #}
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-300
+                      {% if producto.estado == 'DISPONIBLE' %} translate-x-[1.15rem] {% else %} translate-x-0.5 {% endif %}">
+                    </span>
+                  </span>
+
+                  {# Texto #}
+                  <span class="whitespace-nowrap">
+                    {% if producto.estado == 'DISPONIBLE' %}Activo{% else %}Inactivo{% endif %}
+                  </span>
+                </button>
+              </form>
+
+              {# Editar #}
+              <a href="{% url 'editar_producto' producto.id %}"
+                 class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full border border-chocolate/20 text-chocolate text-xs font-semibold hover:bg-chocolate/5 transition-all">
+                <i class="fa-solid fa-pen"></i>
+                Editar
+              </a>
+
+              {# Eliminar #}
+              <a href="{% url 'eliminar_producto' producto.id %}"
+                 onclick="return confirm('¿Seguro que desea eliminar el producto?')"
+                 class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition-all">
+                <i class="fa-solid fa-trash"></i>
+                Eliminar
+              </a>
+
+            </div>
+          </article>
+        </li>
+      {% endfor %}
+
+    </ul>
+  {% else %}
+    {# ---------- ESTADO VACÍO ---------- #}
+    <div class="flex flex-col items-center justify-center text-center py-20 rounded-[2rem] bg-white shadow-soft ring-1 ring-chocolate/5">
+      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-rosaClaro text-chocolate mb-5">
+        <i class="fa-solid fa-cake-candles text-3xl"></i>
+      </div>
+      <h2 class="text-xl lg:text-2xl font-bold text-cafe mb-2">Aún no hay productos</h2>
+      <p class="text-sm lg:text-base text-cafe/60 mb-6 max-w-md">
+        Empieza creando tu primer producto para que aparezca en el catálogo.
+      </p>
+      <a href="{% url 'crear_producto' %}"
+         class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-chocolate text-white text-sm font-semibold shadow-soft hover:bg-chocolate/90 transition-all">
+        <i class="fa-solid fa-plus"></i>
+        Crear producto
+      </a>
+    </div>
+  {% endif %}
+
+</section>
+{% endblock %}  

@@ -12,11 +12,23 @@ class Categoria(models.Model):
     '''
     modelo que representa las categorias
     '''
-    nombre = models.CharField(max_length=100)
+    CATEGORIAS_CHOICES = [
+        ('PASTELES_DE_SABORES','Pasteles de sabores'),
+        ('CUPCAKES','Cupcakes'),
+        ('GALLETAS','Galletas'),
+        ('POSTRES_INDIVIDUALES','Postres individuales'),
+        ('TARTAS','Tartas'),
+        ('PAVLOVAS','Pavlovas'),
+        ('BROWNIES','Brownies'),
+    ]
+    categoria = models.CharField(
+        max_length=20,
+        choices=CATEGORIAS_CHOICES
+    )
     imagen_principal = models.ImageField(upload_to='img/', default='img/logo.png')
 
     def __str__(self):
-        return self.nombre
+        return self.categoria
 
 
 class Producto(models.Model):
@@ -29,7 +41,6 @@ class Producto(models.Model):
     )
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True)
     stock = models.PositiveIntegerField(default=10)
-    estado_activo = models.BooleanField(default=True)
     porciones = models.PositiveIntegerField(default=1)
     destacado = models.BooleanField(default=False)
     mas_vendido = models.BooleanField(default=False)
@@ -43,6 +54,15 @@ class Producto(models.Model):
         null=True,
         blank=True,
         related_name='productos'
+    )
+    ESTADO_CHOICES = [
+        ('DISPONIBLE','Disponible'),
+        ('AGOTADO','Agotado'),
+    ]
+    estado = models.CharField(
+        max_length=10,
+        choices=ESTADO_CHOICES,
+        default='DISPONIBLE'
     )
 
     def __str__(self):

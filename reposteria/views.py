@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido, ItemCarrito
+from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido, ItemCarrito, FechaBloqueada
 from .forms import ResenaForm
 
 def home(request):
@@ -12,7 +13,6 @@ def home(request):
         'mas_vendidos': Producto.objects.filter(mas_vendido=True),
         'es_nuevos':      Producto.objects.filter(es_nuevo=True),
     })
-
 
 def es_usuario(user):
     return user.is_authenticated and not user.is_staff
@@ -169,7 +169,6 @@ def editar_producto(request, producto_id):
         messages.success(request, "Producto actualizado correctamente.")
         return redirect("producto_detalle", producto_id=producto.id)
 
-    # CORRECCIÓN AQUÍ: nombre del archivo con guion bajo
     return render(request, "editar-producto.html", {
         "producto": producto,
         "categorias": categorias,
@@ -233,10 +232,18 @@ def armar_pedido_view(request):
     # PASO 3: GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
     if request.method == 'POST':
         tipo_entrega = request.POST.get('tipo_entrega')
-        fecha = request.POST.get('fecha')
+        fecha_str = request.POST.get('fecha')
         hora = request.POST.get('hora')
         
-        nota_horario = f"Fecha de entrega: {fecha} | Hora: {hora}"
+        # --- VALIDACIÓN DE FECHA BLOQUEADA AQUÍ ---
+        if fecha_str:
+            fecha_obj = parse_date(fecha_str)
+            if fecha_obj and FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
+                messages.error(request, f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada (día libre).")
+                return redirect('armar_pedido') # Redirige de vuelta al formulario para que elija otra fecha
+        # ------------------------------------------
+
+        nota_horario = f"Fecha de entrega: {fecha_str} | Hora: {hora}"
 
         # Acción 1: Creamos el Pedido oficial
         nuevo_pedido = Pedido.objects.create(
@@ -265,9 +272,15 @@ def armar_pedido_view(request):
         messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
         return redirect('home')
     
+    # --- CORRECCIÓN: Convertimos las fechas a lista de strings para el JSON ---
+    fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
+    fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
+    
     contexto = {
         'items': items_carrito,
         'subtotal': subtotal,
+        'fechas_bloqueadas': fechas_qs,
+        'fechas_bloqueadas_json': fechas_bloqueadas_json,  # <-- Lista limpia para JS
     }
     return render(request, 'armar_pedido.html', contexto)
 
@@ -284,13 +297,11 @@ def ver_carrito_view(request):
         'items': items,
         'total': total
     }
-    # CRITERIO 1 y 3 se resolverán en el HTML (carrito.html)
     return render(request, 'carrito.html', contexto)
 
 @login_required
 def eliminar_item_carrito(request, item_id):
     # CRITERIO 4: Eliminar un producto del carrito
-    # Buscamos el item asegurándonos que pertenezca al carrito de este usuario por seguridad
     item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
     nombre_producto = item.producto.nombre
     item.delete()
@@ -301,20 +312,16 @@ def eliminar_item_carrito(request, item_id):
 @require_POST
 @login_required
 def agregar_al_carrito(request, producto_id):
-    # Función extra para que dejes de usar el administrador de Django
     producto = get_object_or_404(Producto, id=producto_id)
     carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
     
-    # Revisamos si el postre ya está en el carrito
     item, creado = ItemCarrito.objects.get_or_create(carrito=carrito, producto=producto)
     
     if not creado:
-        # Si ya estaba, le sumamos 1 a la cantidad
         item.cantidad += 1
         item.save()
         
     messages.success(request, f"¡{producto.nombre} agregado al carrito!")
-    # Lo mandamos a ver su carrito
     return redirect('ver_carrito')
 
 def avanzar_estado_categoria(request, producto_id):
@@ -327,5 +334,41 @@ def avanzar_estado_categoria(request, producto_id):
         categorias.estado = 'DISPONIBLE'
         categorias.save()
     
-    
     return redirect('lista_productos')
+
+def gestionar_fechas_bloqueadas_view(request):
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        
+        # 1. Acción de BLOQUEAR
+        if accion == 'bloquear':
+            fecha_str = request.POST.get('fecha')
+            motivo = request.POST.get('motivo', '')
+            
+            if fecha_str:
+                fecha_obj = parse_date(fecha_str)
+                if fecha_obj:
+                    obj, created = FechaBloqueada.objects.get_or_create(
+                        fecha=fecha_obj,
+                        defaults={'motivo': motivo}
+                    )
+                    if created:
+                        messages.success(request, f"El día {fecha_obj} ha sido bloqueado.")
+                    else:
+                        messages.warning(request, f"El día {fecha_obj} ya estaba bloqueado.")
+                else:
+                    messages.error(request, "Formato de fecha inválido.")
+            return redirect('gestionar_fechas_bloqueadas')
+
+        # 2. Acción de HABILITAR (Desbloquear)
+        elif accion == 'habilitar':
+            fechas_ids = request.POST.getlist('fechas_seleccionadas')
+            if fechas_ids:
+                FechaBloqueada.objects.filter(id__in=fechas_ids).delete()
+                messages.success(request, "Las fechas seleccionadas han sido habilitadas nuevamente.")
+            else:
+                messages.warning(request, "No seleccionaste ninguna fecha para habilitar.")
+            return redirect('gestionar_fechas_bloqueadas')
+
+    fechas_bloqueadas = FechaBloqueada.objects.all().order_by('fecha')
+    return render(request, 'bloquear_fechas.html', {'fechas_bloqueadas': fechas_bloqueadas})

@@ -15,5 +15,6 @@ urlpatterns = [
     path('lista_productos/', views.lista_productos, name = 'lista_productos'),
     path('lista_productos/<int:producto_id>/avanzar',views.avanzar_estado_categoria, name='avanzar_estado_categoria'),
     path('panel/bloquear-fechas/', views.gestionar_fechas_bloqueadas_view, name='gestionar_fechas_bloqueadas'),
+    path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
 
 ]

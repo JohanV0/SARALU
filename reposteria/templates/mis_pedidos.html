@@ -1,0 +1,116 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Mis Pedidos — SARALU{% endblock %}
+
+{% block content %}
+
+<main class="flex-grow relative mx-auto w-full max-w-[1900px] px-4 sm:px-7 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-16">
+  
+  <!-- Destellos decorativos de fondo -->
+  <span class="pointer-events-none absolute top-16 right-10 text-mantequilla text-3xl animate-pulse">✦</span>
+  <span class="pointer-events-none absolute bottom-24 left-8 text-rosa text-2xl animate-bounce">✦</span>
+
+  <!-- Botón Volver -->
+  <a href="{% url 'home' %}" class="group inline-flex items-center gap-2 text-sm font-bold text-chocolate/60 hover:text-chocolate transition mb-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+    Volver al inicio
+  </a>
+
+  <!-- Encabezado de la página (Estilo Home) -->
+  <div class="relative mb-10 lg:mb-14">
+    <span class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
+      <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+      <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
+        Historial de compras
+      </span>
+    </span>
+
+    <h1 class="mt-5 font-display text-4xl sm:text-5xl lg:text-6xl 3xl:text-7xl font-semibold leading-[1.05] tracking-tight text-chocolate">
+      Mis
+      <span class="font-script text-rosa text-5xl sm:text-6xl lg:text-7xl 3xl:text-8xl inline-block ml-2">
+        pedidos
+      </span>
+    </h1>
+
+    <p class="mt-4 lg:mt-6 max-w-2xl text-sm lg:text-base text-cafe">
+      Historial y seguimiento de tus compras.
+    </p>
+  </div>
+
+  {# ========================================== #}
+  {# CRITERIO: SI NO HAY PEDIDOS                #}
+  {# ========================================== #}
+  {% if not pedidos %}
+    <div class="relative overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema p-12 lg:p-20 text-center shadow-soft ring-1 ring-chocolate/10">
+      
+      <span class="pointer-events-none absolute top-8 left-8 text-mantequilla text-3xl animate-pulse">★</span>
+      <span class="pointer-events-none absolute bottom-8 right-8 text-rosa text-2xl animate-bounce">★</span>
+
+      <span class="text-6xl mb-6 block drop-shadow-md">😅</span>
+      <h2 class="font-display text-3xl lg:text-4xl font-semibold mb-4 text-chocolate">Aún no has hecho ningún pedido</h2>
+      <p class="text-cafe text-sm lg:text-base mb-8 max-w-md mx-auto leading-relaxed">
+        Cuando realices tu primera compra en SARALU, aparecerá aquí para que le hagas seguimiento.
+      </p>
+      
+      <a href="{% url 'catalogo' %}" class="group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full bg-chocolate px-8 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 hover:shadow-lift transition-all">
+        <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
+        Explorar el catálogo
+      </a>
+    </div>
+
+  {# ========================================== #}
+  {# CRITERIO: SI HAY PEDIDOS (Mostrar lista)   #}
+  {# ========================================== #}
+  {% else %}
+    <div class="grid grid-cols-1 gap-5 lg:gap-6">
+      {% for pedido in pedidos %}
+        <div class="group relative flex flex-col md:flex-row justify-between md:items-center overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema p-6 lg:p-8 shadow-soft ring-1 ring-chocolate/10 transition-all hover:-translate-y-1 hover:shadow-lift">
+          
+          <span class="pointer-events-none absolute top-4 right-6 text-mantequilla/50 text-2xl rotate-12 transition-transform group-hover:scale-110">★</span>
+
+          <!-- Información del pedido -->
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-3 mb-3">
+              <span class="rounded-full bg-rosaClaro px-3 py-1 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate">
+                Pedido #{{ pedido.id }}
+              </span>
+              <span class="text-xs lg:text-sm font-bold text-cafe">
+                {{ pedido.creado|date:"d de F, Y" }}
+              </span>
+            </div>
+            
+            <h3 class="font-display text-xl lg:text-2xl font-semibold text-chocolate mb-2">
+              {{ pedido.get_domicilio_display|default:"Pedido de Repostería" }}
+            </h3>
+            
+            <p class="text-sm lg:text-base text-chocolate/70 line-clamp-2 leading-relaxed">
+              {% for detalle in pedido.detalles.all %}
+                <span class="font-bold text-chocolate">{{ detalle.cantidad }}x</span> {{ detalle.producto.nombre }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </p>
+          </div>
+
+          <!-- Estado y Total -->
+          <div class="flex flex-row md:flex-col items-center md:items-end justify-between gap-4 w-full md:w-auto shrink-0 border-t md:border-t-0 border-chocolate/10 pt-5 md:pt-0 mt-5 md:mt-0">
+            <div class="text-left md:text-right">
+              <p class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/50 mb-1">Total pagado</p>
+              <p class="font-display text-2xl lg:text-3xl font-bold text-chocolate">${{ pedido.total|floatformat:0 }}</p>
+            </div>
+            
+            <!-- Etiqueta de estado con colores dinámicos -->
+            <span class="px-4 py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-widest2 shadow-sm
+              {% if pedido.estado == 'pendiente' %} bg-mantequilla text-chocolate
+              {% elif pedido.estado == 'entregado' %} bg-green-100 text-green-700
+              {% elif pedido.estado == 'cancelado' %} bg-red-100 text-red-700
+              {% else %} bg-azul text-chocolate {% endif %}">
+              {{ pedido.get_estado_display }}
+            </span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</main>
+
+{% endblock %}

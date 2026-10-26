@@ -47,7 +47,7 @@
       <section class="relative">
 
         <form method="POST" action="{% url 'armar_pedido' %}"
-              class="relative overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema p-6 sm:p-8 lg:p-10 shadow-soft ring-1 ring-chocolate/10">
+              class="relative overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema p-5 sm:p-8 lg:p-10 shadow-soft ring-1 ring-chocolate/10">
 
           {% csrf_token %}
 
@@ -109,8 +109,15 @@
                 </svg>
                 Fecha
               </label>
-              <input type="date" name="fecha" required
+              <input type="date" name="fecha" id="input-fecha" required
                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
+              
+              {# --- MENSAJE DE ERROR DINÁMICO --- #}
+              <div id="mensaje-error-fecha" class="hidden mt-2 text-xs sm:text-sm font-bold text-red-500 flex items-start gap-1">
+                <span>⚠</span>
+                <span>Esta fecha no está disponible. Por favor, selecciona otra.</span>
+              </div>
+              {# -------------------------------- #}
             </div>
 
             <div class="w-full sm:w-1/2">
@@ -150,7 +157,7 @@
             Al confirmar aceptas nuestros términos y recibirás un mensaje de confirmación con los detalles de tu pedido.
           </p>
 
-          <button type="submit"
+          <button type="submit" id="btn-confirmar"
                   class="group relative mt-5 inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-full bg-chocolate px-8 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 hover:shadow-lift transition-all">
             <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
             Confirmar pedido
@@ -312,5 +319,45 @@
     </div>
 
   </main>
+
+  {# --- SCRIPT PARA LA VALIDACIÓN DINÁMICA --- #}
+  {# CORRECCIÓN: Ahora usamos la lista de strings que enviamos desde la vista #}
+  {{ fechas_bloqueadas_json|json_script:"fechas-bloqueadas-data" }}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputFecha = document.getElementById('input-fecha');
+      const mensajeError = document.getElementById('mensaje-error-fecha');
+      const btnConfirmar = document.getElementById('btn-confirmar');
+
+      // Leemos la lista de strings (["2026-10-25", "2026-11-01"])
+      const fechasBloqueadasArray = JSON.parse(document.getElementById('fechas-bloqueadas-data').textContent);
+
+      inputFecha.addEventListener('change', function() {
+        const fechaSeleccionada = this.value;
+
+        if (fechasBloqueadasArray.includes(fechaSeleccionada)) {
+          // Si la fecha está bloqueada: mostramos el error y bloqueamos el botón
+          mensajeError.classList.remove('hidden');
+          btnConfirmar.disabled = true;
+          btnConfirmar.classList.add('opacity-50', 'cursor-not-allowed');
+          
+          // Pintamos el borde del input de rojo
+          inputFecha.classList.add('border-red-500');
+          inputFecha.classList.remove('border-chocolate/10');
+        } else {
+          // Si la fecha está libre: ocultamos el error y habilitamos el botón
+          mensajeError.classList.add('hidden');
+          btnConfirmar.disabled = false;
+          btnConfirmar.classList.remove('opacity-50', 'cursor-not-allowed');
+          
+          // Restauramos el borde normal
+          inputFecha.classList.remove('border-red-500');
+          inputFecha.classList.add('border-chocolate/10');
+        }
+      });
+    });
+  </script>
+  {# ------------------------------------------ #}
 
 {% endblock %}

@@ -1,0 +1,151 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% block title %}Bloquear Fechas — SARALU{% endblock %}
+
+{% block content %}
+<section class="relative overflow-hidden bg-crema pt-12 pb-20 px-6 lg:px-20 3xl:px-32 min-h-screen">
+  
+  {# Decoraciones de fondo #}
+  <span class="absolute top-20 left-10 text-mantequilla text-3xl rotate-12 animate-pulse z-0">✦</span>
+  <span class="absolute bottom-20 right-10 text-rosa text-2xl -rotate-12 animate-bounce z-0">✦</span>
+  <span class="absolute top-1/2 left-1/4 text-azul text-xl z-0">✦</span>
+
+  <div class="relative mx-auto w-full max-w-[1200px] z-10">
+    
+    {# --- Encabezado --- #}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <div>
+        <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+          <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+          Agenda de la Dueña
+        </span>
+        <h1 class="font-display mt-3 text-4xl md:text-5xl font-semibold tracking-tight text-chocolate">
+          Gestión de <span class="font-script text-rosa">Días Libres</span>
+        </h1>
+        <p class="mt-3 max-w-2xl text-sm lg:text-base text-cafe">
+          Selecciona los días en los que no estarás recibiendo pedidos. Los clientes no podrán agendar entregas en estas fechas.
+        </p>
+      </div>
+      
+      <a href="{% url 'home' %}" class="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-chocolate shadow-soft hover:bg-gray-50 hover:-translate-y-1 transition-all self-start">
+        <svg class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver al Panel
+      </a>
+    </div>
+
+    {# --- Mensajes de Alerta --- #}
+    {% if messages %}
+      <div class="mb-8 space-y-3">
+        {% for message in messages %}
+          <div class="flex items-center gap-3 p-4 rounded-2xl shadow-soft {% if message.tags == 'success' %}bg-[#E8F5E9] text-[#2E7D32]{% elif message.tags == 'warning' %}bg-[#FFF8E1] text-[#F57F17]{% else %}bg-[#FFEBEE] text-[#C62828]{% endif %}">
+            <span class="text-xl">
+              {% if message.tags == 'success' %}✓{% elif message.tags == 'warning' %}⚠{% else %}✗{% endif %}
+            </span>
+            <p class="font-semibold text-sm lg:text-base">{{ message }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# --- Tarjetas Principales --- #}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      
+      {# ========================================== #}
+      {# TARJETA 1: BLOQUEAR FECHA                  #}
+      {# ========================================== #}
+      <div class="relative overflow-hidden rounded-[2rem] bg-rosaClaro/45 p-8 lg:p-10 shadow-soft">
+        <span class="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-rosa/40 blur-3xl"></span>
+        
+        <div class="relative z-10">
+          <div class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-white text-chocolate shadow-sm mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+            </svg>
+          </div>
+          
+          <h2 class="font-display text-2xl lg:text-3xl font-semibold text-chocolate mb-2">Deshabilitar un Día</h2>
+          <p class="text-sm text-cafe mb-6">Selecciona la fecha que quieres bloquear para pedidos.</p>
+
+          <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="bloquear">
+            
+            <div>
+              <label class="block text-sm font-bold text-chocolate mb-2">Selecciona la fecha:</label>
+              <input type="date" name="fecha" required 
+                     class="w-full p-4 rounded-xl border-none bg-white text-chocolate shadow-sm focus:outline-none focus:ring-2 focus:ring-rosa transition-all font-semibold">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-bold text-chocolate mb-2">Motivo (opcional):</label>
+              <input type="text" name="motivo" placeholder="Ej: Vacaciones, Feriado..." 
+                     class="w-full p-4 rounded-xl border-none bg-white text-chocolate shadow-sm focus:outline-none focus:ring-2 focus:ring-rosa transition-all">
+            </div>
+            
+            <button type="submit" 
+                    class="w-full mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+              Bloquear Fecha
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {# ========================================== #}
+      {# TARJETA 2: HABILITAR FECHAS                #}
+      {# ========================================== #}
+      <div class="relative overflow-hidden rounded-[2rem] bg-mantequilla/35 p-8 lg:p-10 shadow-soft">
+        <span class="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-mantequilla/60 blur-3xl"></span>
+        
+        <div class="relative z-10">
+          <div class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-white text-chocolate shadow-sm mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+            </svg>
+          </div>
+
+          <h2 class="font-display text-2xl lg:text-3xl font-semibold text-chocolate mb-2">Habilitar Días</h2>
+          <p class="text-sm text-cafe mb-6">Selecciona las fechas que quieres volver a habilitar para pedidos.</p>
+
+          <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="habilitar">
+            
+            {% if fechas_bloqueadas %}
+              <div class="bg-white rounded-2xl shadow-sm p-3 max-h-[280px] overflow-y-auto mb-6 space-y-2 [scrollbar-width:thin]">
+                {% for fecha in fechas_bloqueadas %}
+                  <label class="flex items-center gap-4 p-3 rounded-xl hover:bg-rosaClaro/30 cursor-pointer transition-colors border border-transparent hover:border-rosa/30">
+                    <input type="checkbox" name="fechas_seleccionadas" value="{{ fecha.id }}" 
+                           class="w-5 h-5 text-chocolate rounded focus:ring-chocolate cursor-pointer">
+                    <div class="flex flex-col">
+                      <span class="font-bold text-chocolate text-sm lg:text-base">{{ fecha.fecha|date:"d M, Y" }}</span>
+                      <span class="text-xs text-cafe">{{ fecha.motivo|default:"Sin motivo especificado" }}</span>
+                    </div>
+                  </label>
+                {% endfor %}
+              </div>
+              
+              <button type="submit" 
+                      class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#6A994E] px-6 py-4 text-sm lg:text-base font-bold text-white shadow-soft hover:bg-[#588140] hover:-translate-y-1 transition-all">
+                Habilitar Seleccionadas
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+            {% else %}
+              {# Estado Vacío #}
+              <div class="bg-white/60 rounded-2xl p-8 text-center border border-mantequilla border-dashed">
+                <span class="text-4xl text-mantequilla">✦</span>
+                <h3 class="mt-4 font-display text-xl font-semibold text-chocolate">Todo disponible</h3>
+                <p class="mt-2 text-sm text-cafe">No tienes fechas bloqueadas actualmente. Todos los días están habilitados para recibir pedidos.</p>
+              </div>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

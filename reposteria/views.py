@@ -44,7 +44,12 @@ def detalle_producto_view(request, producto_id):
         ),
         id=producto_id
     )
-
+    productos_relacionados = (
+        Producto.objects
+        .filter(categoria=producto.categoria)     # misma categoría
+        .exclude(id=producto.id)                   # sin el actual
+        .order_by('-id')[:4]                       # opcional: los 4 más nuevos
+    )
     resenas = producto.resenas.all().order_by('-fecha_creacion')
     resena_usuario = None
     form = None
@@ -102,6 +107,7 @@ def detalle_producto_view(request, producto_id):
                 form = ResenaForm(instance=resena_usuario)
 
     contexto = {
+        'productos_relacionados' : productos_relacionados,
         'producto': producto,
         'resenas': resenas,
         'resena_usuario': resena_usuario,

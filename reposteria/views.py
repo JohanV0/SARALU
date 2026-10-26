@@ -304,3 +304,17 @@ def agregar_al_carrito(request, producto_id):
     messages.success(request, f"¡{producto.nombre} agregado al carrito!")
     # Lo mandamos a ver su carrito
     return redirect('ver_carrito')
+
+
+# HU-033: MIS PEDIDOS (CLIENTE)
+
+@login_required
+def mis_pedidos_view(request):
+    # Buscamos solo los pedidos de este cliente, ordenados por fecha (más nuevos primero)
+    pedidos = Pedido.objects.filter(cliente=request.user).order_by('-creado')
+    
+    contexto = {
+        'pedidos': pedidos
+    }
+    # Enviaremos esta información a una nueva plantilla que crearemos luego
+    return render(request, 'mis_pedidos.html', contexto)

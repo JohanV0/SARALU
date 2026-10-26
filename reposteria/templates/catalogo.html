@@ -1,10 +1,8 @@
 {% extends "layout/base.html" %}
 {% load static %}
-
 {% block title %}Catálogo — SARALU{% endblock %}
 {% block content %}
 {% load static %}
-
 <body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4">
   
   {% if messages %}
@@ -17,96 +15,6 @@
     {% endfor %}
   </div>
   {% endif %}
-
-    {# ============================================================ #}
-    {# PANEL ADMIN — Dashboard                                      #}
-    {# ============================================================ #}
-    {% if user.is_authenticated and user.is_staff %}
-      <div id="admin-overlay" onclick="toggleAdminPanel()" class="hidden fixed inset-0 z-40 bg-chocolate/40 backdrop-blur-sm"></div>
-      <aside id="admin-drawer" class="fixed top-0 left-0 z-50 flex h-screen w-[380px] lg:w-[420px] 3xl:w-[500px] 4xl:w-[560px] -translate-x-full flex-col rounded-r-6xl bg-crema shadow-panel transition-transform duration-300 ease-out">
-        <div class="relative overflow-hidden rounded-tr-6xl bg-rosa px-6 lg:px-7 3xl:px-9 pb-5 3xl:pb-7 pt-7 3xl:pt-9 text-chocolate shrink-0">
-          <div class="pointer-events-none absolute -top-12 -right-12 h-40 3xl:h-56 w-40 3xl:w-56 rounded-full bg-mantequilla/40 blur-3xl"></div>
-          <div class="pointer-events-none absolute -bottom-16 -left-12 h-40 3xl:h-56 w-40 3xl:w-56 rounded-full bg-rosaClaro/60 blur-3xl"></div>
-          
-          <span class="pointer-events-none absolute top-8 right-16 text-mantequilla text-xl 3xl:text-2xl rotate-12">★</span>
-          <span class="pointer-events-none absolute bottom-20 right-8 text-mantequilla/80 text-sm 3xl:text-base -rotate-12">★</span>
-          <div class="relative flex items-start justify-between">
-            <div>
-              <p class="text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/60">Panel de</p>
-              <p class="font-script text-3xl lg:text-4xl 3xl:text-5xl text-chocolate leading-none mt-2">Saralu</p>
-            </div>
-            <button type="button" onclick="toggleAdminPanel()" class="grid h-9 w-9 lg:h-10 lg:w-10 3xl:h-12 3xl:w-12 place-items-center rounded-full bg-crema/60 text-chocolate/70 hover:bg-crema hover:text-chocolate transition" aria-label="Cerrar panel">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 3xl:h-6 3xl:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-          <div class="relative mt-5 3xl:mt-7 flex items-center gap-3 rounded-3xl bg-crema/70 p-3 3xl:p-4 backdrop-blur-sm">
-            <span class="relative grid h-12 w-12 lg:h-13 lg:w-13 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-full bg-mantequilla font-display text-xl lg:text-2xl 3xl:text-3xl font-bold text-chocolate">
-              {{ user.first_name|first|default:user.username|first|upper }}
-              <span class="absolute -bottom-1 -right-1 text-mantequilla text-sm">★</span>
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="text-base lg:text-lg 3xl:text-xl font-bold leading-tight truncate">{{ user.first_name|default:user.username }}</p>
-              <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 truncate">Administradora</p>
-            </div>
-            <span class="rounded-full bg-chocolate px-3 py-1 3xl:px-3.5 3xl:py-1.5 text-[10px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-mantequilla">Admin</span>
-          </div>
-        </div>
-        <nav class="flex-1 overflow-y-auto px-5 3xl:px-7 py-5 3xl:py-7 space-y-6 3xl:space-y-8">
-          <a href="{% url 'home' %}" class="group relative flex items-center gap-4 rounded-4xl bg-mantequilla px-5 py-5 3xl:px-6 3xl:py-6 shadow-soft hover:-translate-y-1 hover:shadow-glow transition-all overflow-hidden">
-            <span class="pointer-events-none absolute top-2 right-16 text-chocolate/20 text-lg rotate-12">★</span>
-            <span class="pointer-events-none absolute bottom-2 right-6 text-chocolate/20 text-sm -rotate-12">★</span>
-            <span class="grid h-16 w-16 lg:h-17 lg:w-17 3xl:h-20 3xl:w-20 shrink-0 place-items-center rounded-3xl bg-chocolate text-mantequilla">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 3xl:h-9 3xl:w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </span>
-            <div class="flex-1 min-w-0">
-              <p class="font-display font-bold leading-tight text-chocolate text-xl lg:text-2xl 3xl:text-3xl">Panel principal</p>
-              <p class="text-sm lg:text-base 3xl:text-lg text-chocolate/60 mt-1">Resumen general del día</p>
-            </div>
-          </a>
-          <div>
-            <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50"><span class="text-mantequilla">★</span> Catálogo</p>
-            <div class="grid grid-cols-2 gap-3 3xl:gap-4">
-              <a href="#" class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
-                <span class="pointer-events-none absolute top-3 right-3 text-mantequilla text-base rotate-12">★</span>
-                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-rosa group-hover:bg-crema transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4" /></svg>
-                </span>
-                <div class="mt-auto">
-                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Registrar producto</p>
-                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Añadir al menú</p>
-                </div>
-              </a>
-              <a href="#" class="group relative flex flex-col gap-3 rounded-4xl bg-rosaClaro p-4 3xl:p-5 min-h-[150px] 3xl:min-h-[180px] shadow-soft hover:bg-rosa hover:-translate-y-1 hover:shadow-lift transition-all overflow-hidden">
-                <span class="pointer-events-none absolute top-3 right-3 text-mantequilla text-base rotate-12">★</span>
-                <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 place-items-center rounded-3xl bg-rosa group-hover:bg-crema transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7 text-chocolate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
-                </span>
-                <div class="mt-auto">
-                  <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Gestionar productos</p>
-                  <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Editar y activar</p>
-                </div>
-              </a>
-            </div>
-          </div>
-        </nav>
-        <div class="border-t border-chocolate/10 bg-crema px-5 3xl:px-7 py-4 3xl:py-5 shrink-0">
-          <form action="{% url 'logout' %}" method="post" class="block">
-            {% csrf_token %}
-            <button type="submit" class="group relative flex w-full items-center justify-center gap-2.5 rounded-3xl bg-chocolate px-4 py-3.5 3xl:py-4 text-base lg:text-lg 3xl:text-xl font-semibold text-mantequilla shadow-soft hover:bg-cafe transition overflow-hidden">
-              <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-              Cerrar sesión
-            </button>
-          </form>
-          <p class="mt-3 text-center text-[10px] lg:text-xs 3xl:text-sm font-semibold uppercase tracking-widest2 text-chocolate/40">SARALU · v1.0</p>
-        </div>
-      </aside>
-    {% endif %}
-
     {# ============================================================ #}
     {# HERO CATÁLOGO                                                  #}
     {# ============================================================ #}
@@ -257,23 +165,7 @@
         </div>
       </div>
     </section>
-
   <script>
-    // Función para abrir/cerrar el panel de administración
-    function toggleAdminPanel() {
-      const drawer = document.getElementById('admin-drawer');
-      const overlay = document.getElementById('admin-overlay');
-      const isOpen = !drawer.classList.contains('-translate-x-full');
-      if (isOpen) {
-        drawer.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-      } else {
-        drawer.classList.remove('-translate-x-full');
-        overlay.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-      }
-    }
     // Script para ocultar automáticamente los mensajes de Django después de 4 segundos
     document.addEventListener("DOMContentLoaded", function() {
       const messageContainer = document.getElementById('django-messages');

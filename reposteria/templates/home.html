@@ -2,7 +2,6 @@
 {% load static %}
 {% block title %}SARALU — Repostería Artesanal{% endblock %}
 {% block content %}
-
   <section id="inicio" class="relative overflow-hidden bg-crema pt-10 pb-16 lg:pt-16 lg:pb-24 px-6 sm:px-10 lg:px-20 3xl:px-32">
     <span class="absolute top-20 left-6 text-mantequilla text-2xl rotate-12 animate-pulse">✦</span>
     <span class="absolute bottom-20 right-6 text-rosa text-xl -rotate-12 animate-bounce">✦</span>
@@ -65,22 +64,16 @@
       </div>
     </div>
   </section>
-
-
   {# ============================================================ #}
   {# MÁS VENDIDOS — carrusel en móvil, grid en desktop            #}
   {# ============================================================ #}
-
   <section id="mas-vendidos" class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
     <div class="absolute inset-0 bg-rosaClaro/45 rounded-[2rem] lg:rounded-[3rem]"></div>
-
     <span class="absolute top-10 left-10 text-mantequilla text-3xl animate-pulse z-10">✦</span>
     <span class="absolute bottom-20 right-10 text-rosa text-2xl animate-bounce z-10">✦</span>
     <span class="absolute top-1/3 right-1/4 text-azul text-xl z-10">✦</span>
     <span class="absolute bottom-1/4 left-1/3 text-chocolate/30 text-lg z-10">✦</span>
-
     <div class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20">
-
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10 lg:mb-14">
         <div>
           <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
@@ -102,7 +95,6 @@
           </span>
         </a>
       </div>
-
       {# === CARRUSEL MÓVIL / GRID DESKTOP === #}
       <div class="flex md:grid md:grid-cols-4 gap-4 lg:gap-6 3xl:gap-8 items-stretch md:items-start overflow-x-auto snap-x snap-mandatory overscroll-x-contain scroll-smooth pb-4 -mx-6 px-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {% for producto in mas_vendidos %}
@@ -131,7 +123,7 @@
               </div>
             </a>
             {# ---- Botón carrito (flujo aparte) ---- #}
-            <form method="post" action="#" class="mt-4">
+            <form method="post" action="{% url 'agregar_al_carrito' producto.id %}" class="mt-4">
               {% csrf_token %}
               <button type="submit"
                       class="w-full rounded-full bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla hover:bg-cafe transition">
@@ -163,11 +155,9 @@
       {% endif %}
     </div>
   </section>
-
   {# ============================================================ #}
   {# CATÁLOGO DESTACADO                                             #}
   {# ============================================================ #}
-
   <section id="catalogo-destacado"
            class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-20 lg:py-24 3xl:py-32">
     <span class="absolute top-20 right-10 text-rosa text-3xl animate-pulse">✦</span>
@@ -194,7 +184,6 @@
         </span>
       </a>
     </div>
-
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 3xl:gap-8 lg:auto-rows-[300px]">
       {% for producto in destacados %}
         {% if forloop.first %}
@@ -255,7 +244,7 @@
                   ${{ producto.precio|floatformat:0 }}
                 </p>
               </div>
-              <form method="post" action="#" class="mt-4">
+              <form method="post" action="{% url 'agregar_al_carrito' producto.id %}" class="mt-4">
                 {% csrf_token %}
                 <button type="submit"
                         class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-4 py-2.5 text-sm font-bold text-mantequilla hover:bg-cafe transition">
@@ -287,11 +276,9 @@
       {% endfor %}
     </div>
   </section>
-
   {# ============================================================ #}
   {# PRODUCTOS NUEVOS                                               #}
   {# ============================================================ #}
-
   <section id="es_nuevo" class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
     <div class="absolute inset-0 bg-mantequilla/35 rounded-[2rem] lg:rounded-[3rem]"></div>
     <span class="absolute top-16 right-20 text-rosa text-3xl animate-pulse z-10">✦</span>
@@ -310,7 +297,6 @@
           Nuevas creaciones hechas para sorprenderte.
         </p>
       </div>
-
       <div class="space-y-5 3xl:space-y-7">
         {% for producto in es_nuevos %}
           <div class="group relative grid grid-cols-1 md:grid-cols-[320px_1fr] 3xl:grid-cols-[420px_1fr] rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema overflow-hidden shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
@@ -345,7 +331,7 @@
                 <p class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
                   ${{ producto.precio|floatformat:0 }}
                 </p>
-                <form method="post" action="#">
+                <form method="post" action="{% url 'agregar_al_carrito' producto.id %}">
                   {% csrf_token %}
                   <button type="submit"
                           class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 lg:px-7 lg:py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
@@ -369,12 +355,9 @@
       </div>
     </div>
   </section>
-
-
   {# ============================================================ #}
   {# CTA FINAL                                                      #}
   {# ============================================================ #}
-
   <section class="relative overflow-hidden bg-chocolate py-24 lg:py-28 3xl:py-40 text-crema mx-4 lg:mx-8 mb-8 rounded-[2rem] lg:rounded-[3rem]">
     <span class="absolute top-10 left-10 text-mantequilla text-3xl animate-pulse z-10">✦</span>
     <span class="absolute bottom-10 right-10 text-rosa text-2xl animate-bounce z-10">✦</span>
@@ -388,18 +371,15 @@
           <span class="h-1.5 w-1.5 rounded-full bg-mantequilla"></span>
           Repostería artesanal
         </span>
-
         <h2 class="font-display mt-7 text-5xl md:text-6xl lg:text-7xl 3xl:text-8xl font-semibold tracking-tight leading-[0.98]">
           ¿Listo para
           <br />
           endulzar
           <span class="font-script text-mantequilla">tu día</span>?
         </h2>
-
         <p class="mx-auto mt-6 max-w-2xl text-base lg:text-lg text-crema/65 leading-relaxed">
           Descubre nuestras tortas, cupcakes y postres preparados especialmente para ti.
         </p>
-
         <a href="{% url 'catalogo' %}"
            class="group mt-9 inline-flex items-center gap-3 rounded-full bg-mantequilla px-8 py-4 lg:px-10 lg:py-5 text-sm lg:text-base font-bold text-chocolate shadow-glow hover:-translate-y-1 transition-all">
           Ver catálogo completo

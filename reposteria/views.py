@@ -372,3 +372,15 @@ def gestionar_fechas_bloqueadas_view(request):
 
     fechas_bloqueadas = FechaBloqueada.objects.all().order_by('fecha')
     return render(request, 'bloquear_fechas.html', {'fechas_bloqueadas': fechas_bloqueadas})
+
+# HU-033: MIS PEDIDOS (CLIENTE)
+@login_required
+def mis_pedidos_view(request):
+    # Buscamos solo los pedidos de este cliente, ordenados por fecha (más nuevos primero)
+    pedidos = Pedido.objects.filter(cliente=request.user).order_by('-creado')
+    
+    contexto = {
+        'pedidos': pedidos
+    }
+    # Enviaremos esta información a una nueva plantilla que crearemos luego
+    return render(request, 'mis_pedidos.html', contexto)

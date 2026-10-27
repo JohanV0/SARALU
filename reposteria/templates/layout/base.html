@@ -34,8 +34,8 @@
           letterSpacing: { widest2: "0.3em" },
           borderRadius: { '4xl': '2rem', '5xl': '2.5rem', '6xl': '3rem' },
           fontSize: {
-            '3xs': '0.625rem',  /* 10px (un poco más grande) */
-            '2xs': '0.75rem',   /* 12px */
+            '3xs': '0.625rem',
+            '2xs': '0.75rem',
           },
           maxWidth: {
             '8xl': '1700px',
@@ -85,161 +85,160 @@
       <header id="main-navbar"
               class="sticky top-0 z-50 will-change-transform transition-transform duration-300 ease-out">
         <div class="bg-crema shadow-soft rounded-b-4xl lg:rounded-b-6xl border-b border-chocolate/10">
-          {# Aumentamos un poco el padding interior para que respire #}
           <div class="mx-auto w-full max-w-9xl px-4 py-3 sm:px-6 sm:py-4 lg:px-10 lg:py-5">
 
-            {# Contenedor principal: wrap en móvil, nowrap en desktop #}
-            <div class="flex flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:gap-6">
+            <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-4 lg:flex-nowrap lg:gap-6">
 
-              {# -------- LOGO (order 1) -------- #}
-              <div class="flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0">
-                {% if user.is_authenticated and user.is_staff %}
-                  <button type="button"
-                          onclick="toggleAdminPanel()"
-                          class="grid h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 place-items-center rounded-xl sm:rounded-2xl bg-chocolate text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all shrink-0"
-                          aria-label="Abrir panel de administración">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="3" y1="6" x2="21" y2="6" />
-                      <line x1="3" y1="12" x2="21" y2="12" />
-                      <line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                  </button>
-                {% endif %}
-
-                <a href="{% url 'home' %}" class="group flex items-center gap-2 sm:gap-3 shrink-0">
-                  <span class="relative grid h-11 w-11 sm:h-12 sm:w-12 lg:h-16 lg:w-16 3xl:h-20 3xl:w-20 place-items-center overflow-hidden rounded-xl sm:rounded-2xl bg-mantequilla ring-1 ring-mantequilla/30 transition duration-300 group-hover:-translate-y-0.5 group-hover:ring-rosa">
-                    <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-1" />
-                  </span>
-                  <span class="flex flex-col leading-none">
-                    <span class="font-script text-2xl sm:text-3xl lg:text-3xl 3xl:text-4xl text-chocolate">Saralu</span>
-                    <span class="hidden lg:block mt-1 text-3xs 3xl:text-2xs font-semibold uppercase tracking-widest2 text-chocolate/55">
-                      Repostería artesanal
-                    </span>
-                  </span>
-                </a>
-              </div>
-
-              {# -------- ACCIONES (order 2 móvil / order 3 desktop) -------- #}
-              <div class="flex items-center gap-2 sm:gap-3 order-2 lg:order-3 shrink-0">
-
-                <a href="{% url 'ver_carrito' %}"
-                   class="relative grid h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 place-items-center rounded-xl sm:rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all"
-                   aria-label="Carrito de compras">
+              {# -------- 1. BOTÓN ADMIN -------- #}
+              {% if user.is_authenticated and user.is_staff %}
+                <button type="button"
+                        onclick="toggleAdminPanel()"
+                        class="order-1 grid h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 place-items-center rounded-xl sm:rounded-2xl bg-chocolate text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all shrink-0"
+                        aria-label="Abrir panel de administración">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="21" r="1" />
-                    <circle cx="20" cy="21" r="1" />
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
                   </svg>
-                  {% if carrito_count %}
-                    <span class="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rosa px-1 text-3xs font-bold text-chocolate ring-2 ring-crema">
-                      {{ carrito_count }}
-                    </span>
-                  {% endif %}
-                </a>
+                </button>
+              {% endif %}
 
-                {% block user_menu %}
-                  {% if user.is_authenticated %}
-                    <div class="relative" id="user-menu-wrapper">
-                      <button type="button"
-                              onclick="toggleUserMenu(event)"
-                              class="inline-flex items-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl bg-chocolate/10 ring-1 ring-chocolate/20 px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base font-bold text-chocolate hover:bg-chocolate/15 hover:ring-chocolate/40 transition-all max-w-28 sm:max-w-52"
-                              aria-haspopup="true" aria-expanded="false" id="user-menu-button">
-                        <span class="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-mantequilla shrink-0"></span>
-                        <span class="truncate">{{ user.first_name|default:user.username }}</span>
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             class="h-4 w-4 transition-transform duration-200 shrink-0"
-                             id="user-menu-chevron"
-                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="6 9 12 15 18 9" />
+              {# -------- 2. LOGO -------- #}
+              <a href="{% url 'home' %}" class="order-2 group flex items-center gap-0 sm:gap-3 shrink-0">
+                <span class="hidden sm:grid relative h-11 w-11 sm:h-12 sm:w-12 lg:h-16 lg:w-16 3xl:h-20 3xl:w-20 place-items-center overflow-hidden rounded-xl sm:rounded-2xl bg-mantequilla ring-1 ring-mantequilla/30 transition duration-300 group-hover:-translate-y-0.5 group-hover:ring-rosa">
+                  <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-1" />
+                </span>
+                <span class="flex flex-col leading-none">
+                  <span class="font-script text-2xl sm:text-3xl lg:text-3xl 3xl:text-4xl text-chocolate">Saralu</span>
+                  <span class="hidden lg:block mt-1 text-3xs 3xl:text-2xs font-semibold uppercase tracking-widest2 text-chocolate/55">
+                    Repostería artesanal
+                  </span>
+                </span>
+              </a>
+
+              {# -------- 3. PERFIL (ml-auto empuja el perfil y el carrito a la derecha) -------- #}
+              {% block user_menu %}
+                {% if user.is_authenticated %}
+                  <div class="order-3 ml-auto lg:ml-0 lg:order-6 relative shrink-0" id="user-menu-wrapper">
+                    <button type="button"
+                            onclick="toggleUserMenu(event)"
+                            class="inline-flex items-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl bg-chocolate/10 ring-1 ring-chocolate/20 px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base font-bold text-chocolate hover:bg-chocolate/15 hover:ring-chocolate/40 transition-all max-w-28 sm:max-w-52"
+                            aria-haspopup="true" aria-expanded="false" id="user-menu-button">
+                      <span class="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-mantequilla shrink-0"></span>
+                      <span class="truncate">{{ user.first_name|default:user.username }}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                           class="h-4 w-4 transition-transform duration-200 shrink-0"
+                           id="user-menu-chevron"
+                           fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+
+                    <div id="user-menu-dropdown"
+                         class="hidden absolute right-0 mt-2 w-64 sm:w-72 origin-top-right rounded-2xl bg-crema shadow-lift ring-1 ring-chocolate/10 overflow-hidden z-50">
+
+                      <div class="px-4 py-3.5 bg-rosaClaro/60 border-b border-chocolate/10">
+                        <p class="text-xs lg:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">Cuenta</p>
+                        <p class="mt-1.5 text-base lg:text-lg font-bold text-chocolate truncate">
+                          {{ user.first_name|default:user.username }}
+                        </p>
+                        {% if user.email %}
+                          <p class="text-sm lg:text-base text-chocolate/60 truncate">{{ user.email }}</p>
+                        {% endif %}
+                      </div>
+
+                      <a href="{% url 'editar_perfil' %}"
+                         class="flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-mantequilla/40 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
-                      </button>
+                        Editar perfil
+                      </a>
 
-                      <div id="user-menu-dropdown"
-                           class="hidden absolute right-0 mt-2 w-64 sm:w-72 origin-top-right rounded-2xl bg-crema shadow-lift ring-1 ring-chocolate/10 overflow-hidden z-50">
-
-                        <div class="px-4 py-3.5 bg-rosaClaro/60 border-b border-chocolate/10">
-                          <p class="text-xs lg:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">Cuenta</p>
-                          <p class="mt-1.5 text-base lg:text-lg font-bold text-chocolate truncate">
-                            {{ user.first_name|default:user.username }}
-                          </p>
-                          {% if user.email %}
-                            <p class="text-sm lg:text-base text-chocolate/60 truncate">{{ user.email }}</p>
-                          {% endif %}
-                        </div>
-
-                        <a href="{% url 'editar_perfil' %}"
-                           class="flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-mantequilla/40 transition">
+                      {% if user.is_staff %}
+                        <button type="button"
+                                onclick="openAdminFromMenu(event)"
+                                class="w-full flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-mantequilla/40 transition text-left">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
                                stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
                           </svg>
-                          Editar perfil
-                        </a>
+                          Panel admin
+                        </button>
+                      {% endif %}
 
-                        {% if user.is_staff %}
-                          <button type="button"
-                                  onclick="openAdminFromMenu(event)"
-                                  class="w-full flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-mantequilla/40 transition text-left">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-                                 stroke-linecap="round" stroke-linejoin="round">
-                              <rect x="3" y="3" width="7" height="7" />
-                              <rect x="14" y="3" width="7" height="7" />
-                              <rect x="14" y="14" width="7" height="7" />
-                              <rect x="3" y="14" width="7" height="7" />
-                            </svg>
-                            Panel admin
-                          </button>
-                        {% endif %}
+                      <div class="border-t border-chocolate/10"></div>
 
-                        <div class="border-t border-chocolate/10"></div>
+                      <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="w-full flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-rosa/30 transition">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
+                               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                               stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                          </svg>
+                          Cerrar sesión
+                        </button>
+                      </form>
 
-                        <form action="{% url 'logout' %}" method="post">
-                          {% csrf_token %}
-                          <button type="submit"
-                                  class="w-full flex items-center gap-3 px-4 py-3.5 text-base lg:text-lg font-semibold text-chocolate hover:bg-rosa/30 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-                                 stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                              <polyline points="16 17 21 12 16 7" />
-                              <line x1="21" y1="12" x2="9" y2="12" />
-                            </svg>
-                            Cerrar sesión
-                          </button>
-                        </form>
-
-                      </div>
                     </div>
-                  {% else %}
-                    <a href="{% url 'login' %}"
-                       class="inline-flex items-center justify-center rounded-xl sm:rounded-2xl border border-chocolate/50 px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base font-bold text-chocolate hover:bg-chocolate hover:text-crema transition-all whitespace-nowrap">
-                      <span class="hidden sm:inline">Iniciar sesión</span>
-                      <span class="sm:hidden">Entrar</span>
-                    </a>
-                  {% endif %}
-                {% endblock %}
+                  </div>
+                {% else %}
+                  <a href="{% url 'login' %}"
+                     class="order-3 ml-auto lg:ml-0 lg:order-6 inline-flex items-center justify-center rounded-xl sm:rounded-2xl border border-chocolate/50 px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base font-bold text-chocolate hover:bg-chocolate hover:text-crema transition-all whitespace-nowrap shrink-0">
+                    <span class="hidden sm:inline">Iniciar sesión</span>
+                    <span class="sm:hidden">Entrar</span>
+                  </a>
+                {% endif %}
+              {% endblock %}
 
-                {# -------- CATÁLOGO (Visible en móvil, aprovecha el espacio) -------- #}
+              {# -------- 4. CARRITO (Queda al lado derecho del perfil) -------- #}
+              <a href="{% url 'ver_carrito' %}"
+                 class="order-4 lg:order-5 relative grid h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 place-items-center rounded-xl sm:rounded-2xl bg-mantequilla text-chocolate shadow-soft hover:bg-rosa hover:-translate-y-0.5 transition-all shrink-0"
+                 aria-label="Carrito de compras">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+                {% if carrito_count %}
+                  <span class="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rosa px-1 text-3xs font-bold text-chocolate ring-2 ring-crema">
+                    {{ carrito_count }}
+                  </span>
+                {% endif %}
+              </a>
+
+              {# -------- 5. CATÁLOGO -------- #}
+              <div class="order-5 lg:order-7 hidden lg:flex shrink-0">
                 <a href="{% url 'catalogo' %}"
                    class="inline-flex items-center justify-center rounded-xl sm:rounded-2xl bg-chocolate px-4 py-2 sm:px-5 sm:py-3 text-sm sm:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all whitespace-nowrap">
                   Catálogo
                 </a>
               </div>
 
-              {# -------- NAV LINKS (order 3 móvil / order 2 desktop) -------- #}
-              <nav class="w-full order-3 lg:order-2 lg:w-auto lg:flex-1 mt-1 lg:mt-0">
-                {# Utilizamos justify-center con un poco de gap para que respiren bien en móvil #}
+              {# -------- 6. NAV LINKS -------- #}
+              <nav class="order-6 lg:order-4 w-full lg:w-auto lg:flex-1 mt-2 lg:mt-0">
                 <ul class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:gap-x-4 lg:gap-x-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-chocolate/10 text-sm sm:text-base lg:text-base 3xl:text-lg font-bold text-chocolate">
                   {% block nav_links %}
-                    <li><a href="{% url 'home' %}" class="inline-flex rounded-full px-3 py-2 hover:bg-mantequilla transition-all whitespace-nowrap">Inicio</a></li>
+                    
+                    {# "Inicio" ahora está oculto en celulares por defecto para TODOS los roles #}
+                    <li><a href="{% url 'home' %}" class="hidden sm:inline-flex rounded-full px-3 py-2 hover:bg-mantequilla transition-all whitespace-nowrap">Inicio</a></li>
+                    
                     <li><a href="{% url 'home' %}#mas-vendidos" class="inline-flex rounded-full px-3 py-2 hover:bg-mantequilla transition-all whitespace-nowrap">Más vendidos</a></li>
                     <li><a href="{% url 'home' %}#catalogo-destacado" class="inline-flex rounded-full px-3 py-2 hover:bg-mantequilla transition-all whitespace-nowrap">Destacados</a></li>
                     <li><a href="{% url 'home' %}#es_nuevo" class="inline-flex rounded-full px-3 py-2 hover:bg-mantequilla transition-all whitespace-nowrap">Novedades</a></li>
@@ -254,9 +253,7 @@
       </header>
     {% endblock %}
 
-
     {% block content %}{% endblock %}
-
 
     {% block footer %}
       <footer class="relative overflow-hidden bg-rosaClaro mx-4 lg:mx-8 mb-8 rounded-4xl lg:rounded-6xl">
@@ -292,7 +289,7 @@
       </footer>
     {% endblock %}
 
-  </div> <!-- Cierre del borde blanco redondeado -->
+  </div>
 
   <script>
     console.log('[SARALU] base.html scripts cargados');
@@ -301,9 +298,7 @@
       const drawer  = document.getElementById('admin-drawer');
       const overlay = document.getElementById('admin-overlay');
       if (!drawer || !overlay) return;
-
       const isOpen = !drawer.classList.contains('-translate-x-full');
-
       if (isOpen) {
         drawer.classList.add('-translate-x-full');
         overlay.classList.add('hidden');
@@ -321,7 +316,6 @@
       const chevron  = document.getElementById('user-menu-chevron');
       const button   = document.getElementById('user-menu-button');
       if (!dropdown) return;
-
       if (!dropdown.classList.contains('hidden')) {
         closeUserMenu();
       } else {
@@ -336,7 +330,6 @@
       const chevron  = document.getElementById('user-menu-chevron');
       const button   = document.getElementById('user-menu-button');
       if (!dropdown) return;
-
       dropdown.classList.add('hidden');
       if (chevron) chevron.classList.remove('rotate-180');
       if (button)  button.setAttribute('aria-expanded', 'false');

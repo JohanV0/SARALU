@@ -9,13 +9,18 @@
     <span class="absolute top-1/2 left-1/4 text-azul text-lg">✦</span>
     <div class="relative mx-auto w-full max-w-[1900px]">
       <div class="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+        
+        {# -------- COLUMNA IZQUIERDA (Texto) -------- #}
         <div class="text-center lg:text-left order-2 lg:order-1 lg:pl-10 xl:pl-16">
-          <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
+          
+          {# ESTE ES EL ORIGINAL: Se oculta en móvil y se muestra desde LG (computadoras) #}
+          <div class="hidden lg:inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
             <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
             <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
               Repostería hecha con cariño
             </span>
           </div>
+
           <h1 class="mt-6 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] xl:text-[5.5rem] 3xl:text-[7rem] font-semibold leading-[1.1] tracking-tight text-chocolate">
             Pequeños<br />
             momentos,<br />
@@ -27,8 +32,8 @@
             En SARALU creamos repostería artesanal pensada para convertir cualquier momento en algo especial. Postres preparados con dedicación, ingredientes seleccionados y mucho amor.
           </p>
           <div class="mt-8 flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
-            <a href="#catalogo-destacado" class="group inline-flex items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
-              Ver Destacados
+            <a href="{% url 'catalogo' %}" class="group inline-flex items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+              Ver catalogo
               <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
             <a href="#mas-vendidos" class="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 lg:px-9 lg:py-4 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-gray-50 hover:-translate-y-1 transition-all">
@@ -50,11 +55,24 @@
             </span>
           </div>
         </div>
+
+        {# -------- COLUMNA DERECHA (Logo) -------- #}
         <div class="relative flex justify-center lg:justify-end w-full px-4 sm:px-0 order-1 lg:order-2 mb-8 lg:mb-0">
-          <div class="relative w-full max-w-[500px] lg:max-w-[700px] xl:max-w-[900px]">
+          <div class="relative w-full max-w-[500px] lg:max-w-[700px] xl:max-w-[900px] flex flex-col items-center">
+            
+            {# ESTE ES EL NUEVO: Se muestra solo en celulares (lg:hidden), va arriba del logo #}
+            <div class="inline-flex lg:hidden items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft mb-6 relative z-20">
+              <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+              <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
+                Repostería hecha con cariño
+              </span>
+            </div>
+
             <div class="absolute top-1/4 -right-12 h-72 w-72 rounded-full bg-rosa/50 blur-3xl"></div>
             <div class="absolute bottom-1/4 -left-12 h-72 w-72 rounded-full bg-rosa/40 blur-3xl"></div>
+            
             <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="relative w-full h-auto object-contain z-10" />
+            
             <span class="absolute -top-5 -right-5 text-rosa text-5xl animate-pulse z-20 drop-shadow-md">✦</span>
             <span class="absolute bottom-10 -left-8 text-rosa text-4xl animate-bounce z-20 drop-shadow-md">✦</span>
             <span class="absolute top-1/2 -right-8 text-mantequilla text-3xl z-20 drop-shadow-md">✦</span>
@@ -62,6 +80,7 @@
             <span class="absolute top-1/4 -left-4 text-rosa text-2xl z-20 drop-shadow-md">✦</span>
           </div>
         </div>
+
       </div>
     </div>
   </section>

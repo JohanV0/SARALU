@@ -1,0 +1,154 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% block title %}Gestionar administradores — SARALU{% endblock %}
+{% block content %}
+
+  {# ============================================================ #}
+  {# HERO                                                          #}
+  {# ============================================================ #}
+  <section class="relative overflow-hidden bg-crema pt-16 pb-12 lg:pt-20 lg:pb-16 px-6 sm:px-10 lg:px-20 3xl:px-32">
+    <span class="absolute top-12 left-8 text-mantequilla text-2xl rotate-12 animate-pulse">✦</span>
+    <span class="absolute bottom-10 right-10 text-rosa text-xl -rotate-12 animate-bounce">✦</span>
+    <span class="absolute top-1/2 left-1/4 text-azul text-lg">✦</span>
+    <div class="relative mx-auto w-full max-w-[1900px] text-center">
+      <span class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
+        <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">Panel de administración</span>
+      </span>
+      <h1 class="mt-6 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-semibold leading-[1.1] tracking-tight text-chocolate">
+        Gestionar<br />
+        <span class="font-script text-rosa text-6xl sm:text-7xl md:text-8xl lg:text-[5.5rem] inline-block mt-4 lg:mt-6">
+          administradores.
+        </span>
+      </h1>
+      <p class="mx-auto mt-6 max-w-xl text-base md:text-lg lg:text-xl leading-relaxed text-cafe">
+        Añade o quita administradoras, y ajusta los permisos del grupo sin salir de SARALU.
+      </p>
+    </div>
+  </section>
+
+  {# ============================================================ #}
+  {# CONTENIDO                                                     #}
+  {# ============================================================ #}
+  <section class="relative mx-auto w-full max-w-[1500px] px-6 lg:px-10 2xl:px-14 3xl:px-20 pb-20 lg:pb-28">
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 lg:gap-8">
+
+      {# -------- MIEMBROS ACTUALES -------- #}
+      <div class="relative overflow-hidden rounded-[2rem] bg-rosaClaro/60 p-6 lg:p-8 shadow-soft">
+        <span class="absolute top-6 right-8 text-mantequilla text-2xl rotate-12">✦</span>
+        <span class="absolute bottom-6 right-6 text-rosa text-lg -rotate-12">✦</span>
+
+        <div class="relative flex items-start justify-between gap-4 mb-6">
+          <div>
+            <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+              <span class="h-2 w-2 rounded-full bg-rosa"></span>
+              Grupo "Administradores"
+            </span>
+            <h2 class="font-display mt-2 text-2xl lg:text-3xl font-semibold text-chocolate">
+              Miembros actuales
+            </h2>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-chocolate px-4 py-2 text-xs lg:text-sm font-bold text-mantequilla shadow-soft">
+            {{ miembros|length }} miembro{{ miembros|length|pluralize:"s" }}
+          </span>
+        </div>
+
+        {% if miembros %}
+          <ul class="divide-y divide-chocolate/10">
+            {% for u in miembros %}
+              <li class="flex items-center justify-between gap-4 py-4">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mantequilla font-display text-lg font-bold text-chocolate">
+                    {{ u.username|first|upper }}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="font-bold text-chocolate truncate">{{ u.username }}</p>
+                    <p class="text-xs lg:text-sm text-cafe truncate">{{ u.email|default:"sin email" }}</p>
+                  </div>
+                </div>
+                <form method="post" class="shrink-0">
+                  {% csrf_token %}
+                  <input type="hidden" name="accion" value="quitar">
+                  <input type="hidden" name="user_id" value="{{ u.id }}">
+                  <button type="submit"
+                          onclick="return confirm('¿Quitar a {{ u.username }} del grupo?')"
+                          class="rounded-full bg-red-500/10 px-4 py-2 text-xs lg:text-sm font-bold text-red-600 hover:bg-red-500 hover:text-white transition">
+                    Quitar
+                  </button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="rounded-2xl bg-crema/80 px-5 py-10 text-center">
+            <span class="grid h-12 w-12 mx-auto place-items-center rounded-full bg-mantequilla text-chocolate text-xl">✦</span>
+            <p class="mt-3 font-display text-lg font-semibold text-chocolate">Sin administradoras</p>
+            <p class="mt-1 text-sm text-cafe">Añade la primera desde el panel de la derecha.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      {# -------- AÑADIR ADMINISTRADORA -------- #}
+      <div class="relative overflow-hidden rounded-[2rem] bg-mantequilla/40 p-6 lg:p-8 shadow-soft">
+        <span class="absolute top-6 right-8 text-rosa text-2xl animate-pulse">✦</span>
+
+        <div class="relative mb-6">
+          <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+            <span class="h-2 w-2 rounded-full bg-rosa"></span>
+            Nuevos accesos
+          </span>
+          <h2 class="font-display mt-2 text-2xl lg:text-3xl font-semibold text-chocolate">
+            Añadir administradora
+          </h2>
+          <p class="mt-2 text-sm lg:text-base text-cafe">
+            Selecciona un usuario y dale acceso al grupo con privilegios.
+          </p>
+        </div>
+
+        {% if no_miembros %}
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="agregar">
+            <div>
+              <label class="block text-xs lg:text-sm font-bold uppercase tracking-widest2 text-cafe mb-2">
+                Usuario
+              </label>
+              <select name="user_id" required
+                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3 text-chocolate font-semibold focus:border-chocolate focus:outline-none">
+                <option value="">— Selecciona un usuario —</option>
+                {% for u in no_miembros %}
+                  <option value="{{ u.id }}">{{ u.username }} — {{ u.email|default:"sin email" }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3.5 font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
+              Añadir al grupo
+              <span>→</span>
+            </button>
+          </form>
+        {% else %}
+          <div class="rounded-2xl bg-crema/80 px-5 py-10 text-center">
+            <span class="grid h-12 w-12 mx-auto place-items-center rounded-full bg-rosaClaro text-chocolate text-xl">✓</span>
+            <p class="mt-3 font-display text-lg font-semibold text-chocolate">Todos ya son admins</p>
+            <p class="mt-1 text-sm text-cafe">No quedan usuarios por añadir al grupo.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+    {# ============================================================ #}
+    {# VOLVER                                                        #}
+    {# ============================================================ #}
+    <div class="mt-10 flex justify-center">
+      <a href="{% url 'home' %}"
+         class="group inline-flex items-center gap-3 rounded-full bg-white px-7 py-3.5 font-bold text-chocolate shadow-soft hover:bg-mantequilla hover:-translate-y-0.5 transition-all">
+        <span class="grid h-7 w-7 place-items-center rounded-full bg-chocolate text-mantequilla text-sm transition group-hover:-translate-x-1">←</span>
+        Volver al panel principal
+      </a>
+    </div>
+
+  </section>
+
+{% endblock %}

@@ -40,6 +40,11 @@ def register(request):
 
     return render(request, 'register.html',{'errores': errores, 'datos' : datos})
 
+def es_usuario(user):
+    return user.is_authenticated and not user.is_staff
+
+def admin(user):
+    return user.is_authenticated and user.is_staff
 
 @login_required
 def editar_perfil(request):
@@ -148,3 +153,73 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
 class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     """Paso 4: página final de éxito."""
     template_name = 'password_reset_complete.html'
+
+from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+
+def admin(user):
+    return user.is_authenticated and user.is_staff
+
+
+@login_required
+@user_passes_test(admin)
+def gestionar_usuarios(request):
+    grupo, _ = Group.objects.get_or_create(name='Administradores')
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+
+        # ---------- Añadir usuario al grupo ----------
+        if accion == 'agregar':
+            user_id = request.POST.get('user_id')
+            usuario = get_object_or_404(User, id=user_id)
+            usuario.groups.add(grupo)
+            usuario.is_staff = True          # para que pueda entrar al panel
+            usuario.save(update_fields=['is_staff'])
+            messages.success(request, f'{usuario.username} ahora es administrador.')
+            return redirect('gestionar-usuarios')
+
+        # ---------- Quitar usuario del grupo ----------
+        if accion == 'quitar':
+            user_id = request.POST.get('user_id')
+            usuario = get_object_or_404(User, id=user_id)
+            usuario.groups.remove(grupo)
+            usuario.is_staff = False
+            usuario.save(update_fields=['is_staff'])
+            messages.success(request, f'{usuario.username} ya no es administrador.')
+            return redirect('gestionar-usuarios')
+
+        # ---------- Guardar permisos del grupo ----------
+        if accion == 'guardar_permisos':
+            perm_ids = request.POST.getlist('permisos')
+            grupo.permissions.set(Permission.objects.filter(id__in=perm_ids))
+            messages.success(request, 'Permisos del grupo actualizados.')
+            return redirect('gestionar-usuarios')
+
+    # Listado de usuarios que YA están en el grupo
+    miembros = grupo.user_set.all().order_by('username')
+
+    # Usuarios que NO están en el grupo (para poder agregarlos)
+    no_miembros = User.objects.exclude(id__in=miembros.values_list('id', flat=True)).order_by('username')
+
+    # Todos los permisos de la app reposteria, agrupados por modelo
+    permisos_app = (
+        Permission.objects
+        .filter(content_type__app_label='reposteria')
+        .select_related('content_type')
+        .order_by('content_type__model', 'codename')
+    )
+
+    # Permisos actuales del grupo (para marcar los checkboxes)
+    permisos_actuales = set(grupo.permissions.values_list('id', flat=True))
+
+    contexto = {
+        'grupo': grupo,
+        'miembros': miembros,
+        'no_miembros': no_miembros,
+        'permisos_app': permisos_app,
+        'permisos_actuales': permisos_actuales,
+    }
+    return render(request, 'gestionar-usuarios.html', contexto)

@@ -38,7 +38,7 @@ def register(request):
             login(request,user)
             return redirect('home')
 
-    return render(request, 'register.html',{'errore': errores, 'datos' : datos})
+    return render(request, 'register.html',{'errores': errores, 'datos' : datos})
 
 
 @login_required

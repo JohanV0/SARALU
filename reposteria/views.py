@@ -1,3 +1,5 @@
+import re
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils.dateparse import parse_date
@@ -240,18 +242,29 @@ def armar_pedido_view(request):
         tipo_entrega = request.POST.get('tipo_entrega')
         fecha_str = request.POST.get('fecha')
         hora = request.POST.get('hora')
+        direccion_cliente = request.POST.get('direccion', '').strip()
+        comentarios_cliente = request.POST.get('comentarios', '').strip()
         
         # --- VALIDACIÓN DE FECHA BLOQUEADA AQUÍ ---
         if fecha_str:
             fecha_obj = parse_date(fecha_str)
             if fecha_obj and FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
                 messages.error(request, f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada (día libre).")
-                return redirect('armar_pedido') # Redirige de vuelta al formulario para que elija otra fecha
+                return redirect('armar_pedido')
         # ------------------------------------------
 
-        nota_horario = f"Fecha de entrega: {fecha_str} | Hora: {hora}"
+        # Si es recogida en tienda, definimos la ubicación para las notas
+        if tipo_entrega == 'recojo':
+            ubicacion_texto = "La Arboleda Campestre, Conjunto Almendros"
+        else:
+            ubicacion_texto = direccion_cliente
 
-        # Acción 1: Creamos el Pedido oficial
+        # Unimos todo de forma ordenada en los comentarios para que quede visible en el detalle del pedido
+        nota_horario = f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | Fecha: {fecha_str} | Hora: {hora}"
+        if comentarios_cliente:
+            nota_horario += f" | Notas: {comentarios_cliente}"
+
+        # Acción 1: Creamos el Pedido oficial (sin tocar el campo 'direccion' relacional para evitar el error)
         nuevo_pedido = Pedido.objects.create(
             cliente=request.user,
             nombre_contacto=request.user.username, 
@@ -271,14 +284,13 @@ def armar_pedido_view(request):
                 precio_unitario=item.producto.precio
             )
 
-        # Acción 3: Vaciamos el carrito (borramos los items)
+        # Acción 3: Vaciamos el carrito
         items_carrito.delete()
 
-        # Acción 4: Mensaje de éxito y lo mandamos al inicio
+        # Acción 4: Mensaje de éxito
         messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
         return redirect('home')
     
-    # --- CORRECCIÓN: Convertimos las fechas a lista de strings para el JSON ---
     fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
     fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
     
@@ -286,7 +298,7 @@ def armar_pedido_view(request):
         'items': items_carrito,
         'subtotal': subtotal,
         'fechas_bloqueadas': fechas_qs,
-        'fechas_bloqueadas_json': fechas_bloqueadas_json,  # <-- Lista limpia para JS
+        'fechas_bloqueadas_json': fechas_bloqueadas_json,
     }
     return render(request, 'armar_pedido.html', contexto)
 
@@ -384,9 +396,45 @@ def gestionar_fechas_bloqueadas_view(request):
 def mis_pedidos_view(request):
     # Buscamos solo los pedidos de este cliente, ordenados por fecha (más nuevos primero)
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-creado')
-    
+
+    # Procesamos el campo 'comentarios' para extraer fecha, hora, dirección y notas.
+    for pedido in pedidos:
+        texto = pedido.comentarios or ""
+
+        # 1. Extraer Fecha (y convertirla a objeto date para el filtro del template)
+        fecha_entrega = None
+        match_fecha = re.search(r'Fecha:\s*([\d\-]+)', texto)
+        if match_fecha:
+            try:
+                fecha_entrega = datetime.strptime(match_fecha.group(1), '%Y-%m-%d').date()
+            except ValueError:
+                fecha_entrega = match_fecha.group(1)
+
+        # 2. Extraer Hora
+        hora_entrega = None
+        match_hora = re.search(r'Hora:\s*([\d:]+)', texto)
+        if match_hora:
+            hora_entrega = match_hora.group(1)
+
+        # 3. Extraer Dirección (buscando el texto entre "Dirección: " y el siguiente " | ")
+        direccion_entrega = None
+        match_direccion = re.search(r'Dirección:\s*([^|]+)', texto)
+        if match_direccion:
+            direccion_entrega = match_direccion.group(1).strip()
+
+        # 4. Extraer Notas (buscando todo lo que haya después de "Notas: ")
+        notas_entrega = None
+        match_notas = re.search(r'Notas:\s*(.+)$', texto)
+        if match_notas:
+            notas_entrega = match_notas.group(1).strip()
+
+        # Inyectamos los 4 atributos al objeto pedido
+        pedido.fecha_entrega_mostrar = fecha_entrega
+        pedido.hora_entrega_mostrar = hora_entrega
+        pedido.direccion_entrega_mostrar = direccion_entrega
+        pedido.notas_entrega_mostrar = notas_entrega
+
     contexto = {
         'pedidos': pedidos
     }
-    # Enviaremos esta información a una nueva plantilla que crearemos luego
     return render(request, 'mis_pedidos.html', contexto)

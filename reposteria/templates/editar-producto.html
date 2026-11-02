@@ -95,7 +95,7 @@
                 <span class="text-mantequilla">$</span> Precio
               </label>
               <input type="number" step="0.01" name="precio" id="id_precio"
-                     value="{{ producto.precio|floatformat:2 }}" required
+                     value="{{ producto.precio|floatformat:0 }}" required
                      placeholder="Ej: 25000"
                      class="w-full px-4 py-3 bg-crema border border-chocolate/10 rounded-xl text-chocolate placeholder:text-cafe/50 text-sm lg:text-base focus:border-rosa focus:ring-2 focus:ring-rosaClaro transition-all duration-150 outline-none" />
             </div>
@@ -226,8 +226,8 @@
           </div>
 
           {# --- Checkboxes (Destacado y Más vendido) --- #}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4 pt-2">
-            <label class="group flex items-center gap-3 rounded-2xl bg-crema ring-1 ring-chocolate/10 px-4 py-3.5 cursor-pointer hover:ring-rosa hover:bg-rosaClaro/40 transition-all">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4 pt-2">
+            <label class="group flex items-center gap-3 rounded-2xl bg-crema ring-1 ring-chocolate/10 px-3 py-3.5 cursor-pointer hover:ring-rosa hover:bg-rosaClaro/40 transition-all">
               <input type="checkbox" name="destacado" id="id_destacado"
                      {% if producto.destacado %}checked{% endif %}
                      class="h-5 w-5 rounded-md text-rosa border-chocolate/30 focus:ring-rosa focus:ring-offset-0" />
@@ -239,6 +239,13 @@
                      {% if producto.mas_vendido %}checked{% endif %}
                      class="h-5 w-5 rounded-md text-rosa border-chocolate/30 focus:ring-rosa focus:ring-offset-0" />
               <span class="text-sm font-semibold text-chocolate">Más vendido</span>
+            </label>
+            
+            <label class="group flex items-center gap-3 rounded-2xl bg-crema ring-1 ring-chocolate/10 px-4 py-3.5 cursor-pointer hover:ring-rosa hover:bg-rosaClaro/40 transition-all">
+              <input type="checkbox" name="nuevo" id="id_nuevo"
+              {% if producto.es_nuevo %}checked{% endif %}
+              class="h-5 w-5 rounded-md text-rosa border-chocolate/30 focus:ring-rosa focus:ring-offset-0" />
+              <span class="text-sm font-semibold text-chocolate">¿Es nuevo?</span>
             </label>
           </div>
 

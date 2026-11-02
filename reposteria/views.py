@@ -21,17 +21,17 @@ def admin(user):
     return user.is_authenticated and user.is_staff
 
 def catalogo_view(request):
-    categoria_id = request.GET.get('categoria')
+    categoria_code = request.GET.get('categoria')        # "TARTAS", "CUPCAKES", ...
     productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
     categorias = Categoria.objects.all()
 
-    if categoria_id:
-        productos = productos.filter(categoria_id=categoria_id)
+    if categoria_code:
+        productos = productos.filter(categoria__categoria=categoria_code)
 
     contexto = {
         'productos': productos,
         'categorias': categorias,
-        'categoria_actual': int(categoria_id) if categoria_id else None,
+        'categoria_actual': categoria_code,              
     }
     return render(request, 'catalogo.html', contexto)
 
@@ -44,7 +44,12 @@ def detalle_producto_view(request, producto_id):
         ),
         id=producto_id
     )
-
+    productos_relacionados = (
+        Producto.objects
+        .filter(categoria=producto.categoria)     # misma categoría
+        .exclude(id=producto.id)                   # sin el actual
+        .order_by('-id')[:4]                       # opcional: los 4 más nuevos
+    )
     resenas = producto.resenas.all().order_by('-fecha_creacion')
     resena_usuario = None
     form = None
@@ -102,6 +107,7 @@ def detalle_producto_view(request, producto_id):
                 form = ResenaForm(instance=resena_usuario)
 
     contexto = {
+        'productos_relacionados': productos_relacionados,
         'producto': producto,
         'resenas': resenas,
         'resena_usuario': resena_usuario,
@@ -134,7 +140,7 @@ def editar_producto(request, producto_id):
         # Leemos los checkboxes correctamente según el HTML
         destacado = 'destacado' in request.POST
         mas_vendido = 'mas_vendido' in request.POST
-        es_nuevo = 'es_nuevo' in request.POST
+        es_nuevo = 'nuevo' in request.POST
 
         if not (nombre and precio and stock and porciones and categoria_id):
             messages.error(request, "Faltan campos obligatorios.")
@@ -187,7 +193,7 @@ def nuevo_producto(request):
     porciones = request.POST.get('porciones')
     destacado = request.POST.get('destacado') == 'on'
     mas_vendido = request.POST.get('mas_vendido') == 'on'
-    es_nuevo = request.POST.get('es_nuevo') == 'on'
+    es_nuevo = request.POST.get('nuevo') == 'on'
 
     if nombre and descripcion and precio:
       producto = Producto(

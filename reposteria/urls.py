@@ -16,5 +16,7 @@ urlpatterns = [
     path('lista_productos/<int:producto_id>/avanzar',views.avanzar_estado_categoria, name='avanzar_estado_categoria'),
     path('panel/bloquear-fechas/', views.gestionar_fechas_bloqueadas_view, name='gestionar_fechas_bloqueadas'),
     path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
+    path('panel/pedidos/', views.lista_pedidos_admin_view, name='lista_pedidos_admin'),
+    path('panel/pedido/<int:pedido_id>/cambiar-estado/', views.cambiar_estado_pedido_view, name='cambiar_estado_pedido'),
 
 ]

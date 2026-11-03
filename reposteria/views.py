@@ -6,7 +6,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido, ItemCarrito, FechaBloqueada
+from .models import HistorialEstadoPedido, Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido, ItemCarrito, FechaBloqueada
 from .forms import ResenaForm
 
 def home(request):
@@ -432,3 +432,41 @@ def mis_pedidos_view(request):
         'pedidos': pedidos
     }
     return render(request, 'mis_pedidos.html', contexto)
+
+@login_required
+@user_passes_test(admin)
+def lista_pedidos_admin_view(request):
+    # La dueña puede ver todos los pedidos ordenados del más reciente al más antiguo
+    pedidos = Pedido.objects.all().order_by('-creado')
+    contexto = {
+        'pedidos': pedidos,
+        'estados': Pedido.ESTADOS, # Pasamos los estados permitidos para el selector
+    }
+    return render(request, 'lista_pedidos_admin.html', contexto)
+
+@login_required
+@user_passes_test(admin)
+def cambiar_estado_pedido_view(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        estados_validos = [e[0] for e in Pedido.ESTADOS]
+        
+        if nuevo_estado in estados_validos:
+            pedido.estado = nuevo_estado
+            pedido.save()
+            
+            # Registramos el cambio en el historial del pedido
+            HistorialEstadoPedido.objects.create(
+                pedido=pedido,
+                estado=nuevo_estado,
+                comentario=f"Estado actualizado por la administración.",
+                usuario=request.user
+            )
+            
+            messages.success(request, f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!")
+        else:
+            messages.error(request, "Estado inválido.")
+            
+    return redirect('lista_pedidos_admin')

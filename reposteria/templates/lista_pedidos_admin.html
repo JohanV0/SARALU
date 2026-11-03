@@ -1,0 +1,90 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Gestión de Pedidos — SARALU{% endblock %}
+
+{% block content %}
+
+<main class="flex-grow relative mx-auto w-full max-w-[1900px] px-4 sm:px-7 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-16">
+  
+  <div class="relative mb-10 lg:mb-14">
+    <span class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
+      <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+      <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
+        Panel de Administración
+      </span>
+    </span>
+
+    <h1 class="mt-5 font-display text-4xl sm:text-5xl lg:text-6xl font-semibold text-chocolate">
+      Gestión de
+      <span class="font-script text-rosa text-5xl sm:text-6xl inline-block ml-2">pedidos</span>
+    </h1>
+    <p class="mt-4 text-sm lg:text-base text-cafe">
+      Cambia el estado de los pedidos para organizar la producción diaria de la pastelería.
+    </p>
+  </div>
+
+  {% if not pedidos %}
+    <div class="rounded-[2rem] bg-crema p-12 text-center ring-1 ring-chocolate/10 shadow-soft">
+      <p class="text-lg font-semibold text-cafe">No hay pedidos registrados en el sistema.</p>
+    </div>
+  {% else %}
+    <div class="grid grid-cols-1 gap-6">
+      {% for pedido in pedidos %}
+        <div class="rounded-[2rem] bg-crema p-6 lg:p-8 shadow-soft ring-1 ring-chocolate/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          
+          <!-- Info básica del pedido -->
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="rounded-full bg-rosaClaro px-3 py-1 text-xs font-bold text-chocolate">
+                Pedido #{{ pedido.id }}
+              </span>
+              <span class="text-xs font-bold text-cafe">
+                Cliente: {{ pedido.nombre_contacto }}
+              </span>
+              <span class="text-xs text-cafe/70">
+                ({{ pedido.creado|date:"d M Y, H:i" }})
+              </span>
+            </div>
+
+            <h3 class="font-display text-xl font-semibold text-chocolate mb-1">
+              {{ pedido.get_domicilio_display }} — Total: ${{ pedido.total|floatformat:0 }}
+            </h3>
+
+            <!-- Productos del pedido -->
+            <p class="text-sm text-chocolate/80">
+              {% for detalle in pedido.detalles.all %}
+                <span class="font-bold">{{ detalle.cantidad }}x</span> {{ detalle.producto.nombre }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </p>
+
+            {% if pedido.comentarios %}
+              <p class="text-xs text-cafe/80 mt-2 bg-white/60 p-2.5 rounded-xl border border-chocolate/5">
+                <span class="font-bold">Detalles / Notas:</span> {{ pedido.comentarios }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Selector de Estado (Formulario de Cambio) -->
+          <form method="POST" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="flex items-center gap-3 w-full md:w-auto bg-white p-3 rounded-2xl ring-1 ring-chocolate/10">
+            {% csrf_token %}
+            <select name="estado" class="appearance-none rounded-xl border border-chocolate/20 bg-crema px-3 py-2 text-xs font-bold text-chocolate focus:outline-none focus:border-chocolate">
+              {% for val, label in pedido.ESTADOS %}
+                <option value="{{ val }}" {% if pedido.estado == val %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="rounded-xl bg-chocolate px-4 py-2 text-xs font-bold text-mantequilla hover:bg-cafe transition shadow-sm">
+              Actualizar
+            </button>
+          </form>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</main>
+
+{% endblock %}

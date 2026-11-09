@@ -1,23 +1,30 @@
 {% extends "layout/base.html" %}
 {% load static %}
 
-{% block title %}Registrar producto — SARALU{% endblock %}
+{% block title %}SARALU — Registrar producto{% endblock %}
 
 {% block content %}
-{# ==== Material Symbols de Google ==== #}
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-  <main class="relative flex-1 w-full mx-auto max-w-[1100px] px-4 sm:px-7 lg:px-10 py-10 lg:py-16">
+{# ============================================================ #}
+{# REGISTRAR PRODUCTO — misma estética que el home              #}
+{# ============================================================ #}
+<section id="nuevo-producto"
+         class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
+  <div class="absolute inset-0 bg-rosaClaro/45 rounded-[2rem] lg:rounded-[3rem]"></div>
+  <span class="absolute top-10 left-10 text-mantequilla text-3xl animate-pulse z-10">✦</span>
+  <span class="absolute bottom-20 right-10 text-rosa text-2xl animate-bounce z-10">✦</span>
+  <span class="absolute top-1/3 right-1/4 text-azul text-xl z-10">✦</span>
+  <span class="absolute bottom-1/4 left-1/3 text-chocolate/30 text-lg z-10">✦</span>
 
-    <span class="absolute top-20 right-10 text-rosa text-3xl animate-pulse">✦</span>
-    <span class="absolute bottom-20 left-10 text-mantequilla text-2xl animate-bounce">✦</span>
+  <div class="relative mx-auto w-full max-w-[1100px] px-6 lg:px-10">
 
-    <div class="text-center mb-10">
+    {# ---------- ENCABEZADO ---------- #}
+    <div class="flex flex-col items-center text-center mb-10 lg:mb-14">
       <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
-        <span class="h-2 w-2 rounded-full bg-rosa"></span>
+        <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
         Catálogo
       </span>
-      <h1 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-chocolate">
+      <h1 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold tracking-tight text-chocolate">
         Registrar <span class="font-script text-rosa">producto</span>
       </h1>
       <p class="mt-3 max-w-2xl mx-auto text-sm lg:text-base text-cafe">
@@ -25,131 +32,155 @@
       </p>
     </div>
 
+    {# ---------- MENSAJES FLASH ---------- #}
     {% if messages %}
-      <div class="mb-6 space-y-2">
+      <div class="mb-8 space-y-3 max-w-3xl mx-auto">
         {% for message in messages %}
-          <div class="rounded-2xl px-5 py-4 text-sm font-semibold bg-mantequilla text-chocolate border border-chocolate/20 shadow-soft">
-            {{ message }}
+          <div class="flex items-center gap-3 p-4 rounded-[1.35rem] shadow-soft ring-1 bg-mantequilla/60 text-chocolate ring-mantequilla">
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-chocolate text-mantequilla text-sm font-display font-bold">✓</span>
+            <p class="font-semibold text-sm lg:text-base">{{ message }}</p>
           </div>
         {% endfor %}
       </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" class="rounded-[2rem] bg-white/70 backdrop-blur ring-1 ring-chocolate/10 shadow-soft p-6 lg:p-10 space-y-6">
+    {# ---------- FORMULARIO ---------- #}
+    <form method="post" enctype="multipart/form-data" 
+          class="rounded-[1.7rem] lg:rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema p-6 md:p-8 lg:p-10 shadow-soft hover:shadow-lift transition-all space-y-7">
       {% csrf_token %}
 
       {# Nombre #}
       <div>
-        <label for="nombre" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
-          Nombre <span class="text-rosa">*</span>
+        <label for="nombre" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-mantequilla"></span>
+          Nombre del producto <span class="text-rosa text-base leading-none">*</span>
         </label>
         <input type="text" name="nombre" id="nombre" required
                placeholder="Ej. Torta de chocolate"
-               class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+               class="w-full rounded-[1rem] border-2 border-mantequilla/60 bg-white px-4 py-3.5 text-chocolate font-semibold shadow-soft placeholder-cafe/40 focus:outline-none focus:border-chocolate focus:ring-2 focus:ring-mantequilla transition-all" />
       </div>
 
       {# Descripción #}
       <div>
-        <label for="descripcion" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
-          Descripción <span class="text-rosa">*</span>
+        <label for="descripcion" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-azul"></span>
+          Descripción <span class="text-rosa text-base leading-none">*</span>
         </label>
         <textarea name="descripcion" id="descripcion" rows="3" required
                   placeholder="Ingredientes, sabor, presentación…"
-                  class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition min-h-[110px]"></textarea>
+                  class="w-full rounded-[1rem] border-2 border-mantequilla/60 bg-white px-4 py-3.5 text-chocolate font-semibold shadow-soft placeholder-cafe/40 focus:outline-none focus:border-chocolate focus:ring-2 focus:ring-mantequilla transition-all min-h-[120px] resize-y"></textarea>
       </div>
 
       {# Precio y Categoría #}
       <div class="grid md:grid-cols-2 gap-6">
         <div>
-          <label for="precio" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
-            Precio <span class="text-rosa">*</span>
+          <label for="precio" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-rosa"></span>
+            Precio <span class="text-rosa text-base leading-none">*</span>
           </label>
-          <input type="number" name="precio" id="precio" step="0.01" min="0.01" required
-                 placeholder="Ej: 25000"
-                 class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+          <div class="relative">
+            <span class="absolute inset-y-0 left-4 flex items-center text-chocolate/50 font-bold text-lg">$</span>
+            <input type="number" name="precio" id="precio" step="0.01" min="0.01" required
+                   placeholder="Ej: 25000"
+                   class="w-full rounded-[1rem] border-2 border-mantequilla/60 bg-white pl-9 pr-4 py-3.5 text-chocolate font-semibold shadow-soft placeholder-cafe/40 focus:outline-none focus:border-chocolate focus:ring-2 focus:ring-mantequilla transition-all" />
+          </div>
         </div>
 
         <div>
-          <label for="categoria" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
-            Categoría <span class="text-rosa">*</span>
+          <label for="categoria" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-azul"></span>
+            Categoría <span class="text-rosa text-base leading-none">*</span>
           </label>
-          
-          {# Select estilizado #}
           <div class="relative">
             <select name="categoria" id="categoria" required
-                    class="w-full appearance-none rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition pr-10 cursor-pointer">
+                    class="w-full appearance-none rounded-[1rem] border-2 border-mantequilla/60 bg-white px-4 py-3.5 text-chocolate font-semibold shadow-soft focus:outline-none focus:border-chocolate focus:ring-2 focus:ring-mantequilla transition-all pr-10 cursor-pointer">
               <option value="" disabled selected>Selecciona una categoría...</option>
               {% for c in categorias %}
                 <option value="{{ c.id }}">{{ c.get_categoria_display|default:c.categoria }}</option>
               {% endfor %}
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-chocolate/60">
-              <span class="material-symbols-outlined text-[20px]">expand_more</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
             </div>
           </div>
         </div>
       </div>
 
-      {# Imagen #}
-      <div>
-        <label for="imagen" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
-          Imagen principal
-        </label>
-        <input type="file" name="imagen" id="imagen" accept="image/*"
-               class="block w-full text-sm text-cafe cursor-pointer file:mr-4 file:rounded-full file:border-0 file:bg-chocolate file:px-5 file:py-2.5 file:text-sm file:font-bold file:text-mantequilla hover:file:bg-cafe file:cursor-pointer" />
-      </div>
-
       {# Stock y Porciones #}
       <div class="grid md:grid-cols-2 gap-6">
         <div>
-          <label for="stock" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
-            Stock
+          <label for="stock" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-mantequilla"></span>
+            Stock (unidades disponibles)
           </label>
           <input type="number" name="stock" id="stock" min="0" value="10"
-                 class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+                 class="w-full rounded-[1rem] border-2 border-mantequilla/60 bg-white px-4 py-3.5 text-chocolate font-semibold shadow-soft focus:outline-none focus:border-chocolate focus:ring-2 focus:ring-mantequilla transition-all" />
         </div>
 
         <div>
-          <label for="porciones" class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-2">
+          <label for="porciones" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-azul"></span>
             Porciones por unidad
           </label>
           <input type="number" name="porciones" id="porciones" min="1" value="1"
-                 class="w-full rounded-xl border border-chocolate/20 bg-crema px-4 py-3 text-chocolate outline-none focus:border-chocolate focus:ring-1 focus:ring-chocolate transition" />
+                 class="w-full rounded-[1rem] border-2 border-mantequilla/60 bg-white px-4 py-3.5 text-chocolate font-semibold shadow-soft focus:outline-none focus:border-chocolate focus:ring-2 focus:ring-mantequilla transition-all" />
         </div>
       </div>
 
-      {# Etiquetas (Destacado y Más vendido) #}
+      {# Imagen #}
       <div>
-        <p class="block text-sm font-bold uppercase tracking-widest2 text-chocolate/70 mb-3">
+        <label for="imagen" class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-rosa"></span>
+          Imagen principal
+        </label>
+        <input type="file" name="imagen" id="imagen" accept="image/*"
+               class="block w-full text-sm text-cafe cursor-pointer file:mr-4 file:rounded-full file:border-0 file:bg-chocolate file:px-6 file:py-3 file:text-sm file:font-bold file:text-mantequilla hover:file:bg-cafe file:cursor-pointer file:transition-colors bg-white rounded-[1rem] border-2 border-mantequilla/60 p-2 shadow-soft" />
+      </div>
+
+      {# Etiquetas #}
+      <div>
+        <p class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-mantequilla"></span>
           Etiquetas del producto
         </p>
-        <div class="grid sm:grid-cols-2 gap-3">
-          <label class="flex items-center gap-3 rounded-xl bg-rosaClaro/50 px-4 py-3 cursor-pointer hover:bg-rosaClaro transition">
-            <input type="checkbox" name="destacado" class="h-5 w-5 rounded border-chocolate/30 text-chocolate focus:ring-chocolate" />
-            <span class="text-sm font-semibold">Destacado</span>
+        <div class="grid sm:grid-cols-3 gap-3">
+          <label class="flex items-center gap-3 rounded-[1rem] border-2 border-mantequilla/40 bg-white px-4 py-3.5 cursor-pointer hover:bg-mantequilla/10 transition-colors shadow-sm">
+            <input type="checkbox" name="destacado" class="h-5 w-5 rounded border-chocolate/30 accent-chocolate cursor-pointer" />
+            <span class="text-sm font-bold text-chocolate">Destacado</span>
           </label>
-          <label class="flex items-center gap-3 rounded-xl bg-rosaClaro/50 px-4 py-3 cursor-pointer hover:bg-rosaClaro transition">
-            <input type="checkbox" name="mas_vendido" class="h-5 w-5 rounded border-chocolate/30 text-chocolate focus:ring-chocolate" />
-            <span class="text-sm font-semibold">Más vendido</span>
+          <label class="flex items-center gap-3 rounded-[1rem] border-2 border-mantequilla/40 bg-white px-4 py-3.5 cursor-pointer hover:bg-mantequilla/10 transition-colors shadow-sm">
+            <input type="checkbox" name="mas_vendido" class="h-5 w-5 rounded border-chocolate/30 accent-chocolate cursor-pointer" />
+            <span class="text-sm font-bold text-chocolate">Más vendido</span>
+          </label>
+          <label class="flex items-center gap-3 rounded-[1rem] border-2 border-mantequilla/40 bg-white px-4 py-3.5 cursor-pointer hover:bg-mantequilla/10 transition-colors shadow-sm">
+            <input type="checkbox" name="es_nuevo" class="h-5 w-5 rounded border-chocolate/30 accent-chocolate cursor-pointer" />
+            <span class="text-sm font-bold text-chocolate">Nuevo</span>
           </label>
         </div>
       </div>
 
       {# Botones #}
-      <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-chocolate/10">
+      <div class="flex flex-col sm:flex-row gap-3 pt-7 border-t border-chocolate/10">
         <button type="submit"
-                class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-8 py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 13l4 4L19 7" />
-          </svg>
+                class="group w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-full bg-chocolate px-8 py-4 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 transition-all">
+          <span class="grid h-6 w-6 lg:h-7 lg:w-7 place-items-center rounded-full bg-mantequilla text-chocolate">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
           Guardar producto
         </button>
         <a href="{% url 'catalogo' %}"
-           class="inline-flex items-center justify-center gap-2 rounded-full border-2 border-chocolate/20 px-8 py-3.5 text-sm lg:text-base font-bold text-chocolate hover:bg-chocolate/5 hover:-translate-y-0.5 transition-all">
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-chocolate/20 bg-crema px-8 py-4 text-sm lg:text-base font-bold text-chocolate hover:bg-chocolate/5 hover:-translate-y-1 transition-all">
           Cancelar
         </a>
       </div>
+
     </form>
 
-  </main>
+  </div>
+</section>
+
 {% endblock %}

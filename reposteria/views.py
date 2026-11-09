@@ -4,8 +4,15 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Producto, Categoria, Resena, RespuestaResena, Carrito, Pedido, DetallePedido, ItemCarrito, FechaBloqueada
+from django.db.models import Prefetch
+import re
+from .models import (
+    Producto, Categoria, Resena, RespuestaResena, Carrito, 
+    Pedido, DetallePedido, ItemCarrito, FechaBloqueada,
+    CupoFecha, ConfiguracionAgenda
+)
 from .forms import ResenaForm
+
 
 def home(request):
     return render(request, 'home.html', {
@@ -108,7 +115,7 @@ def detalle_producto_view(request, producto_id):
         'form': form,
     }
     return render(request, 'detalle_producto.html', contexto)
-  
+
 @login_required
 def eliminar_producto(request,producto_id):
     producto = Producto.objects.get(id=producto_id)
@@ -130,7 +137,7 @@ def editar_producto(request, producto_id):
         ventas = request.POST.get("ventas")
         categoria_id = request.POST.get("categoria")
         estado = request.POST.get("estado")  # 'DISPONIBLE' o 'AGOTADO'
-        
+
         # Leemos los checkboxes correctamente según el HTML
         destacado = 'destacado' in request.POST
         mas_vendido = 'mas_vendido' in request.POST
@@ -150,14 +157,14 @@ def editar_producto(request, producto_id):
         producto.stock = int(stock)
         producto.porciones = int(porciones)
         producto.ventas = int(ventas) if ventas else 0
-        
+
         # CORRECCIÓN AQUÍ: estado en vez de estado_activo
         producto.estado = estado if estado else 'DISPONIBLE'
-        
+
         producto.destacado = destacado
         producto.mas_vendido = mas_vendido
         producto.es_nuevo = es_nuevo
-        
+
         if categoria_id:
             producto.categoria = get_object_or_404(Categoria, id=categoria_id)
 
@@ -173,7 +180,7 @@ def editar_producto(request, producto_id):
         "producto": producto,
         "categorias": categorias,
     })
-  
+
 def nuevo_producto(request):
   categorias = Categoria.objects.all()
 
@@ -234,7 +241,7 @@ def armar_pedido_view(request):
         tipo_entrega = request.POST.get('tipo_entrega')
         fecha_str = request.POST.get('fecha')
         hora = request.POST.get('hora')
-        
+
         # --- VALIDACIÓN DE FECHA BLOQUEADA AQUÍ ---
         if fecha_str:
             fecha_obj = parse_date(fecha_str)
@@ -248,8 +255,8 @@ def armar_pedido_view(request):
         # Acción 1: Creamos el Pedido oficial
         nuevo_pedido = Pedido.objects.create(
             cliente=request.user,
-            nombre_contacto=request.user.username, 
-            telefono_contacto="", 
+            nombre_contacto=request.user.username,
+            telefono_contacto="",
             domicilio=tipo_entrega,
             subtotal=subtotal,
             total=subtotal,
@@ -271,11 +278,11 @@ def armar_pedido_view(request):
         # Acción 4: Mensaje de éxito y lo mandamos al inicio
         messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
         return redirect('home')
-    
+
     # --- CORRECCIÓN: Convertimos las fechas a lista de strings para el JSON ---
     fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
     fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
-    
+
     contexto = {
         'items': items_carrito,
         'subtotal': subtotal,
@@ -289,10 +296,10 @@ def ver_carrito_view(request):
     # Buscamos el carrito del usuario
     carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
     items = carrito.items.all()
-    
+
     # CRITERIO 2: Calculamos el total acumulado
     total = sum(item.subtotal() for item in items)
-    
+
     contexto = {
         'items': items,
         'total': total
@@ -305,7 +312,7 @@ def eliminar_item_carrito(request, item_id):
     item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
     nombre_producto = item.producto.nombre
     item.delete()
-    
+
     messages.success(request, f"Eliminaste {nombre_producto} de tu carrito.")
     return redirect('ver_carrito')
 
@@ -314,13 +321,13 @@ def eliminar_item_carrito(request, item_id):
 def agregar_al_carrito(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
-    
+
     item, creado = ItemCarrito.objects.get_or_create(carrito=carrito, producto=producto)
-    
+
     if not creado:
         item.cantidad += 1
         item.save()
-        
+
     messages.success(request, f"¡{producto.nombre} agregado al carrito!")
     return redirect('ver_carrito')
 
@@ -333,18 +340,18 @@ def avanzar_estado_categoria(request, producto_id):
     elif categorias.estado == 'AGOTADO':
         categorias.estado = 'DISPONIBLE'
         categorias.save()
-    
+
     return redirect('lista_productos')
 
 def gestionar_fechas_bloqueadas_view(request):
     if request.method == 'POST':
         accion = request.POST.get('accion')
-        
+
         # 1. Acción de BLOQUEAR
         if accion == 'bloquear':
             fecha_str = request.POST.get('fecha')
             motivo = request.POST.get('motivo', '')
-            
+
             if fecha_str:
                 fecha_obj = parse_date(fecha_str)
                 if fecha_obj:
@@ -378,9 +385,111 @@ def gestionar_fechas_bloqueadas_view(request):
 def mis_pedidos_view(request):
     # Buscamos solo los pedidos de este cliente, ordenados por fecha (más nuevos primero)
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-creado')
-    
+
     contexto = {
         'pedidos': pedidos
     }
-    # Enviaremos esta información a una nueva plantilla que crearemos luego
     return render(request, 'mis_pedidos.html', contexto)
+
+
+# =========================================================
+# HU: PEDIDOS PENDIENTES (DUEÑA)
+# =========================================================
+
+@login_required
+@user_passes_test(admin)
+def pedidos_pendientes_view(request):
+    """
+    Lista los pedidos en estado 'pendiente' con:
+      - fotos de cada producto (producto.imagen o primera de su galería)
+      - comentarios del cliente (Pedido.comentarios)
+      - detalles (cantidad, precio, subtotal, datos de entrega y totales)
+    """
+    detalles_qs = (
+        DetallePedido.objects
+        .select_related('producto')
+        .prefetch_related('producto__imagenes')
+    )
+
+    pedidos = (
+        Pedido.objects
+        .filter(estado='pendiente')
+        .select_related('cliente', 'cupon', 'direccion')
+        .prefetch_related(Prefetch('detalles', queryset=detalles_qs))
+        .order_by('creado')  # el más viejo primero
+    )
+
+    return render(request, 'pedidos_pendientes.html', {'pedidos': pedidos})
+
+
+# =========================================================
+# HU: ACEPTAR Y ENTREGAR PEDIDOS
+# =========================================================
+
+def _extraer_fecha_pedido(comentarios):
+    """Extrae la fecha 'YYYY-MM-DD' del texto de comentarios del pedido."""
+    if not comentarios:
+        return None
+    # Busca el patrón "Fecha de entrega: YYYY-MM-DD"
+    match = re.search(r"Fecha de entrega:\s*(\d{4}-\d{2}-\d{2})", comentarios)
+    if match:
+        return parse_date(match.group(1))
+    return None
+
+@login_required
+@user_passes_test(admin)
+@require_POST
+def aceptar_pedido_view(request, pedido_id):
+    """Cambia el pedido a 'confirmado' y resta un cupo a la fecha elegida."""
+    pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
+    
+    # 1. Extraer la fecha y restar el cupo
+    fecha_entrega = _extraer_fecha_pedido(pedido.comentarios)
+    
+    if fecha_entrega:
+        cupo, creado = CupoFecha.objects.get_or_create(
+            fecha=fecha_entrega,
+            defaults={'cupos_disponibles': ConfiguracionAgenda.obtener().cupo_maximo_por_dia}
+        )
+        # Restamos 1, evitando que baje de 0
+        if cupo.cupos_disponibles > 0:
+            cupo.cupos_disponibles -= 1
+            cupo.save()
+            messages.success(request, f"Pedido #{pedido.id} aceptado. Se restó 1 cupo para el {fecha_entrega}.")
+        else:
+            messages.warning(request, f"Pedido #{pedido.id} aceptado. Pero NO quedaban cupos para el {fecha_entrega}.")
+    else:
+        messages.info(request, f"Pedido #{pedido.id} aceptado. (No se encontró fecha para restar cupo).")
+
+    # 2. Cambiar estado
+    pedido.estado = 'confirmado'
+    pedido.save()
+
+    return redirect('todos_los_pedidos')
+
+@login_required
+@user_passes_test(admin)
+@require_POST
+def marcar_entregado_view(request, pedido_id):
+    """Cambia el estado a 'entregado', lo que hará que desaparezca de la lista activa."""
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    pedido.estado = 'entregado'
+    pedido.save()
+    
+    messages.success(request, f"¡Pedido #{pedido.id} entregado con éxito! Ya no aparecerá en la lista.")
+    return redirect('todos_los_pedidos')
+
+@login_required
+@user_passes_test(admin)
+def todos_los_pedidos_view(request):
+    """Muestra pedidos confirmados o en preparación. Oculta los entregados."""
+    # Filtramos para que NO salgan los pendientes (esos están en otra vista) ni los entregados/cancelados
+    pedidos = (
+        Pedido.objects
+        .filter(estado__in=['confirmado', 'preparacion'])
+        .select_related('cliente')
+        .prefetch_related('detalles__producto__imagenes')
+        .order_by('creado')
+    )
+    return render(request, 'todos_los_pedidos.html', {'pedidos': pedidos})

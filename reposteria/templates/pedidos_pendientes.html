@@ -144,17 +144,25 @@
                 </div>
 
                 {# Comentarios del cliente #}
-                <div class="rounded-[1.35rem] bg-white p-4 lg:p-5 shadow-soft">
+                <div class="rounded-[1.35rem] bg-white p-4 lg:p-5 shadow-soft flex flex-col">
                   <h2 class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2">
                     <span class="h-2 w-2 rounded-full bg-rosa"></span>
                     Comentarios del cliente
                   </h2>
                   {% if pedido.comentarios %}
-                    <p class="rounded-[1rem] bg-mantequilla/40 p-3 lg:p-4 text-sm lg:text-base text-chocolate whitespace-pre-line ring-1 ring-mantequilla/60">
-                      {{ pedido.comentarios }}
-                    </p>
+                    <!-- Contenedor oculto que el script leerá -->
+                    <div class="comment-content hidden">{{ pedido.comentarios }}</div>
+                    <!-- Aquí se inyectará el HTML separado -->
+                    <div class="comment-output flex-1"></div>
                   {% else %}
-                    <p class="text-sm text-cafe/60 italic">Sin comentarios.</p>
+                    <div class="flex-1 flex items-center justify-center rounded-[1rem] bg-cafe/5 border-2 border-dashed border-cafe/10 p-4 min-h-[100px]">
+                      <p class="text-sm text-cafe/50 italic flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Sin comentarios.
+                      </p>
+                    </div>
                   {% endif %}
                 </div>
 
@@ -220,5 +228,80 @@
 
   </div>
 </section>
+
+<!-- SCRIPT PARA SEPARAR DATOS Y COMENTARIOS -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.comment-content').forEach(inputEl => {
+      const rawText = inputEl.textContent.trim();
+      if (!rawText || rawText === 'None') return;
+
+      const outputEl = inputEl.nextElementSibling;
+      
+      // Si no contiene el separador |, se muestra tal cual con el diseño simple
+      if (!rawText.includes('|')) {
+        outputEl.innerHTML = `
+          <div class="relative flex-1 rounded-[1rem] bg-[#FFFDF5] p-4 lg:p-5 text-sm lg:text-base text-chocolate border-l-4 border-mantequilla shadow-sm overflow-hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-4 -right-4 h-24 w-24 text-mantequilla/20" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+              <p class="relative z-10 whitespace-pre-line leading-relaxed font-medium">${escapeHTML(rawText)}</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Lógica para separar por "|"
+      const parts = rawText.split('|').map(p => p.trim());
+      let logistics = [];
+      let notes = '';
+
+      parts.forEach(part => {
+        const lower = part.toLowerCase();
+        if (lower.startsWith('notas:') || lower.startsWith('comentarios:') || lower.startsWith('comentario:')) {
+          notes = part.substring(part.indexOf(':') + 1).trim();
+        } else {
+          logistics.push(part);
+        }
+      });
+
+      let html = '';
+
+      // Bloque 1: Datos Básicos del Pedido (Hora, Fecha, Dirección)
+      if (logistics.length > 0) {
+        html += '<div class="rounded-[1rem] bg-[#FFFDF5] p-4 lg:p-5 border border-mantequilla/40 shadow-sm mb-3">';
+        html += '<h4 class="text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-azul"></span> Datos básicos</h4>';
+        html += '<ul class="space-y-2 text-sm lg:text-base">';
+        logistics.forEach(item => {
+          const colonIndex = item.indexOf(':');
+          if (colonIndex !== -1) {
+            const key = item.substring(0, colonIndex).trim();
+            const value = item.substring(colonIndex + 1).trim();
+            html += `<li class="flex justify-between gap-4 border-b border-chocolate/5 pb-1.5 last:border-0 last:pb-0">
+                        <span class="text-cafe font-medium">${escapeHTML(key)}</span>
+                        <span class="font-bold text-chocolate text-right">${escapeHTML(value)}</span>
+                     </li>`;
+          } else {
+            html += `<li class="font-medium text-chocolate">${escapeHTML(item)}</li>`;
+          }
+        });
+        html += '</ul></div>';
+      }
+
+      // Bloque 2: Notas del Cliente (El comentario como tal)
+      if (notes) {
+        html += '<div class="relative rounded-[1rem] bg-[#FFF5F5] p-4 lg:p-5 border-l-4 border-rosa shadow-sm overflow-hidden">';
+        html += '<h4 class="text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-rosa"></span> Notas del cliente</h4>';
+        html += '<svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-3 -right-3 h-16 w-16 text-rosa/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>';
+        html += `<p class="relative z-10 whitespace-pre-line leading-relaxed font-medium italic text-chocolate">"${escapeHTML(notes)}"</p>`;
+        html += '</div>';
+      }
+
+      outputEl.innerHTML = html;
+    });
+  });
+
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag]));
+  }
+</script>
 
 {% endblock %}

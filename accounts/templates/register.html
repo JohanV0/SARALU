@@ -117,14 +117,40 @@
         <p class="mt-1 text-xs text-cafe sm:text-sm">Regístrate para endulzar tu día.</p>
       </div>
 
-      <!-- Errores generales -->
-      {% if errors %}
-      <div class="mb-5 rounded-2xl bg-rosaClaro px-4 py-3 text-center text-xs font-bold text-chocolate sm:text-sm">
-        <ul class="list-disc space-y-0.5 pl-4 text-left">
-          {% for error in errors %}
-          <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
+      <!-- ============================================================
+           ERRORES · con temática SARALU
+           - Fondo rosa suave (rosaClaro) + anillo rosa + shadow-soft
+           - Osito 🐻 del logo asomando a la izquierda
+           - Título en fuente display (Fredoka) color chocolate
+           - Chispitas decorativas que hacen twinkle
+           - Cada error con badge rosa circular en vez del "•" normal
+      ============================================================ -->
+      {% if errores %}
+      <div class="relative mb-6 overflow-hidden rounded-3xl bg-rosaClaro/90 px-5 py-4 shadow-soft ring-2 ring-rosa/50 backdrop-blur-sm">
+        <!-- Chispitas decorativas -->
+        <span class="pointer-events-none absolute -right-1 -top-2 text-2xl text-rosa/50 animate-twinkle" aria-hidden="true">✦</span>
+        <span class="pointer-events-none absolute bottom-2 right-8 text-base text-mantequilla/70 animate-twinkle" style="animation-delay:-1s" aria-hidden="true">✦</span>
+
+        <div class="relative flex items-start gap-3">
+          <!-- Osito del logo -->
+          <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-soft ring-2 ring-white/80">
+            <span class="text-xl" aria-hidden="true">🐻</span>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <p class="font-display text-sm font-semibold text-chocolate">
+              ¡Ups! Revisa estos detallitos
+            </p>
+            <ul class="mt-2 space-y-1.5 text-xs text-cafe sm:text-sm">
+              {% for error in errores %}
+              <li class="flex items-start gap-2">
+                <span class="mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-rosa text-[10px] font-bold text-white shadow-sm">!</span>
+                <span class="font-medium">{{ error }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
       </div>
       {% endif %}
 

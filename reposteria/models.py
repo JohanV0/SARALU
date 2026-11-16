@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.templatetags.static import static
 from decimal import Decimal
 
 
@@ -67,6 +68,22 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    # === NUEVO: helper para fotos en plantillas ===
+    def imagen_principal(self):
+        """
+        Devuelve la URL de la mejor imagen disponible:
+        1) La imagen principal del producto (campo `imagen`)
+        2) La primera imagen de su galería (ImagenProducto)
+        3) El logo por defecto
+        Uso desde plantillas: {{ producto.imagen_principal }}
+        """
+        if self.imagen:
+            return self.imagen.url
+        primera = self.imagenes.first()
+        if primera:
+            return primera.imagen.url
+        return static('img/logo.png')
 
 
 class ImagenProducto(models.Model):

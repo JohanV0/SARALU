@@ -18,5 +18,8 @@ urlpatterns = [
     path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
     path('panel/pedidos/', views.lista_pedidos_admin_view, name='lista_pedidos_admin'),
     path('panel/pedido/<int:pedido_id>/cambiar-estado/', views.cambiar_estado_pedido_view, name='cambiar_estado_pedido'),
-
+    path('panel/pedidos/pendientes/', views.pedidos_pendientes_view, name='pedidos_pendientes'),
+    path('panel/pedidos/todos/', views.todos_los_pedidos_view, name='todos_los_pedidos'),
+    path('panel/pedidos/aceptar/<int:pedido_id>/', views.aceptar_pedido_view, name='aceptar_pedido'),
+    path('panel/pedidos/entregar/<int:pedido_id>/', views.marcar_entregado_view, name='marcar_entregado'),
 ]

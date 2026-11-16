@@ -1,3 +1,5 @@
+import re
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils.dateparse import parse_date
@@ -28,17 +30,17 @@ def admin(user):
     return user.is_authenticated and user.is_staff
 
 def catalogo_view(request):
-    categoria_id = request.GET.get('categoria')
+    categoria_code = request.GET.get('categoria')        # "TARTAS", "CUPCAKES", ...
     productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
     categorias = Categoria.objects.all()
 
-    if categoria_id:
-        productos = productos.filter(categoria_id=categoria_id)
+    if categoria_code:
+        productos = productos.filter(categoria__categoria=categoria_code)
 
     contexto = {
         'productos': productos,
         'categorias': categorias,
-        'categoria_actual': int(categoria_id) if categoria_id else None,
+        'categoria_actual': categoria_code,              
     }
     return render(request, 'catalogo.html', contexto)
 
@@ -51,7 +53,12 @@ def detalle_producto_view(request, producto_id):
         ),
         id=producto_id
     )
-
+    productos_relacionados = (
+        Producto.objects
+        .filter(categoria=producto.categoria)     # misma categoría
+        .exclude(id=producto.id)                   # sin el actual
+        .order_by('-id')[:4]                       # opcional: los 4 más nuevos
+    )
     resenas = producto.resenas.all().order_by('-fecha_creacion')
     resena_usuario = None
     form = None
@@ -109,6 +116,7 @@ def detalle_producto_view(request, producto_id):
                 form = ResenaForm(instance=resena_usuario)
 
     contexto = {
+        'productos_relacionados': productos_relacionados,
         'producto': producto,
         'resenas': resenas,
         'resena_usuario': resena_usuario,
@@ -141,7 +149,7 @@ def editar_producto(request, producto_id):
         # Leemos los checkboxes correctamente según el HTML
         destacado = 'destacado' in request.POST
         mas_vendido = 'mas_vendido' in request.POST
-        es_nuevo = 'es_nuevo' in request.POST
+        es_nuevo = 'nuevo' in request.POST
 
         if not (nombre and precio and stock and porciones and categoria_id):
             messages.error(request, "Faltan campos obligatorios.")
@@ -194,7 +202,7 @@ def nuevo_producto(request):
     porciones = request.POST.get('porciones')
     destacado = request.POST.get('destacado') == 'on'
     mas_vendido = request.POST.get('mas_vendido') == 'on'
-    es_nuevo = request.POST.get('es_nuevo') == 'on'
+    es_nuevo = request.POST.get('nuevo') == 'on'
 
     if nombre and descripcion and precio:
       producto = Producto(
@@ -241,18 +249,29 @@ def armar_pedido_view(request):
         tipo_entrega = request.POST.get('tipo_entrega')
         fecha_str = request.POST.get('fecha')
         hora = request.POST.get('hora')
-
+        direccion_cliente = request.POST.get('direccion', '').strip()
+        comentarios_cliente = request.POST.get('comentarios', '').strip()
+        
         # --- VALIDACIÓN DE FECHA BLOQUEADA AQUÍ ---
         if fecha_str:
             fecha_obj = parse_date(fecha_str)
             if fecha_obj and FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
                 messages.error(request, f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada (día libre).")
-                return redirect('armar_pedido') # Redirige de vuelta al formulario para que elija otra fecha
+                return redirect('armar_pedido')
         # ------------------------------------------
 
-        nota_horario = f"Fecha de entrega: {fecha_str} | Hora: {hora}"
+        # Si es recogida en tienda, definimos la ubicación para las notas
+        if tipo_entrega == 'recojo':
+            ubicacion_texto = "La Arboleda Campestre, Conjunto Almendros"
+        else:
+            ubicacion_texto = direccion_cliente
 
-        # Acción 1: Creamos el Pedido oficial
+        # Unimos todo de forma ordenada en los comentarios para que quede visible en el detalle del pedido
+        nota_horario = f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | Fecha: {fecha_str} | Hora: {hora}"
+        if comentarios_cliente:
+            nota_horario += f" | Notas: {comentarios_cliente}"
+
+        # Acción 1: Creamos el Pedido oficial (sin tocar el campo 'direccion' relacional para evitar el error)
         nuevo_pedido = Pedido.objects.create(
             cliente=request.user,
             nombre_contacto=request.user.username,
@@ -272,14 +291,15 @@ def armar_pedido_view(request):
                 precio_unitario=item.producto.precio
             )
 
-        # Acción 3: Vaciamos el carrito (borramos los items)
+        # Acción 3: Vaciamos el carrito
         items_carrito.delete()
 
-        # Acción 4: Mensaje de éxito y lo mandamos al inicio
+        # Acción 4: Mensaje de éxito
         messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
         return redirect('home')
 
     # --- CORRECCIÓN: Convertimos las fechas a lista de strings para el JSON ---
+    
     fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
     fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
 
@@ -287,7 +307,7 @@ def armar_pedido_view(request):
         'items': items_carrito,
         'subtotal': subtotal,
         'fechas_bloqueadas': fechas_qs,
-        'fechas_bloqueadas_json': fechas_bloqueadas_json,  # <-- Lista limpia para JS
+        'fechas_bloqueadas_json': fechas_bloqueadas_json,
     }
     return render(request, 'armar_pedido.html', contexto)
 

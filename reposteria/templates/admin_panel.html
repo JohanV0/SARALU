@@ -182,21 +182,20 @@
           <p class="px-2 mb-3 flex items-center gap-2 text-[11px] lg:text-xs 3xl:text-sm font-bold uppercase tracking-widest2 text-chocolate/50">
           <span class="text-mantequilla">★</span> Usuarios
           </p>
-          <a href="#"
-             class="group relative col-span-2 flex items-center gap-4 rounded-4xl bg-crema ring-1 ring-chocolate/10 px-5 py-4 3xl:px-6 3xl:py-5 shadow-soft hover:ring-chocolate/25 hover:-translate-y-1 transition-all overflow-hidden">
-            <span class="pointer-events-none absolute top-2 right-20 text-mantequilla text-sm rotate-12">★</span>
-            <span class="grid h-14 w-14 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-3xl bg-chocolate text-mantequilla">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 3xl:h-7 3xl:w-7" fill="none"
-                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 11l3 3L22 4" />
-                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-              </svg>
-            </span>
-            <div class="flex-1 min-w-0">
-              <p class="font-display font-bold leading-tight text-chocolate text-base lg:text-lg 3xl:text-xl">Gestionar Usuarios</p>
-              <p class="text-xs lg:text-sm 3xl:text-base text-chocolate/60 mt-1">Administra los usuarios del sistema</p>
-            </div>
+            <a href="{% url 'gestionar-usuarios' %}"
+               class="group relative flex items-center gap-4 rounded-4xl bg-mantequilla px-5 py-5 shadow-soft hover:-translate-y-1 hover:shadow-glow transition-all overflow-hidden">
+              <span class="grid h-16 w-16 shrink-0 place-items-center rounded-3xl bg-chocolate text-mantequilla">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </span>
+              <div class="flex-1 min-w-0">
+                <p class="font-display font-bold leading-tight text-chocolate text-xl">Gestionar usuarios</p>
+                <p class="text-sm text-chocolate/60 mt-1">Permisos y miembros del grupo</p>
+              </div>
+            </a>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 3xl:h-6 3xl:w-6 text-chocolate/40 group-hover:text-chocolate group-hover:translate-x-0.5 transition-all shrink-0"
                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
                  stroke-linecap="round" stroke-linejoin="round">

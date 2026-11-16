@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Iniciar sesión — SARALU</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -54,24 +54,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 
-<body class="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-crema px-4 py-16 font-body antialiased text-chocolate selection:bg-rosaClaro selection:text-chocolate">
+<!--
+  CAMBIOS CLAVE PARA MÓVIL:
+  - overflow-x-hidden (antes overflow-hidden) → permite el scroll vertical.
+  - Sin flex en el body: el centrado lo hace un wrapper con min-h-[100dvh] + py.
+  - El body ya NO recorta el contenido: si la tarjeta es más alta que la pantalla, se puede deslizar.
+-->
+<body class="relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-crema font-body antialiased text-chocolate selection:bg-rosaClaro selection:text-chocolate">
 
-  <!-- ===== FONDO: logo disimulado ===== -->
-  <div class="pointer-events-none fixed inset-0" aria-hidden="true">
-    <!-- Logo grande, tenue, difuminado y desvanecido en los bordes -->
+  <!-- ===== FONDO: logo disimulado (fijo, no afecta al scroll) ===== -->
+  <div class="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
     <div class="absolute inset-0 bg-center bg-no-repeat opacity-[0.40] blur-[2px] mix-blend-multiply
                 [-webkit-mask-image:radial-gradient(circle,black_30%,transparent_68%)]
                 [mask-image:radial-gradient(circle,black_30%,transparent_68%)]"
-         style="background-image:url('{% static 'img/logo.png' %}'); background-size:min(1200px,160vw) auto;">
+            style="background-image:url('{% static 'img/logo.png' %}'); background-size:min(1200px,160vw) auto;">
     </div>
-    <!-- Manchas de color -->
-    <div class="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-rosa/35 blur-3xl"></div>
-    <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-mantequilla/50 blur-3xl"></div>
-    <div class="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-azul/30 blur-3xl"></div>
+    <div class="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-rosa/35 blur-3xl sm:h-96 sm:w-96"></div>
+    <div class="absolute -bottom-32 -right-32 h-72 w-72 rounded-full bg-mantequilla/50 blur-3xl sm:h-96 sm:w-96"></div>
+    <div class="absolute top-1/3 -right-24 h-56 w-56 rounded-full bg-azul/30 blur-3xl sm:h-72 sm:w-72"></div>
   </div>
 
-  <!-- ===== Chispitas de dona flotando + estrellas ===== -->
-  <div class="pointer-events-none fixed inset-0" aria-hidden="true">
+  <!-- ===== Chispitas de dona + estrellas (ocultas parcialmente en móvil) ===== -->
+  <div class="pointer-events-none fixed inset-0 z-0 hidden sm:block" aria-hidden="true">
     <span class="absolute top-[14%] left-[10%] h-1.5 w-5 rounded-full bg-rosa animate-float" style="--r:35deg"></span>
     <span class="absolute top-[26%] right-[12%] h-1.5 w-5 rounded-full bg-mantequilla animate-float" style="--r:-30deg; animation-delay:-2s"></span>
     <span class="absolute bottom-[22%] left-[14%] h-1.5 w-5 rounded-full bg-azul animate-float" style="--r:70deg; animation-delay:-4s"></span>
@@ -79,125 +83,140 @@
     <span class="absolute top-[48%] left-[5%] h-1.5 w-4 rounded-full bg-mantequilla animate-float" style="--r:10deg; animation-delay:-3s"></span>
     <span class="absolute top-[8%] right-[30%] h-1.5 w-4 rounded-full bg-azul animate-float" style="--r:-15deg; animation-delay:-5s"></span>
 
-    <span class="absolute top-20 left-[18%] text-mantequilla text-3xl animate-twinkle">✦</span>
-    <span class="absolute bottom-24 right-[10%] text-rosa text-2xl animate-twinkle" style="animation-delay:-1s">✦</span>
-    <span class="absolute top-[40%] right-[6%] text-azul text-xl animate-twinkle" style="animation-delay:-2s">✦</span>
-    <span class="absolute bottom-[30%] left-[8%] text-rosa text-xl animate-twinkle" style="animation-delay:-.5s">✦</span>
+    <span class="absolute top-20 left-[18%] text-3xl text-mantequilla animate-twinkle">✦</span>
+    <span class="absolute bottom-24 right-[10%] text-2xl text-rosa animate-twinkle" style="animation-delay:-1s">✦</span>
+    <span class="absolute top-[40%] right-[6%] text-xl text-azul animate-twinkle" style="animation-delay:-2s">✦</span>
+    <span class="absolute bottom-[30%] left-[8%] text-xl text-rosa animate-twinkle" style="animation-delay:-.5s">✦</span>
   </div>
 
-  <!-- ===== Tarjeta ===== -->
-  <div class="relative z-10 mt-10 w-full max-w-md">
+  <!-- ===== WRAPPER CON SCROLL NATURAL ===== -->
+  <div class="relative z-10 flex min-h-screen min-h-[100dvh] w-full flex-col items-center justify-center
+              px-4 pb-14 pt-24 sm:px-6 sm:py-20">
 
-    <!-- Osito del logo asomando sobre la tarjeta -->
-    <div class="absolute -top-14 left-1/2 z-20 h-28 w-28 -translate-x-1/2 overflow-hidden rounded-full bg-crema ring-4 ring-white shadow-lift">
-      <!-- Si el osito no queda centrado, ajusta left/top -->
-      <img src="{% static 'img/logo.png' %}" alt="Logo SARALU"
-           class="absolute max-w-none"
-           style="width:287px; left:-25px; top:-84px;" />
-    </div>
+    <!-- Tarjeta -->
+    <div class="relative w-full max-w-md">
 
-    <main class="relative rounded-[2.5rem] bg-white/65 px-6 pb-9 pt-20 shadow-lift ring-1 ring-white/80 backdrop-blur-xl sm:px-10
-                 outline outline-2 outline-dashed outline-rosa/60 outline-offset-[-14px]">
-
-      <!-- Título -->
-      <div class="mb-8 text-center">
-        <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft">
-          <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
-          <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">
-            Repostería artesanal
-          </span>
-        </div>
-
-        <h1 class="mt-5 font-display text-4xl sm:text-5xl font-semibold leading-[1.1] tracking-tight text-chocolate">
-          Te da la<br />
-          <span class="font-script text-rosa text-5xl sm:text-6xl inline-block mt-2 pb-2 leading-[1.3]">
-            bienvenida
-          </span>
-        </h1>
-        <p class="mt-1 text-sm text-cafe">Ingresa para endulzar tu día.</p>
+      <!-- Osito del logo asomando (tamaño responsive) -->
+      <div class="absolute -top-12 left-1/2 z-20 h-24 w-24 -translate-x-1/2 overflow-hidden rounded-full
+                  bg-crema ring-4 ring-white shadow-lift sm:-top-14 sm:h-28 sm:w-28">
+        <img src="{% static 'img/logo.png' %}" alt="Logo SARALU"
+             class="absolute max-w-none w-[246px] left-[-21px] top-[-72px]
+                    sm:w-[287px] sm:left-[-25px] sm:top-[-84px]" />
       </div>
 
-      <!-- Errores de Django -->
-      {% if form.errors %}
-      <div class="mb-5 rounded-2xl bg-rosaClaro px-4 py-3 text-center text-sm font-bold text-chocolate">
-        Usuario o contraseña incorrectos.
-      </div>
-      {% endif %}
+      <main class="relative rounded-[2rem] bg-white/65 px-5 pb-8 pt-16 shadow-lift ring-1 ring-white/80 backdrop-blur-xl
+                   outline outline-2 outline-dashed outline-rosa/60 outline-offset-[-12px]
+                   sm:rounded-[2.5rem] sm:px-10 sm:pb-9 sm:pt-20 sm:outline-offset-[-14px]">
 
-      <form action="{% url 'login' %}" method="post" class="space-y-5">
-        {% csrf_token %}
-
-        <!-- Usuario -->
-        <div>
-          <label for="username" class="mb-1.5 ml-4 block text-[11px] font-bold uppercase tracking-widest2 text-cafe">Nombre</label>
-          <div class="group relative">
-            <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe/50 transition-colors group-focus-within:text-rosa"
-                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-            <input
-              type="text"
-              name="username"
-              id="username"
-              placeholder="Nombre del usuario"
-              autofocus
-              value="{{ form.username.value|default:'' }}"
-              class="w-full rounded-full bg-white/85 py-3.5 pl-12 pr-5 text-sm text-chocolate placeholder-cafe/50
-                     shadow-soft ring-1 ring-transparent transition
-                     focus:outline-none focus:ring-2 focus:ring-rosa" />
+        <!-- Título -->
+        <div class="mb-7 text-center sm:mb-8">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-soft sm:px-4 sm:py-2">
+            <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
+            <span class="text-[9px] font-bold uppercase tracking-widest2 text-cafe sm:text-xs">
+              Repostería artesanal
+            </span>
           </div>
+
+          <h1 class="mt-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight text-chocolate
+                     sm:mt-5 sm:text-4xl md:text-5xl">
+            Te da la<br />
+            <span class="font-script mt-1 inline-block pb-2 text-4xl leading-[1.3] text-rosa
+                         sm:mt-2 sm:text-5xl md:text-6xl">
+              bienvenida
+            </span>
+          </h1>
+          <p class="mt-1 text-sm text-cafe">Ingresa para endulzar tu día.</p>
         </div>
 
-        <!-- Contraseña -->
-        <div>
-          <label for="password" class="mb-1.5 ml-4 block text-[11px] font-bold uppercase tracking-widest2 text-cafe">Contraseña</label>
-          <div class="group relative">
-            <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe/50 transition-colors group-focus-within:text-rosa"
-                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Ingrese su contraseña"
-              required
-              class="w-full rounded-full bg-white/85 py-3.5 pl-12 pr-5 text-sm text-chocolate placeholder-cafe/50
-                     shadow-soft ring-1 ring-transparent transition
-                     focus:outline-none focus:ring-2 focus:ring-rosa" />
+        <!-- Errores de Django -->
+        {% if form.errors %}
+        <div class="mb-5 rounded-2xl bg-rosaClaro px-4 py-3 text-center text-sm font-bold text-chocolate">
+          Usuario o contraseña incorrectos.
+        </div>
+        {% endif %}
+
+        <form action="{% url 'login' %}" method="post" class="space-y-5">
+          {% csrf_token %}
+
+          <!-- Usuario -->
+          <div>
+            <label for="username" class="mb-1.5 ml-4 block text-[11px] font-bold uppercase tracking-widest2 text-cafe">Nombre</label>
+            <div class="group relative">
+              <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe/50 transition-colors group-focus-within:text-rosa"
+                   fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <input
+                type="text"
+                name="username"
+                id="username"
+                placeholder="Nombre del usuario"
+                autocomplete="username"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="next"
+                autofocus
+                value="{{ form.username.value|default:'' }}"
+                class="w-full rounded-full bg-white/85 py-3.5 pl-12 pr-5 text-base text-chocolate placeholder-cafe/50
+                       shadow-soft ring-1 ring-transparent transition
+                       focus:outline-none focus:ring-2 focus:ring-rosa sm:text-sm" />
+            </div>
           </div>
 
-          <div class="mt-2 text-right">
-            <a href="{% url 'password_reset' %}" class="text-xs font-bold text-cafe transition-colors hover:text-chocolate">
-              ¿Olvidaste tu contraseña?
+          <!-- Contraseña -->
+          <div>
+            <label for="password" class="mb-1.5 ml-4 block text-[11px] font-bold uppercase tracking-widest2 text-cafe">Contraseña</label>
+            <div class="group relative">
+              <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cafe/50 transition-colors group-focus-within:text-rosa"
+                   fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              <input
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Ingrese su contraseña"
+                autocomplete="current-password"
+                enterkeyhint="go"
+                required
+                class="w-full rounded-full bg-white/85 py-3.5 pl-12 pr-5 text-base text-chocolate placeholder-cafe/50
+                       shadow-soft ring-1 ring-transparent transition
+                       focus:outline-none focus:ring-2 focus:ring-rosa sm:text-sm" />
+            </div>
+
+            <div class="mt-2 text-right">
+              <a href="{% url 'password_reset' %}" class="text-xs font-bold text-cafe transition-colors hover:text-chocolate">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 text-sm font-bold text-mantequilla
+                   shadow-soft transition-all hover:-translate-y-1 hover:bg-cafe active:scale-[0.98]">
+            Ingresar
+            <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+
+          <p class="text-center text-sm text-cafe">
+            ¿No tienes cuenta?
+            <a href="{% url 'register' %}"
+               class="font-bold text-chocolate underline decoration-rosa decoration-2 underline-offset-4 transition-colors hover:text-cafe">
+              Regístrate
             </a>
-          </div>
-        </div>
+          </p>
+        </form>
 
-        <button
-          type="submit"
-          class="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-chocolate px-7 py-3.5 text-sm font-bold text-mantequilla
-                 shadow-soft transition-all hover:-translate-y-1 hover:bg-cafe active:scale-[0.98]">
-          Ingresar
-          <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
-
-        <p class="text-center text-sm text-cafe">
-          ¿No tienes cuenta?
-          <a href="{% url 'register' %}"
-             class="font-bold text-chocolate underline decoration-rosa decoration-2 underline-offset-4 transition-colors hover:text-cafe">
-            Regístrate
+        <div class="mt-6 text-center">
+          <a href="{% url 'home' %}"
+             class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest2 text-cafe/70 transition-colors hover:text-chocolate">
+            <span aria-hidden="true">←</span> Volver al inicio
           </a>
-        </p>
-      </form>
-
-      <div class="mt-6 text-center">
-        <a href="{% url 'home' %}"
-           class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest2 text-cafe/70 transition-colors hover:text-chocolate">
-          <span aria-hidden="true">←</span> Volver al inicio
-        </a>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   </div>
 </body>
 </html>

@@ -142,34 +142,76 @@
               
               <!-- Info de Entrega (Fechas, Hora, Dirección) -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
-                <!-- Tarjeta fusionada de Fecha y Hora (Extraída de comentarios) -->
-                <div class="bg-white p-4 rounded-2xl ring-1 ring-chocolate/5 sm:col-span-2">
+
+                <!-- Tarjeta: Fecha de entrega -->
+                <div class="bg-white p-4 rounded-2xl ring-1 ring-chocolate/5">
                   <div class="flex items-center gap-2 text-cafe mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                    <span class="text-[10px] font-bold uppercase tracking-widest2">Programación de entrega</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span class="text-[10px] font-bold uppercase tracking-widest2">Fecha de entrega</span>
                   </div>
                   <p class="font-semibold text-chocolate">
-                    {% if pedido.comentarios %}
-                      {{ pedido.comentarios }}
+                    {% if pedido.fecha_entrega_mostrar %}
+                      {{ pedido.fecha_entrega_mostrar|date:"d \d\e F \d\e Y" }}
                     {% else %}
                       Por confirmar
                     {% endif %}
                   </p>
                 </div>
-                
-                <!-- Tarjeta de Método de Entrega -->
+
+                <!-- Tarjeta: Hora estimada -->
+                <div class="bg-white p-4 rounded-2xl ring-1 ring-chocolate/5">
+                  <div class="flex items-center gap-2 text-cafe mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span class="text-[10px] font-bold uppercase tracking-widest2">Hora estimada</span>
+                  </div>
+                  <p class="font-semibold text-chocolate">
+                    {% if pedido.hora_entrega_mostrar %}
+                      {{ pedido.hora_entrega_mostrar }}
+                    {% else %}
+                      Por confirmar
+                    {% endif %}
+                  </p>
+                </div>
+
+                <!-- Tarjeta: Método de entrega + dirección -->
                 <div class="bg-white p-4 rounded-2xl ring-1 ring-chocolate/5 sm:col-span-2">
                   <div class="flex items-center gap-2 text-cafe mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
                     <span class="text-[10px] font-bold uppercase tracking-widest2">Método de entrega</span>
                   </div>
                   <p class="font-semibold text-chocolate">{{ pedido.get_domicilio_display|default:"No especificado" }}</p>
-                  {% if pedido.direccion %}
-                    <p class="text-sm text-cafe mt-1">{{ pedido.direccion }}</p>
+                  {% if pedido.direccion_entrega_mostrar %}
+                    <p class="text-sm text-cafe mt-1">{{ pedido.direccion_entrega_mostrar }}</p>
                   {% endif %}
                 </div>
-                
+
+                <!-- Tarjeta: Notas (solo aparece si el cliente escribió algo) -->
+                {% if pedido.notas_entrega_mostrar %}
+                  <div class="bg-mantequilla/30 p-4 rounded-2xl ring-1 ring-mantequilla sm:col-span-2">
+                    <div class="flex items-center gap-2 text-cafe mb-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                      </svg>
+                      <span class="text-[10px] font-bold uppercase tracking-widest2">Notas del pedido</span>
+                    </div>
+                    <p class="text-sm text-chocolate italic">"{{ pedido.notas_entrega_mostrar }}"</p>
+                  </div>
+                {% endif %}
+
               </div>
               
               <!-- Lista de productos -->

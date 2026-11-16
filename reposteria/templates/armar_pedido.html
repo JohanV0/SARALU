@@ -81,10 +81,10 @@
             </label>
 
             <div class="relative">
-              <select name="tipo_entrega" required
+              <select name="tipo_entrega" id="tipo-entrega-select" required onchange="toggleDireccion()"
                       class="w-full appearance-none rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 pr-11 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
                 <option value="domicilio">Domicilio en Ibagué</option>
-                <option value="recojo">Recoger en Tienda (Local)</option>
+                <option value="recojo">Recoger en Tienda</option>
               </select>
               <svg xmlns="http://www.w3.org/2000/svg"
                    class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-chocolate/50"
@@ -93,6 +93,20 @@
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </div>
+          </div>
+
+          {# Campo dinámico de Dirección o Info de Tienda #}
+          <div id="campo-domicilio" class="mt-5">
+            <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+              Dirección exacta de entrega
+            </label>
+            <input type="text" name="direccion" id="input-direccion" required placeholder="Ej: Calle 60 # 5-23, apto 301"
+                   class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
+          </div>
+
+          <div id="info-tienda" class="hidden mt-5 rounded-2xl bg-mantequilla/40 p-4 border border-mantequilla text-sm text-chocolate">
+            <p class="font-bold">📍 Dirección de recogida:</p>
+            <p class="mt-1 text-cafe">La Arboleda Campestre, Conjunto Almendros, Ibagué.</p>
           </div>
 
           {# Fecha y hora #}
@@ -112,12 +126,10 @@
               <input type="date" name="fecha" id="input-fecha" required
                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
               
-              {# --- MENSAJE DE ERROR DINÁMICO --- #}
               <div id="mensaje-error-fecha" class="hidden mt-2 text-xs sm:text-sm font-bold text-red-500 flex items-start gap-1">
                 <span>⚠</span>
                 <span>Esta fecha no está disponible. Por favor, selecciona otra.</span>
               </div>
-              {# -------------------------------- #}
             </div>
 
             <div class="w-full sm:w-1/2">
@@ -149,6 +161,24 @@
               <span class="grid h-6 w-6 place-items-center rounded-full bg-azul text-[10px] text-chocolate">✓</span>
               Calidad
             </span>
+          </div>
+
+          {# PASO 2: Comentarios o descripción del pedido #}
+          <div class="mt-7 pt-6 border-t border-chocolate/10">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-mantequilla font-display text-lg font-bold text-chocolate shadow-soft">
+                2
+              </span>
+              <div>
+                <p class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/55">Paso 2</p>
+                <h3 class="font-display text-xl lg:text-2xl font-semibold text-chocolate">
+                  Comentarios o descripción
+                </h3>
+              </div>
+            </div>
+            
+            <textarea name="comentarios" rows="3" placeholder="Ej: Por favor que el pastel lleve dedicatoria de feliz cumpleaños, o indicaciones especiales..."
+                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3 text-sm lg:text-base font-medium text-chocolate focus:border-chocolate focus:outline-none transition"></textarea>
           </div>
 
           <div class="mt-7 h-px bg-chocolate/10"></div>
@@ -183,7 +213,7 @@
             <span class="pointer-events-none absolute bottom-3 right-8 text-rosa text-sm -rotate-12">★</span>
 
             <div>
-              <p class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/55">Paso 2</p>
+              <p class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/55">Resumen</p>
               <h2 class="font-display mt-1 text-2xl lg:text-3xl font-semibold leading-none text-chocolate">
                 Resumen de compra
               </h2>
@@ -291,7 +321,7 @@
             </span>
             <div>
               <p class="text-sm lg:text-base font-bold text-chocolate">Recogida en tienda</p>
-              <p class="mt-0.5 text-[11px] lg:text-xs text-cafe">Sin costo adicional en el local.</p>
+              <p class="mt-0.5 text-[11px] lg:text-xs text-cafe">Sin costo adicional en la Arboleda Campestre.</p>
             </div>
           </div>
 
@@ -320,44 +350,48 @@
 
   </main>
 
-  {# --- SCRIPT PARA LA VALIDACIÓN DINÁMICA --- #}
-  {# CORRECCIÓN: Ahora usamos la lista de strings que enviamos desde la vista #}
+  {# --- SCRIPT PARA VALIDACIÓN Y INTERACTIVIDAD --- #}
   {{ fechas_bloqueadas_json|json_script:"fechas-bloqueadas-data" }}
 
   <script>
+    function toggleDireccion() {
+      const selectEntrega = document.getElementById('tipo-entrega-select');
+      const campoDomicilio = document.getElementById('campo-domicilio');
+      const inputDireccion = document.getElementById('input-direccion');
+      const infoTienda = document.getElementById('info-tienda');
+
+      if (selectEntrega.value === 'recojo') {
+        campoDomicilio.classList.add('hidden');
+        inputDireccion.removeAttribute('required');
+        infoTienda.classList.remove('hidden');
+      } else {
+        campoDomicilio.classList.remove('hidden');
+        inputDireccion.setAttribute('required', 'true');
+        infoTienda.classList.add('hidden');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const inputFecha = document.getElementById('input-fecha');
       const mensajeError = document.getElementById('mensaje-error-fecha');
       const btnConfirmar = document.getElementById('btn-confirmar');
 
-      // Leemos la lista de strings (["2026-10-25", "2026-11-01"])
       const fechasBloqueadasArray = JSON.parse(document.getElementById('fechas-bloqueadas-data').textContent);
 
       inputFecha.addEventListener('change', function() {
         const fechaSeleccionada = this.value;
 
         if (fechasBloqueadasArray.includes(fechaSeleccionada)) {
-          // Si la fecha está bloqueada: mostramos el error y bloqueamos el botón
           mensajeError.classList.remove('hidden');
           btnConfirmar.disabled = true;
           btnConfirmar.classList.add('opacity-50', 'cursor-not-allowed');
-          
-          // Pintamos el borde del input de rojo
-          inputFecha.classList.add('border-red-500');
-          inputFecha.classList.remove('border-chocolate/10');
         } else {
-          // Si la fecha está libre: ocultamos el error y habilitamos el botón
           mensajeError.classList.add('hidden');
           btnConfirmar.disabled = false;
           btnConfirmar.classList.remove('opacity-50', 'cursor-not-allowed');
-          
-          // Restauramos el borde normal
-          inputFecha.classList.remove('border-red-500');
-          inputFecha.classList.add('border-chocolate/10');
         }
       });
     });
   </script>
-  {# ------------------------------------------ #}
 
 {% endblock %}

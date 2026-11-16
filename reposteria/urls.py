@@ -16,5 +16,8 @@ urlpatterns = [
     path('lista_productos/<int:producto_id>/avanzar',views.avanzar_estado_categoria, name='avanzar_estado_categoria'),
     path('panel/bloquear-fechas/', views.gestionar_fechas_bloqueadas_view, name='gestionar_fechas_bloqueadas'),
     path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
-
+    path('panel/pedidos/pendientes/', views.pedidos_pendientes_view, name='pedidos_pendientes'),
+    path('panel/pedidos/todos/', views.todos_los_pedidos_view, name='todos_los_pedidos'),
+    path('panel/pedidos/aceptar/<int:pedido_id>/', views.aceptar_pedido_view, name='aceptar_pedido'),
+    path('panel/pedidos/entregar/<int:pedido_id>/', views.marcar_entregado_view, name='marcar_entregado'),
 ]

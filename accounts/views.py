@@ -201,6 +201,7 @@ def gestionar_usuarios(request):
     # Listado de usuarios que YA están en el grupo
     miembros = grupo.user_set.all().order_by('username')
 
+    user = User.objects.all()
     # Usuarios que NO están en el grupo (para poder agregarlos)
     no_miembros = User.objects.exclude(id__in=miembros.values_list('id', flat=True)).order_by('username')
 
@@ -218,6 +219,7 @@ def gestionar_usuarios(request):
     contexto = {
         'grupo': grupo,
         'miembros': miembros,
+        'user' : user,
         'no_miembros': no_miembros,
         'permisos_app': permisos_app,
         'permisos_actuales': permisos_actuales,

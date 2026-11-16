@@ -136,8 +136,23 @@
           </div>
         {% endif %}
       </div>
-
     </div>
+      <div class="mt-10 flex justify-center">
+        <ul >
+          {% for usuario in user %}
+          <li>
+            <p>Usuario</p>
+            {{usuario.username}}
+            <p>Correo electronico</p>
+            {{usuario.email}}
+            <p>Estado de usuario</p>
+            {{usuario.is_active}}
+
+          </li>
+          {% endfor %}
+        </ul>
+    </div>
+
     {# ============================================================ #}
     {# VOLVER                                                        #}
     {# ============================================================ #}

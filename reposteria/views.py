@@ -6,7 +6,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from .models import (
     Producto, Categoria, Resena, RespuestaResena, Carrito, 
     Pedido, DetallePedido, ItemCarrito, FechaBloqueada,
@@ -539,8 +539,8 @@ def marcar_entregado_view(request, pedido_id):
 @login_required
 @user_passes_test(admin)
 def todos_los_pedidos_view(request):
-    """Muestra pedidos confirmados o en preparación. Oculta los entregados."""
-    # Filtramos para que NO salgan los pendientes (esos están en otra vista) ni los entregados/cancelados
+    busqueda = request.GET.get("buscar", "").strip()
+
     pedidos = (
         Pedido.objects
         .filter(estado__in=['confirmado', 'preparacion'])
@@ -548,4 +548,18 @@ def todos_los_pedidos_view(request):
         .prefetch_related('detalles__producto__imagenes')
         .order_by('creado')
     )
-    return render(request, 'todos_los_pedidos.html', {'pedidos': pedidos})
+
+    if busqueda:
+        pedidos = pedidos.filter(
+            Q(nombre_contacto__icontains = busqueda) |
+            Q(telefono_contacto__icontains = busqueda) |
+            Q(direccion_entrega__icontains = busqueda) |
+            Q(creado__date__icontains = busqueda) |
+            Q(detalles__producto__nombre__icontains = busqueda)
+        ).distinct()
+
+    return render(
+        request,
+        'todos_los_pedidos.html',
+        {'pedidos': pedidos, 'busqueda': busqueda},
+    )

@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Prefetch
 from .models import (
     Producto, Categoria, Resena, RespuestaResena, Carrito, 
-    Pedido, DetallePedido, ItemCarrito, FechaBloqueada,
-    CupoFecha, ConfiguracionAgenda
+    Pedido, DetallePedido, ItemCarrito, FechaBloqueada, 
+    CupoFecha, ConfiguracionAgenda, HistorialEstadoPedido
 )
 from .forms import ResenaForm
 
@@ -431,9 +431,21 @@ def cambiar_estado_pedido_view(request, pedido_id):
         estados_validos = [e[0] for e in Pedido.ESTADOS]
         
         if nuevo_estado in estados_validos:
+            estado_anterior = pedido.estado
             pedido.estado = nuevo_estado
             pedido.save()
             
+            # CRITERIO HU-030: Si pasa a cancelado, liberamos la fecha/agenda asociada si estaba bloqueada
+            if nuevo_estado == 'cancelado' and estado_anterior != 'cancelado':
+                # Buscamos si en los comentarios hay una fecha guardada (ej. 'Fecha: 2026-12-10')
+                match_fecha = re.search(r'Fecha:\s*([\d\-]+)', pedido.comentarios or '')
+                if match_fecha:
+                    fecha_str = match_fecha.group(1)
+                    fecha_obj = parse_date(fecha_str)
+                    if fecha_obj:
+                        # Si esa fecha estaba bloqueada exclusivamente por este motivo, la eliminamos para liberar el cupo
+                        FechaBloqueada.objects.filter(fecha=fecha_obj).delete()
+
             # Registramos el cambio en el historial del pedido
             HistorialEstadoPedido.objects.create(
                 pedido=pedido,
@@ -442,7 +454,7 @@ def cambiar_estado_pedido_view(request, pedido_id):
                 usuario=request.user
             )
             
-            messages.success(request, f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!")
+            messages.success(request, f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}' y se ha liberado el cupo de la agenda!")
         else:
             messages.error(request, "Estado inválido.")
             

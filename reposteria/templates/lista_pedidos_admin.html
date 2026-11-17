@@ -34,7 +34,7 @@
         <div class="rounded-[2rem] bg-crema p-6 lg:p-8 shadow-soft ring-1 ring-chocolate/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           
           <!-- Info básica del pedido -->
-          <div class="flex-1">
+          <div class="flex-1 w-full">
             <div class="flex items-center gap-3 mb-2">
               <span class="rounded-full bg-rosaClaro px-3 py-1 text-xs font-bold text-chocolate">
                 Pedido #{{ pedido.id }}
@@ -52,21 +52,26 @@
             </h3>
 
             <!-- Productos del pedido -->
-            <p class="text-sm text-chocolate/80">
+            <p class="text-sm text-chocolate/80 mb-3">
               {% for detalle in pedido.detalles.all %}
                 <span class="font-bold">{{ detalle.cantidad }}x</span> {{ detalle.producto.nombre }}{% if not forloop.last %}, {% endif %}
               {% endfor %}
             </p>
 
+            <!-- Tarjeta de detalles limpia en renglones organizados -->
             {% if pedido.comentarios %}
-              <p class="text-xs text-cafe/80 mt-2 bg-white/60 p-2.5 rounded-xl border border-chocolate/5">
-                <span class="font-bold">Detalles / Notas:</span> {{ pedido.comentarios }}
-              </p>
+              <div class="bg-white/80 p-4 rounded-2xl border border-chocolate/10 space-y-2 text-xs text-chocolate shadow-sm">
+                <p class="font-bold text-[11px] uppercase tracking-wider text-cafe border-b border-chocolate/10 pb-1 mb-2">Programación y Datos de Entrega</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div><span class="font-bold text-cafe">Comentarios:</span> {{ pedido.comentarios }}</div>
+                </div>
+              </div>
             {% endif %}
           </div>
 
-          <!-- Selector de Estado (Formulario de Cambio) -->
-          <form method="POST" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="flex items-center gap-3 w-full md:w-auto bg-white p-3 rounded-2xl ring-1 ring-chocolate/10">
+          <!-- Selector de Estado (Formulario de Cambio) alineado -->
+          <form method="POST" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="flex items-center gap-3 w-full md:w-auto bg-white p-3 rounded-2xl ring-1 ring-chocolate/10 shadow-sm shrink-0">
             {% csrf_token %}
             <select name="estado" class="appearance-none rounded-xl border border-chocolate/20 bg-crema px-3 py-2 text-xs font-bold text-chocolate focus:outline-none focus:border-chocolate">
               {% for val, label in pedido.ESTADOS %}

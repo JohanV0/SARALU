@@ -201,6 +201,7 @@ def gestionar_usuarios(request):
     # Listado de usuarios que YA están en el grupo
     miembros = grupo.user_set.all().order_by('username')
 
+    usuarios = User.objects.all()
     # Usuarios que NO están en el grupo (para poder agregarlos)
     no_miembros = User.objects.exclude(id__in=miembros.values_list('id', flat=True)).order_by('username')
 
@@ -218,8 +219,23 @@ def gestionar_usuarios(request):
     contexto = {
         'grupo': grupo,
         'miembros': miembros,
+        'usuarios' : usuarios,
         'no_miembros': no_miembros,
         'permisos_app': permisos_app,
         'permisos_actuales': permisos_actuales,
     }
     return render(request, 'gestionar-usuarios.html', contexto)
+    
+@login_required
+@user_passes_test(admin)
+def cambiar_estado_usuario(request, id):
+    usuario = get_object_or_404(User, id=id)
+
+    if usuario.is_active == True:
+        usuario.is_active = False
+        usuario.save()
+    elif usuario.is_active == False:
+        usuario.is_active = True
+        usuario.save()
+    
+    return redirect('gestionar-usuarios')

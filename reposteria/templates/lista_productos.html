@@ -44,7 +44,55 @@
         Nuevo producto
       </a>
     </div>
-
+    {# ============ BUSCADOR ============ #}
+    <form method="get" class="mb-8 lg:mb-10">
+      <div class="flex flex-col sm:flex-row gap-3">
+      
+        <!-- 1) Búsqueda por texto -->
+        <input
+          type="text"
+          name="buscar"
+          value="{{ busqueda|default:'' }}"
+          placeholder="Buscar por nombre del producto (opcional)"
+          aria-label="Buscar por nombre del producto"
+          class="flex-1 rounded-full bg-white px-5 py-3 text-sm lg:text-base text-chocolate shadow-soft border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-chocolate/40 placeholder:text-cafe/60"
+        >
+      
+        <!-- 2) Filtro por choices (estado) -->
+        <select
+          name="estado"
+          aria-label="Filtrar por estado"
+          class="rounded-full bg-white px-5 py-3 text-sm lg:text-base text-chocolate shadow-soft border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-chocolate/40"
+        >
+          <option value="">Seleccionar estado (opcional)</option>
+          {% for valor, etiqueta in estados %}
+            <option value="{{ valor }}" {% if estado == valor %}selected{% endif %}>
+              {{ etiqueta }}
+            </option>
+          {% endfor %}
+        </select>
+      
+        <!-- Botón buscar -->
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-chocolate/90 hover:-translate-y-0.5 transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.3-4.3"/>
+          </svg>
+          Buscar
+        </button>
+      
+    <!-- Limpiar: aparece si hay CUALQUIER filtro activo -->
+    {% if busqueda or estado %}
+      <a href="{% url 'todos_los_pedidos' %}"
+         class="inline-flex items-center justify-center gap-2 rounded-full bg-crema px-5 py-3 text-sm lg:text-base font-semibold text-chocolate ring-1 ring-chocolate/15 hover:bg-mantequilla transition-all">
+        Limpiar
+      </a>
+    {% endif %}
+  </div>
+</form>
     {# ---------- LISTA ---------- #}
     {% if productos %}
       <ul class="flex flex-col gap-4 lg:gap-5 3xl:gap-6">

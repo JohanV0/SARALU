@@ -227,7 +227,27 @@ def nuevo_producto(request):
 @user_passes_test(admin)
 def lista_productos(request):
     productos = Producto.objects.all()
-    return render(request,'lista_productos.html',{"productos":productos})
+    busqueda = request.GET.get("buscar", "").strip()
+    estado = request.GET.get("estado", "").strip()   # 👈 nuevo filtro
+
+    if busqueda:
+        productos = productos.filter(
+            Q(nombre__icontains=busqueda)
+        ).distinct()
+
+    if estado:                                       # 👈 aplicamos el filtro
+        productos = productos.filter(estado=estado)
+
+    return render(
+        request,
+        'lista_productos.html',
+        {
+            'productos': productos,
+            'busqueda': busqueda,
+            'estado': estado,
+            'estados': Producto.ESTADO_CHOICES,             # 👈 pasamos las opciones
+        },
+    )
 
 @login_required
 def armar_pedido_view(request):
@@ -461,6 +481,9 @@ def pedidos_pendientes_view(request):
       - comentarios del cliente (Pedido.comentarios)
       - detalles (cantidad, precio, subtotal, datos de entrega y totales)
     """
+    busqueda = request.GET.get("buscar", "").strip()
+    domicilio = request.GET.get("domicilio","").strip()
+    
     detalles_qs = (
         DetallePedido.objects
         .select_related('producto')
@@ -473,6 +496,30 @@ def pedidos_pendientes_view(request):
         .select_related('cliente', 'cupon', 'direccion')
         .prefetch_related(Prefetch('detalles', queryset=detalles_qs))
         .order_by('creado')  # el más viejo primero
+    )
+
+    if busqueda:
+        pedidos = pedidos.filter(
+            Q(nombre_contacto__icontains = busqueda) |
+            Q(telefono_contacto__icontains = busqueda) |
+            Q(direccion_entrega__icontains = busqueda) |
+            Q(creado__date__icontains = busqueda) |
+            Q(detalles__producto__nombre__icontains = busqueda)
+        ).distinct()
+
+    if domicilio:                                       
+        pedidos = pedidos.filter(domicilio=domicilio)
+
+    return render(
+        request,
+        'todos_los_pedidos.html',
+        {
+            'pedidos': pedidos,
+            'busqueda': busqueda,            
+            'domicilio': domicilio,
+            'domicilios': Pedido.TIPOS_ENTREGA
+        },
+        
     )
 
     return render(request, 'pedidos_pendientes.html', {'pedidos': pedidos})
@@ -540,6 +587,7 @@ def marcar_entregado_view(request, pedido_id):
 @user_passes_test(admin)
 def todos_los_pedidos_view(request):
     busqueda = request.GET.get("buscar", "").strip()
+    domicilio = request.GET.get("domicilio","").strip()
 
     pedidos = (
         Pedido.objects
@@ -558,8 +606,17 @@ def todos_los_pedidos_view(request):
             Q(detalles__producto__nombre__icontains = busqueda)
         ).distinct()
 
+    if domicilio:                                       
+        pedidos = pedidos.filter(domicilio=domicilio)
+
     return render(
         request,
         'todos_los_pedidos.html',
-        {'pedidos': pedidos, 'busqueda': busqueda},
+        {
+            'pedidos': pedidos,
+            'busqueda': busqueda,            
+            'domicilio': domicilio,
+            'domicilios': Pedido.TIPOS_ENTREGA
+        },
+        
     )

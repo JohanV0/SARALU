@@ -1,25 +1,20 @@
 import re
+from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
+from django.db import transaction
 from .forms import ResenaForm
 from .models import (
-    Carrito,
-    Categoria,
-    ConfiguracionAgenda,
-    CupoFecha,
-    DetallePedido,
-    FechaBloqueada,
-    HistorialEstadoPedido,
-    ItemCarrito,
-    Pedido,
-    Producto,
-    Resena,
-    RespuestaResena,
+    Carrito,Categoria,ConfiguracionAgenda,CupoFecha,
+    DetallePedido,FechaBloqueada,HistorialEstadoPedido,
+    ItemCarrito,Pedido,Producto,Resena,RespuestaResena,
+    HorarioAtencion,
 )
 
 def home(request):
@@ -276,74 +271,124 @@ def lista_productos(request):
 
 @login_required
 def armar_pedido_view(request):
-    # 1. Buscamos el carrito del usuario actual
-    carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
-    items_carrito = carrito.items.all()
+    carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
+    items_carrito = carrito.items.select_related('producto').all()
 
-    # CRITERIO 2: Si el carrito está vacío, rebota al catálogo
     if not items_carrito.exists():
         messages.warning(request, "Debes elegir al menos un producto para armar un pedido.")
         return redirect('catalogo')
 
-    # CRITERIO 1: Calculamos el total
     subtotal = sum(item.subtotal() for item in items_carrito)
 
-    # PASO 3: GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
     if request.method == 'POST':
-        tipo_entrega = request.POST.get('tipo_entrega')
-        fecha_str = request.POST.get('fecha')
-        hora = request.POST.get('hora')
+        tipo_entrega = request.POST.get('tipo_entrega', 'domicilio').strip()
+        fecha_str = request.POST.get('fecha', '').strip()
+        hora_str = request.POST.get('hora', '').strip()
         direccion_cliente = request.POST.get('direccion', '').strip()
+        telefono_form = request.POST.get('telefono', '').strip()
         comentarios_cliente = request.POST.get('comentarios', '').strip()
-        
-        # --- VALIDACIÓN DE FECHA BLOQUEADA AQUÍ ---
-        if fecha_str:
-            fecha_obj = parse_date(fecha_str)
-            if fecha_obj and FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
-                messages.error(request, f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada (día libre).")
+
+        # 1. Validar teléfono (formulario o perfil del usuario)
+        telefono_perfil = ""
+        if hasattr(request.user, 'perfil') and request.user.perfil.telefono:
+            telefono_perfil = request.user.perfil.telefono.strip()
+        telefono_final = telefono_form or telefono_perfil
+
+        if not telefono_final:
+            messages.error(request, "Debes ingresar un teléfono de contacto para coordinar tu pedido.")
+            return redirect('armar_pedido')
+
+        # 2. Validar tipo de entrega y dirección
+        if tipo_entrega not in ['domicilio', 'recojo']:
+            messages.error(request, "Tipo de entrega no válido.")
+            return redirect('armar_pedido')
+
+        if tipo_entrega == 'domicilio':
+            if not direccion_cliente:
+                messages.error(request, "Debes ingresar una dirección de entrega para pedidos a domicilio.")
                 return redirect('armar_pedido')
-        # ------------------------------------------
-
-        # Si es recogida en tienda, definimos la ubicación para las notas
-        if tipo_entrega == 'recojo':
-            ubicacion_texto = "La Arboleda Campestre, Conjunto Almendros"
-        else:
             ubicacion_texto = direccion_cliente
+        else:
+            ubicacion_texto = "La Arboleda Campestre, Conjunto Almendros, Ibagué"
 
-        # Unimos todo de forma ordenada en los comentarios para que quede visible en el detalle del pedido
-        nota_horario = f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | Fecha: {fecha_str} | Hora: {hora}"
+        # 3. Validar fecha (no vacía, válida, no pasada, no bloqueada)
+        if not fecha_str:
+            messages.error(request, "Debes seleccionar una fecha de entrega.")
+            return redirect('armar_pedido')
+
+        fecha_obj = parse_date(fecha_str)
+        if not fecha_obj:
+            messages.error(request, "El formato de la fecha no es válido.")
+            return redirect('armar_pedido')
+
+        hoy = timezone.localdate()
+        if fecha_obj < hoy:
+            messages.error(request, "No puedes elegir una fecha pasada.")
+            return redirect('armar_pedido')
+
+        if FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
+            messages.error(request, f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada.")
+            return redirect('armar_pedido')
+
+        # 4. Validar hora (no vacía, válida y dentro del horario de atención del día)
+        if not hora_str:
+            messages.error(request, "Debes seleccionar una hora aproximada.")
+            return redirect('armar_pedido')
+
+        try:
+            hora_obj = datetime.strptime(hora_str, '%H:%M').time()
+        except ValueError:
+            messages.error(request, "El formato de la hora no es válido.")
+            return redirect('armar_pedido')
+
+        # En Python weekday(): Lunes=0 ... Domingo=6 (coincide con HorarioAtencion.DIAS)
+        dia_semana = fecha_obj.weekday()
+        horario_dia = HorarioAtencion.objects.filter(dia=dia_semana).first()
+        if horario_dia:
+            if not horario_dia.activo:
+                messages.error(request, f"La pastelería no atiende los {horario_dia.get_dia_display().lower()}s.")
+                return redirect('armar_pedido')
+            if not (horario_dia.hora_apertura <= hora_obj <= horario_dia.hora_cierre):
+                messages.error(
+                    request,
+                    f"La hora debe estar entre {horario_dia.hora_apertura.strftime('%H:%M')} y {horario_dia.hora_cierre.strftime('%H:%M')}."
+                )
+                return redirect('armar_pedido')
+
+        nota_horario = f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | Fecha: {fecha_str} | Hora: {hora_str}"
         if comentarios_cliente:
             nota_horario += f" | Notas: {comentarios_cliente}"
 
-        # Acción 1: Creamos el Pedido oficial (sin tocar el campo 'direccion' relacional para evitar el error)
-        nuevo_pedido = Pedido.objects.create(
-            cliente=request.user,
-            nombre_contacto=request.user.username,
-            telefono_contacto="",
-            domicilio=tipo_entrega,
-            subtotal=subtotal,
-            total=subtotal,
-            comentarios=nota_horario
-        )
+        # 5. Guardar todo de forma atómica (o se guarda todo o nada)
+        try:
+            with transaction.atomic():
+                nuevo_pedido = Pedido.objects.create(
+                    cliente=request.user,
+                    nombre_contacto=request.user.get_full_name() or request.user.username,
+                    telefono_contacto=telefono_final,
+                    direccion_entrega=ubicacion_texto,
+                    domicilio=tipo_entrega,
+                    subtotal=subtotal,
+                    total=subtotal,
+                    comentarios=nota_horario
+                )
 
-        # Acción 2: Copiamos los items del carrito al pedido
-        for item in items_carrito:
-            DetallePedido.objects.create(
-                pedido=nuevo_pedido,
-                producto=item.producto,
-                cantidad=item.cantidad,
-                precio_unitario=item.producto.precio
-            )
+                for item in items_carrito:
+                    DetallePedido.objects.create(
+                        pedido=nuevo_pedido,
+                        producto=item.producto,
+                        cantidad=item.cantidad,
+                        precio_unitario=item.producto.precio
+                    )
 
-        # Acción 3: Vaciamos el carrito
-        items_carrito.delete()
+                items_carrito.delete()
+        except Exception:
+            messages.error(request, "Ocurrió un problema al registrar tu pedido. Intenta nuevamente.")
+            return redirect('armar_pedido')
 
-        # Acción 4: Mensaje de éxito
         messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
         return redirect('home')
 
-    # --- CORRECCIÓN: Convertimos las fechas a lista de strings para el JSON ---
-    
     fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
     fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
 
@@ -492,27 +537,51 @@ def lista_pedidos_admin_view(request):
 @user_passes_test(admin)
 def cambiar_estado_pedido_view(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    
+
     if request.method == 'POST':
         nuevo_estado = request.POST.get('estado')
         estados_validos = [e[0] for e in Pedido.ESTADOS]
-        
-        if nuevo_estado in estados_validos:
-            pedido.estado = nuevo_estado
-            pedido.save()
-            
-            # Registramos el cambio en el historial del pedido
-            HistorialEstadoPedido.objects.create(
-                pedido=pedido,
-                estado=nuevo_estado,
-                comentario=f"Estado actualizado por la administración.",
-                usuario=request.user
-            )
-            
-            messages.success(request, f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!")
-        else:
+
+        if nuevo_estado not in estados_validos:
             messages.error(request, "Estado inválido.")
-            
+            return redirect('lista_pedidos_admin')
+
+        estado_anterior = pedido.estado
+
+        # Regla: no marcar como entregado un pedido pendiente o cancelado
+        if nuevo_estado == 'entregado' and estado_anterior in ['pendiente', 'cancelado']:
+            messages.error(
+                request,
+                f"No puedes marcar como Entregado el pedido #{pedido.id} porque está '{pedido.get_estado_display()}'."
+            )
+            return redirect('lista_pedidos_admin')
+
+        try:
+            with transaction.atomic():
+                pedido.estado = nuevo_estado
+                pedido.save()
+
+                if nuevo_estado == 'cancelado' and estado_anterior != 'cancelado':
+                    match_fecha = re.search(r'Fecha:\s*([\d\-]+)', pedido.comentarios or '')
+                    if match_fecha:
+                        fecha_obj = parse_date(match_fecha.group(1))
+                        if fecha_obj:
+                            FechaBloqueada.objects.filter(fecha=fecha_obj).delete()
+
+                HistorialEstadoPedido.objects.create(
+                    pedido=pedido,
+                    estado=nuevo_estado,
+                    comentario="Estado actualizado por la administración.",
+                    usuario=request.user
+                )
+
+            messages.success(
+                request,
+                f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!"
+            )
+        except Exception:
+            messages.error(request, "No se pudo actualizar el estado del pedido. Intenta de nuevo.")
+
     return redirect('lista_pedidos_admin')
 
 # =========================================================

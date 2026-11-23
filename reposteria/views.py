@@ -1,21 +1,21 @@
 import re
-from datetime import datetime
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Prefetch, Q
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Prefetch
-from .models import (
-    Producto, Categoria, Resena, RespuestaResena, Carrito, 
-    Pedido, DetallePedido, ItemCarrito, FechaBloqueada, 
-    CupoFecha, ConfiguracionAgenda, HistorialEstadoPedido, HorarioAtencion
-)
 from .forms import ResenaForm
-
+from .models import (
+    Carrito,Categoria,ConfiguracionAgenda,CupoFecha,
+    DetallePedido,FechaBloqueada,HistorialEstadoPedido,
+    ItemCarrito,Pedido,Producto,Resena,RespuestaResena,
+    HorarioAtencion,
+)
 
 def home(request):
     return render(request, 'home.html', {
@@ -32,16 +32,26 @@ def admin(user):
 
 def catalogo_view(request):
     categoria_code = request.GET.get('categoria')        # "TARTAS", "CUPCAKES", ...
-    productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
+    productos = Producto.objects.select_related('categoria').prefetch_related('imagenes').order_by("nombre")
     categorias = Categoria.objects.all()
 
     if categoria_code:
         productos = productos.filter(categoria__categoria=categoria_code)
 
+    paginator = Paginator(productos, 2) #para saber la cantidad de itenas van a aparecer
+    page_number = request.GET.get("page") #para saber el numero de la pagina desde la URL
+    page_obj = paginator.get_page(page_number) #get_page evita error si se elije numero fuera del que hay (inicio o final)
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    extra_query = query_params.urlencode()
+
     contexto = {
         'productos': productos,
         'categorias': categorias,
-        'categoria_actual': categoria_code,              
+        'categoria_actual': categoria_code,
+        'page_obj' : page_obj,          
+        'extra_query' : extra_query,
     }
     return render(request, 'catalogo.html', contexto)
 
@@ -129,7 +139,7 @@ def detalle_producto_view(request, producto_id):
 def eliminar_producto(request,producto_id):
     producto = Producto.objects.get(id=producto_id)
     producto.delete()
-    return redirect('catalogo')
+    return redirect('lista_productos')
 
 @login_required
 @user_passes_test(admin)
@@ -229,7 +239,35 @@ def nuevo_producto(request):
 @user_passes_test(admin)
 def lista_productos(request):
     productos = Producto.objects.all()
-    return render(request,'lista_productos.html',{"productos":productos})
+    busqueda = request.GET.get("buscar", "").strip()
+    estado = request.GET.get("estado","").strip()
+
+    if busqueda:
+        productos = productos.filter(
+            Q(nombre__icontains = busqueda) 
+        ).distinct()
+
+    if estado:
+        productos = productos.filter(estado=estado)
+    estados = Producto._meta.get_field('estado').choices 
+
+    paginator = Paginator(productos, 8)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    extra_query = query_params.urlencode()
+
+    contexto ={
+            "productos":productos,
+            "busqueda" : busqueda,
+            "estado" : estado,
+            "estados" : estados,
+            "page_obj" : page_obj,
+            "extra_query" : extra_query,
+        }
+    return render(request,'lista_productos.html',contexto)
 
 @login_required
 def armar_pedido_view(request):
@@ -454,17 +492,39 @@ def gestionar_fechas_bloqueadas_view(request):
 # HU-033: MIS PEDIDOS (CLIENTE)
 @login_required
 def mis_pedidos_view(request):
-    # Buscamos solo los pedidos de este cliente, ordenados por fecha (más nuevos primero)
+    busqueda = request.GET.get("buscar", "").strip()
+    estado = request.GET.get("estado", "").strip()
+
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-creado')
 
+    if busqueda:
+        pedidos = pedidos.filter(
+            Q(nombre_contacto__icontains=busqueda) |
+            Q(telefono_contacto__icontains=busqueda) |
+            Q(direccion_entrega__icontains=busqueda) |
+            Q(creado__date__icontains=busqueda) |
+            Q(detalles__producto__nombre__icontains=busqueda)
+        ).distinct()
+
+    if estado:
+        pedidos = pedidos.filter(estado=estado)
+
+    paginator = Paginator(pedidos, 8) 
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     contexto = {
-        'pedidos': pedidos
+        'page_obj': page_obj,
+        'busqueda': busqueda,
+        'estado': estado,
+        'estados': Pedido.ESTADOS, # Enviamos los estados para el <select> del HTML
     }
+    
     return render(request, 'mis_pedidos.html', contexto)
 
 @login_required
 @user_passes_test(admin)
-def lista_pedidos_admin_view(request):
+def lista_pedidos_admin_view(request):  
     # La dueña puede ver todos los pedidos ordenados del más reciente al más antiguo
     pedidos = Pedido.objects.all().order_by('-creado')
     contexto = {
@@ -531,12 +591,9 @@ def cambiar_estado_pedido_view(request, pedido_id):
 @login_required
 @user_passes_test(admin)
 def pedidos_pendientes_view(request):
-    """
-    Lista los pedidos en estado 'pendiente' con:
-      - fotos de cada producto (producto.imagen o primera de su galería)
-      - comentarios del cliente (Pedido.comentarios)
-      - detalles (cantidad, precio, subtotal, datos de entrega y totales)
-    """
+    busqueda = request.GET.get("buscar", "").strip()
+    estado = request.GET.get("estado", "").strip()
+
     detalles_qs = (
         DetallePedido.objects
         .select_related('producto')
@@ -551,7 +608,30 @@ def pedidos_pendientes_view(request):
         .order_by('creado')  # el más viejo primero
     )
 
-    return render(request, 'pedidos_pendientes.html', {'pedidos': pedidos})
+    if busqueda:
+        pedidos = pedidos.filter(
+            Q(nombre_contacto__icontains = busqueda) |
+            Q(telefono_contacto__icontains = busqueda) |
+            Q(direccion_entrega__icontains = busqueda) |
+            Q(creado__date__icontains = busqueda) |
+            Q(detalles__producto__nombre__icontains = busqueda)
+        ).distinct()
+
+    if estado:
+        pedidos = pedidos.filter(estado=estado)
+
+    paginator = Paginator(pedidos, 8) 
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    contexto = {
+        'page_obj': page_obj,
+        'busqueda': busqueda,
+        'estado': estado,
+        'estados': Pedido.ESTADOS, # Enviamos los estados para el <select> del HTML
+    }
+
+    return render(request, 'pedidos_pendientes.html', contexto)
 
 
 # =========================================================
@@ -615,8 +695,8 @@ def marcar_entregado_view(request, pedido_id):
 @login_required
 @user_passes_test(admin)
 def todos_los_pedidos_view(request):
-    """Muestra pedidos confirmados o en preparación. Oculta los entregados."""
-    # Filtramos para que NO salgan los pendientes (esos están en otra vista) ni los entregados/cancelados
+    busqueda = request.GET.get("buscar", "").strip()
+
     pedidos = (
         Pedido.objects
         .filter(estado__in=['confirmado', 'preparacion'])
@@ -624,4 +704,18 @@ def todos_los_pedidos_view(request):
         .prefetch_related('detalles__producto__imagenes')
         .order_by('creado')
     )
-    return render(request, 'todos_los_pedidos.html', {'pedidos': pedidos})
+
+    if busqueda:
+        pedidos = pedidos.filter(
+            Q(nombre_contacto__icontains = busqueda) |
+            Q(telefono_contacto__icontains = busqueda) |
+            Q(direccion_entrega__icontains = busqueda) |
+            Q(creado__date__icontains = busqueda) |
+            Q(detalles__producto__nombre__icontains = busqueda)
+        ).distinct()
+
+    return render(
+        request,
+        'todos_los_pedidos.html',
+        {'pedidos': pedidos, 'busqueda': busqueda},
+    )

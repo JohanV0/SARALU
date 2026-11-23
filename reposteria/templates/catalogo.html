@@ -161,16 +161,15 @@
       
       <div class="mb-8 flex items-end justify-between border-b border-chocolate/10 pb-4">
         <p class="text-sm lg:text-base font-semibold text-cafe">
-          {% if productos %}
-            Mostrando <span class="text-chocolate font-bold" id="contador-productos">{{ productos|length }}</span> producto{{ productos|length|pluralize:"s" }}
+          {% if page_obj %}
+            Mostrando <span class="text-chocolate font-bold" id="contador-productos">{{ page_obj.paginator.count }}</span> producto{{ page_obj.paginator.count|pluralize:"s" }}
           {% endif %}
         </p>
       </div>
       
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start">
-        {% for producto in productos %}
-          {# El if forloop.counter > 4 oculta los productos a partir del quinto #}
-          <article class="group flex flex-col h-full overflow-hidden rounded-[2rem] bg-white shadow-soft ring-1 ring-chocolate/5 transition-all hover:-translate-y-2 hover:shadow-lift {% if forloop.counter > 4 %}hidden producto-oculto{% endif %}">
+        {% for producto in page_obj %}
+          <article class="group flex flex-col h-full overflow-hidden rounded-[2rem] bg-white shadow-soft ring-1 ring-chocolate/5 transition-all hover:-translate-y-2 hover:shadow-lift">
             
             <div class="relative h-56 md:h-64 w-full overflow-hidden bg-rosaClaro">
               {% if producto.imagen %}
@@ -233,18 +232,71 @@
         {% endfor %}
       </div>
 
-      {# BOTÓN PARA MOSTRAR MÁS PRODUCTOS #}
-      {% if productos|length > 4 %}
-        <div id="contenedor-ver-mas" class="mt-12 flex justify-center w-full">
-          <button type="button" onclick="mostrarMasProductos()" 
-                  class="group inline-flex items-center justify-center gap-2 rounded-full bg-white border-2 border-chocolate/10 px-8 py-4 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-mantequilla hover:border-mantequilla hover:-translate-y-1 transition-all">
-            Ver todos los productos ({{ productos|length }})
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+{# ============================================================ #}
+{# PAGINADO                                                       #}
+{# ============================================================ #}
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Paginación" class="mt-16 mb-4 flex flex-col items-center gap-4">
+
+      <div class="inline-flex items-center gap-1 rounded-full bg-crema p-1.5 shadow-soft ring-1 ring-chocolate/5 md:gap-1.5 md:p-2">
+
+        {# Anterior #}
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}"
+             aria-label="Página anterior"
+             class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 19l-7-7 7-7" />
             </svg>
-          </button>
-        </div>
+          </a>
+        {% else %}
+          <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 19l-7-7 7-7" />
+            </svg>
+          </span>
+        {% endif %}
+
+        {# Números #}
+        {% for i in page_obj.paginator.page_range %}
+          {% if page_obj.number == i %}
+            <span aria-current="page"
+                  class="relative grid h-10 w-10 place-items-center rounded-full bg-chocolate font-display text-sm font-bold text-mantequilla shadow-soft">
+              {{ i }}
+              <span class="absolute -right-0.5 -top-0.5 text-[10px] leading-none text-mantequilla">★</span>
+            </span>
+          {% elif i == 1 or i == page_obj.paginator.num_pages or i >= page_obj.number|add:'-1' and i <= page_obj.number|add:'1' %}
+            <a href="?page={{ i }}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}"
+               class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-semibold text-chocolate/70 transition hover:bg-rosaClaro hover:text-chocolate">
+              {{ i }}
+            </a>
+          {% elif i == page_obj.number|add:'-2' or i == page_obj.number|add:'2' %}
+            <span class="grid h-10 w-6 place-items-center text-chocolate/30 select-none">…</span>
+          {% endif %}
+        {% endfor %}
+        {# Siguiente #}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}"
+             aria-label="Página siguiente"
+             class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        {% else %}
+          <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        {% endif %}
+      </div>
+      <p class="font-script text-xl text-rosa">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      </p>
+      </nav>
       {% endif %}
+    </section>
 
     </section>
     {# ============================================================ #}

@@ -1,5 +1,4 @@
 import re
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Prefetch, Q
@@ -7,7 +6,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
-
 from .forms import ResenaForm
 from .models import (
     Carrito,
@@ -23,7 +21,6 @@ from .models import (
     Resena,
     RespuestaResena,
 )
-
 
 def home(request):
     return render(request, 'home.html', {

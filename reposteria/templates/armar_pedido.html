@@ -46,7 +46,7 @@
       {# ---------- COLUMNA IZQUIERDA: FORMULARIO ---------- #}
       <section class="relative">
 
-        <form method="POST" action="{% url 'armar_pedido' %}"
+        <form method="POST" action="{% url 'armar_pedido' %}" id="form-pedido"
               class="relative overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema p-5 sm:p-8 lg:p-10 shadow-soft ring-1 ring-chocolate/10">
 
           {% csrf_token %}
@@ -70,7 +70,7 @@
 
           {# Tipo de entrega #}
           <div class="mt-6 lg:mt-8">
-            <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+            <label for="tipo-entrega-select" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-chocolate/50" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
                    stroke-linecap="round" stroke-linejoin="round">
@@ -97,10 +97,11 @@
 
           {# Campo dinámico de Dirección o Info de Tienda #}
           <div id="campo-domicilio" class="mt-5">
-            <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+            <label for="input-direccion" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
               Dirección exacta de entrega
             </label>
-            <input type="text" name="direccion" id="input-direccion" required placeholder="Ej: Calle 60 # 5-23, apto 301"
+            <input type="text" name="direccion" id="input-direccion" required maxlength="250"
+                   placeholder="Ej: Calle 60 # 5-23, apto 301"
                    class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
           </div>
 
@@ -112,7 +113,7 @@
           {# Fecha y hora #}
           <div class="mt-5 flex flex-col sm:flex-row gap-4 sm:gap-5">
             <div class="w-full sm:w-1/2">
-              <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+              <label for="input-fecha" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-chocolate/50" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -125,7 +126,7 @@
               </label>
               <input type="date" name="fecha" id="input-fecha" required
                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
-              
+
               <div id="mensaje-error-fecha" class="hidden mt-2 text-xs sm:text-sm font-bold text-red-500 flex items-start gap-1">
                 <span>⚠</span>
                 <span>Esta fecha no está disponible. Por favor, selecciona otra.</span>
@@ -133,7 +134,7 @@
             </div>
 
             <div class="w-full sm:w-1/2">
-              <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+              <label for="input-hora" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-chocolate/50" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -142,9 +143,25 @@
                 </svg>
                 Hora aproximada
               </label>
-              <input type="time" name="hora" required
+              <input type="time" name="hora" id="input-hora" required
                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
             </div>
+          </div>
+
+          {# Teléfono de contacto (NUEVO: la vista lo exige) #}
+          <div class="mt-5">
+            <label for="input-telefono" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-chocolate/50" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z" />
+              </svg>
+              Teléfono de contacto
+            </label>
+            <input type="tel" name="telefono" id="input-telefono" required
+                   value="{{ telefono_inicial }}" inputmode="numeric" minlength="7" maxlength="15"
+                   placeholder="Ej: 3001234567"
+                   class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
           </div>
 
           {# Features #}
@@ -176,7 +193,7 @@
                 </h3>
               </div>
             </div>
-            
+
             <textarea name="comentarios" rows="3" placeholder="Ej: Por favor que el pastel lleve dedicatoria de feliz cumpleaños, o indicaciones especiales..."
                       class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3 text-sm lg:text-base font-medium text-chocolate focus:border-chocolate focus:outline-none transition"></textarea>
           </div>
@@ -184,13 +201,13 @@
           <div class="mt-7 h-px bg-chocolate/10"></div>
 
           <p class="mt-5 text-[11px] lg:text-xs text-cafe/90 leading-relaxed">
-            Al confirmar aceptas nuestros términos y recibirás un mensaje de confirmación con los detalles de tu pedido.
+            Al confirmar aceptas nuestros términos. Te llevaremos a WhatsApp con el resumen de tu pedido ya escrito: solo debes pulsar "Enviar" para confirmarlo con nosotros.
           </p>
 
           <button type="submit" id="btn-confirmar"
                   class="group relative mt-5 inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-full bg-chocolate px-8 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 hover:shadow-lift transition-all">
             <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
-            Confirmar pedido
+            Confirmar por WhatsApp
             <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -350,7 +367,7 @@
 
   </main>
 
-  {# --- SCRIPT PARA VALIDACIÓN Y INTERACTIVIDAD --- #}
+  {# --- SCRIPT PARA VALIDACIÓN E INTERACTIVIDAD --- #}
   {{ fechas_bloqueadas_json|json_script:"fechas-bloqueadas-data" }}
 
   <script>
@@ -371,25 +388,37 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+      toggleDireccion(); // por si el navegador restaura el formulario
+
+      const form = document.getElementById('form-pedido');
       const inputFecha = document.getElementById('input-fecha');
       const mensajeError = document.getElementById('mensaje-error-fecha');
       const btnConfirmar = document.getElementById('btn-confirmar');
+      const fechasBloqueadas = JSON.parse(
+        document.getElementById('fechas-bloqueadas-data').textContent
+      );
 
-      const fechasBloqueadasArray = JSON.parse(document.getElementById('fechas-bloqueadas-data').textContent);
+      // No permitir fechas pasadas (usa la fecha local, no UTC)
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      inputFecha.min = `${yyyy}-${mm}-${dd}`;
 
-      inputFecha.addEventListener('change', function() {
-        const fechaSeleccionada = this.value;
+      function validarFecha() {
+        const bloqueada = fechasBloqueadas.includes(inputFecha.value);
+        mensajeError.classList.toggle('hidden', !bloqueada);
+        btnConfirmar.disabled = bloqueada;
+        btnConfirmar.classList.toggle('opacity-50', bloqueada);
+        btnConfirmar.classList.toggle('cursor-not-allowed', bloqueada);
+      }
+      inputFecha.addEventListener('change', validarFecha);
 
-        if (fechasBloqueadasArray.includes(fechaSeleccionada)) {
-          mensajeError.classList.remove('hidden');
-          btnConfirmar.disabled = true;
-          btnConfirmar.classList.add('opacity-50', 'cursor-not-allowed');
-        } else {
-          mensajeError.classList.add('hidden');
-          btnConfirmar.disabled = false;
-          btnConfirmar.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
+      // Evitar doble envío (dos pedidos duplicados)
+      form.addEventListener('submit', function () {
+        btnConfirmar.disabled = true;
+        btnConfirmar.classList.add('opacity-50', 'cursor-not-allowed');
       });
     });
   </script>

@@ -1,35 +1,39 @@
 import re
-from datetime import datetime
+from urllib.parse import quote 
+from django.conf import settings  
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Prefetch, Q
+from django.db import transaction
+from django.db.models import Prefetch, Q, F
 from .models import (
-    Producto, Categoria, Resena, RespuestaResena, Carrito, 
+    Producto, Categoria, Resena, RespuestaResena, Carrito,
     Pedido, DetallePedido, ItemCarrito, FechaBloqueada,
-    CupoFecha, ConfiguracionAgenda
+    CupoFecha, ConfiguracionAgenda, HistorialEstadoPedido
 )
 from .forms import ResenaForm
 
 
 def home(request):
     return render(request, 'home.html', {
-        'destacados':  Producto.objects.filter(destacado=True),
+        'destacados': Producto.objects.filter(destacado=True),
         'mas_vendidos': Producto.objects.filter(mas_vendido=True),
-        'es_nuevos':      Producto.objects.filter(es_nuevo=True),
+        'es_nuevos': Producto.objects.filter(es_nuevo=True),
     })
+
 
 def es_usuario(user):
     return user.is_authenticated and not user.is_staff
 
+
 def admin(user):
     return user.is_authenticated and user.is_staff
 
+
 def catalogo_view(request):
-    categoria_code = request.GET.get('categoria')        # "TARTAS", "CUPCAKES", ...
+    categoria_code = request.GET.get('categoria')  # "TARTAS", "CUPCAKES", ...
     productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
     categorias = Categoria.objects.all()
 
@@ -39,9 +43,10 @@ def catalogo_view(request):
     contexto = {
         'productos': productos,
         'categorias': categorias,
-        'categoria_actual': categoria_code,              
+        'categoria_actual': categoria_code,
     }
     return render(request, 'catalogo.html', contexto)
+
 
 def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(
@@ -54,9 +59,9 @@ def detalle_producto_view(request, producto_id):
     )
     productos_relacionados = (
         Producto.objects
-        .filter(categoria=producto.categoria)     # misma categoría
-        .exclude(id=producto.id)                   # sin el actual
-        .order_by('-id')[:4]                       # opcional: los 4 más nuevos
+        .filter(categoria=producto.categoria)  # misma categoría
+        .exclude(id=producto.id)               # sin el actual
+        .order_by('-id')[:4]                   # los 4 más nuevos
     )
     resenas = producto.resenas.all().order_by('-fecha_creacion')
     resena_usuario = None
@@ -123,11 +128,18 @@ def detalle_producto_view(request, producto_id):
     }
     return render(request, 'detalle_producto.html', contexto)
 
+
+# CORRECCIÓN: solo admin, solo POST y get_object_or_404
+# (en la plantilla el botón debe ser un <form method="post"> con {% csrf_token %})
 @login_required
-def eliminar_producto(request,producto_id):
-    producto = Producto.objects.get(id=producto_id)
+@user_passes_test(admin)
+@require_POST
+def eliminar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
     producto.delete()
+    messages.success(request, "Producto eliminado correctamente.")
     return redirect('catalogo')
+
 
 @login_required
 @user_passes_test(admin)
@@ -145,27 +157,25 @@ def editar_producto(request, producto_id):
         categoria_id = request.POST.get("categoria")
         estado = request.POST.get("estado")  # 'DISPONIBLE' o 'AGOTADO'
 
-        # Leemos los checkboxes correctamente según el HTML
+        # Leemos los checkboxes según el HTML
         destacado = 'destacado' in request.POST
         mas_vendido = 'mas_vendido' in request.POST
         es_nuevo = 'nuevo' in request.POST
 
         if not (nombre and precio and stock and porciones and categoria_id):
             messages.error(request, "Faltan campos obligatorios.")
-            return render(request, "editar_producto.html", {
+            # CORRECCIÓN: mismo nombre de plantilla que el render final
+            return render(request, "editar-producto.html", {
                 "producto": producto,
                 "categorias": categorias,
             })
 
-        # Asignamos los valores al producto
         producto.nombre = nombre
         producto.descripcion = descripcion or ""
         producto.precio = float(precio)
         producto.stock = int(stock)
         producto.porciones = int(porciones)
         producto.ventas = int(ventas) if ventas else 0
-
-        # CORRECCIÓN AQUÍ: estado en vez de estado_activo
         producto.estado = estado if estado else 'DISPONIBLE'
 
         producto.destacado = destacado
@@ -188,46 +198,52 @@ def editar_producto(request, producto_id):
         "categorias": categorias,
     })
 
+
+# CORRECCIÓN: protegida con login y admin
+@login_required
+@user_passes_test(admin)
 def nuevo_producto(request):
-  categorias = Categoria.objects.all()
+    categorias = Categoria.objects.all()
 
-  if request.method == "POST":
-    nombre = request.POST.get('nombre')
-    descripcion = request.POST.get('descripcion')
-    precio = request.POST.get('precio')
-    categoria_id = request.POST.get('categoria')
-    imagen = request.FILES.get('imagen')
-    stock = request.POST.get('stock')
-    porciones = request.POST.get('porciones')
-    destacado = request.POST.get('destacado') == 'on'
-    mas_vendido = request.POST.get('mas_vendido') == 'on'
-    es_nuevo = request.POST.get('nuevo') == 'on'
+    if request.method == "POST":
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        precio = request.POST.get('precio')
+        categoria_id = request.POST.get('categoria')
+        imagen = request.FILES.get('imagen')
+        stock = request.POST.get('stock')
+        porciones = request.POST.get('porciones')
+        destacado = request.POST.get('destacado') == 'on'
+        mas_vendido = request.POST.get('mas_vendido') == 'on'
+        es_nuevo = request.POST.get('nuevo') == 'on'
 
-    if nombre and descripcion and precio:
-      producto = Producto(
-        nombre=nombre,
-        descripcion=descripcion,
-        precio=precio,
-        imagen=imagen,
-        stock=int(stock) if stock else 10,
-        porciones=int(porciones) if porciones else 1,
-        destacado=destacado,
-        mas_vendido=mas_vendido,
-        es_nuevo=es_nuevo,
-        categoria_id=categoria_id if categoria_id else None,
-      )
-      producto.save()
+        if nombre and descripcion and precio:
+            producto = Producto(
+                nombre=nombre,
+                descripcion=descripcion,
+                precio=precio,
+                imagen=imagen,
+                stock=int(stock) if stock else 10,
+                porciones=int(porciones) if porciones else 1,
+                destacado=destacado,
+                mas_vendido=mas_vendido,
+                es_nuevo=es_nuevo,
+                categoria_id=categoria_id if categoria_id else None,
+            )
+            producto.save()
 
-      messages.success(request, f'Producto "{producto.nombre}" registrado correctamente.')
-      return redirect('catalogo')
+            messages.success(request, f'Producto "{producto.nombre}" registrado correctamente.')
+            return redirect('catalogo')
 
-  return render(request, 'nuevo-producto.html', {'categorias': categorias})
+    return render(request, 'nuevo-producto.html', {'categorias': categorias})
+
 
 @login_required
 @user_passes_test(admin)
 def lista_productos(request):
     productos = Producto.objects.all()
-    return render(request,'lista_productos.html',{"productos":productos})
+    return render(request, 'lista_productos.html', {"productos": productos})
+
 
 @login_required
 def armar_pedido_view(request):
@@ -235,70 +251,132 @@ def armar_pedido_view(request):
     carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
     items_carrito = carrito.items.all()
 
-    # CRITERIO 2: Si el carrito está vacío, rebota al catálogo
+    # Si el carrito está vacío, rebota al catálogo
     if not items_carrito.exists():
         messages.warning(request, "Debes elegir al menos un producto para armar un pedido.")
         return redirect('catalogo')
 
-    # CRITERIO 1: Calculamos el total
+    # Calculamos el total
     subtotal = sum(item.subtotal() for item in items_carrito)
 
-    # PASO 3: GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
+    # GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
     if request.method == 'POST':
         tipo_entrega = request.POST.get('tipo_entrega')
         fecha_str = request.POST.get('fecha')
         hora = request.POST.get('hora')
         direccion_cliente = request.POST.get('direccion', '').strip()
         comentarios_cliente = request.POST.get('comentarios', '').strip()
-        
-        # --- VALIDACIÓN DE FECHA BLOQUEADA AQUÍ ---
-        if fecha_str:
-            fecha_obj = parse_date(fecha_str)
-            if fecha_obj and FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
-                messages.error(request, f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada (día libre).")
-                return redirect('armar_pedido')
-        # ------------------------------------------
+        telefono_ingresado = request.POST.get('telefono', '').strip()
 
-        # Si es recogida en tienda, definimos la ubicación para las notas
+        # --- Validar el teléfono (solo dígitos, entre 7 y 15) ---
+        telefono = re.sub(r'\D', '', telefono_ingresado)
+        if not (7 <= len(telefono) <= 15):
+            messages.error(request, "Ingresa un número de teléfono válido para contactarte.")
+            return redirect('armar_pedido')
+
+        # --- Validar tipo de entrega ---
+        # Si tu modelo tiene Pedido.TIPOS_ENTREGA usa: [t[0] for t in Pedido.TIPOS_ENTREGA]
+        tipos_validos = ['domicilio', 'recojo']
+        if tipo_entrega not in tipos_validos:
+            messages.error(request, "Selecciona un tipo de entrega válido.")
+            return redirect('armar_pedido')
+
+        # --- Validar fecha y hora obligatorias ---
+        fecha_obj = parse_date(fecha_str) if fecha_str else None
+        if not fecha_obj or not hora:
+            messages.error(request, "Selecciona la fecha y la hora de entrega.")
+            return redirect('armar_pedido')
+
+        # --- Validar fecha bloqueada ---
+        if FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
+            messages.error(
+                request,
+                f"Lo sentimos, el día {fecha_obj} no está disponible porque la pastelería está cerrada (día libre)."
+            )
+            return redirect('armar_pedido')
+
+        # --- Ubicación según el tipo de entrega ---
         if tipo_entrega == 'recojo':
             ubicacion_texto = "La Arboleda Campestre, Conjunto Almendros"
         else:
-            ubicacion_texto = direccion_cliente
+            # En domicilio la dirección es obligatoria (max 250 = Pedido.direccion_entrega)
+            if not direccion_cliente:
+                messages.error(request, "Ingresa la dirección de entrega para el domicilio.")
+                return redirect('armar_pedido')
+            ubicacion_texto = direccion_cliente[:250]
 
-        # Unimos todo de forma ordenada en los comentarios para que quede visible en el detalle del pedido
-        nota_horario = f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | Fecha: {fecha_str} | Hora: {hora}"
+        # Nota ordenada en los comentarios del pedido
+        # "Fecha de entrega" debe coincidir con _extraer_fecha_pedido
+        nota_horario = (
+            f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | "
+            f"Fecha de entrega: {fecha_str} | Hora: {hora}"
+        )
         if comentarios_cliente:
             nota_horario += f" | Notas: {comentarios_cliente}"
 
-        # Acción 1: Creamos el Pedido oficial (sin tocar el campo 'direccion' relacional para evitar el error)
-        nuevo_pedido = Pedido.objects.create(
-            cliente=request.user,
-            nombre_contacto=request.user.username,
-            telefono_contacto="",
-            domicilio=tipo_entrega,
-            subtotal=subtotal,
-            total=subtotal,
-            comentarios=nota_horario
-        )
+        # Evaluamos los items una sola vez (con su producto)
+        items = list(items_carrito.select_related('producto'))
 
-        # Acción 2: Copiamos los items del carrito al pedido
-        for item in items_carrito:
-            DetallePedido.objects.create(
-                pedido=nuevo_pedido,
-                producto=item.producto,
-                cantidad=item.cantidad,
-                precio_unitario=item.producto.precio
+        # --- Validar stock ANTES de crear nada ---
+        for item in items:
+            if item.cantidad > item.producto.stock:
+                messages.error(
+                    request,
+                    f"No hay suficiente stock de {item.producto.nombre} (quedan {item.producto.stock})."
+                )
+                return redirect('ver_carrito')
+
+        # Todo en una transacción: o se guarda todo o nada
+        with transaction.atomic():
+            nuevo_pedido = Pedido.objects.create(
+                cliente=request.user,
+                nombre_contacto=request.user.username,
+                telefono_contacto=telefono,
+                direccion_entrega=ubicacion_texto,
+                domicilio=tipo_entrega,
+                subtotal=subtotal,
+                total=subtotal,
+                comentarios=nota_horario
             )
 
-        # Acción 3: Vaciamos el carrito
-        items_carrito.delete()
+            lineas_productos = []
+            for item in items:
+                DetallePedido.objects.create(
+                    pedido=nuevo_pedido,
+                    producto=item.producto,
+                    cantidad=item.cantidad,
+                    precio_unitario=item.producto.precio
+                )
+                # Descuenta stock y suma ventas de forma segura
+                Producto.objects.filter(id=item.producto_id).update(
+                    stock=F('stock') - item.cantidad,
+                    ventas=F('ventas') + item.cantidad
+                )
+                lineas_productos.append(
+                    f"• {item.cantidad} x {item.producto.nombre} (${item.subtotal():,.0f})"
+                )
 
-        # Acción 4: Mensaje de éxito
-        messages.success(request, f"¡Tu pedido #{nuevo_pedido.id} ha sido confirmado con éxito!")
-        return redirect('home')
+            # Vaciamos el carrito
+            items_carrito.delete()
 
-    # --- CORRECCIÓN: Convertimos las fechas a lista de strings para el JSON ---
-    
+        # Armamos el mensaje y redirigimos a WhatsApp
+        mensaje = (
+            f"Hola, quiero confirmar mi pedido #{nuevo_pedido.id}\n\n"
+            f"Cliente: {request.user.username}\n"
+            f"Teléfono: {telefono}\n\n"
+            f"Productos:\n" + "\n".join(lineas_productos) + "\n\n"
+            f"Subtotal: ${subtotal:,.0f}\n"
+            f"Tipo de entrega: {nuevo_pedido.get_domicilio_display()}\n"
+            f"Dirección: {ubicacion_texto}\n"
+            f"Fecha: {fecha_str}\n"
+            f"Hora: {hora}\n"
+            f"Notas: {comentarios_cliente or 'Sin notas'}"
+        )
+
+        url_whatsapp = f"https://wa.me/{settings.WHATSAPP_NUMERO}?text={quote(mensaje)}"
+        return redirect(url_whatsapp)
+
+    # Fechas bloqueadas como lista de strings para el JSON del calendario
     fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
     fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
 
@@ -307,16 +385,18 @@ def armar_pedido_view(request):
         'subtotal': subtotal,
         'fechas_bloqueadas': fechas_qs,
         'fechas_bloqueadas_json': fechas_bloqueadas_json,
+        # Precarga el teléfono con el del perfil (si lo tiene)
+        'telefono_inicial': getattr(getattr(request.user, 'perfil', None), 'telefono', ''),
     }
     return render(request, 'armar_pedido.html', contexto)
 
+
 @login_required
 def ver_carrito_view(request):
-    # Buscamos el carrito del usuario
     carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
     items = carrito.items.all()
 
-    # CRITERIO 2: Calculamos el total acumulado
+    # Total acumulado
     total = sum(item.subtotal() for item in items)
 
     contexto = {
@@ -325,15 +405,17 @@ def ver_carrito_view(request):
     }
     return render(request, 'carrito.html', contexto)
 
+
 @login_required
 def eliminar_item_carrito(request, item_id):
-    # CRITERIO 4: Eliminar un producto del carrito
+    # Eliminar un producto del carrito
     item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
     nombre_producto = item.producto.nombre
     item.delete()
 
     messages.success(request, f"Eliminaste {nombre_producto} de tu carrito.")
     return redirect('ver_carrito')
+
 
 @require_POST
 @login_required
@@ -350,18 +432,26 @@ def agregar_al_carrito(request, producto_id):
     messages.success(request, f"¡{producto.nombre} agregado al carrito!")
     return redirect('ver_carrito')
 
-def avanzar_estado_categoria(request, producto_id):
-    categorias = get_object_or_404(Producto, id=producto_id)
 
-    if categorias.estado == 'DISPONIBLE':
-        categorias.estado = 'AGOTADO'
-        categorias.save()
-    elif categorias.estado == 'AGOTADO':
-        categorias.estado = 'DISPONIBLE'
-        categorias.save()
+# CORRECCIÓN: protegida con login y admin
+@login_required
+@user_passes_test(admin)
+def avanzar_estado_categoria(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+
+    if producto.estado == 'DISPONIBLE':
+        producto.estado = 'AGOTADO'
+        producto.save()
+    elif producto.estado == 'AGOTADO':
+        producto.estado = 'DISPONIBLE'
+        producto.save()
 
     return redirect('lista_productos')
 
+
+# CORRECCIÓN: protegida con login y admin
+@login_required
+@user_passes_test(admin)
 def gestionar_fechas_bloqueadas_view(request):
     if request.method == 'POST':
         accion = request.POST.get('accion')
@@ -399,10 +489,11 @@ def gestionar_fechas_bloqueadas_view(request):
     fechas_bloqueadas = FechaBloqueada.objects.all().order_by('fecha')
     return render(request, 'bloquear_fechas.html', {'fechas_bloqueadas': fechas_bloqueadas})
 
+
 # HU-033: MIS PEDIDOS (CLIENTE)
 @login_required
 def mis_pedidos_view(request):
-    # Buscamos solo los pedidos de este cliente, ordenados por fecha (más nuevos primero)
+    # Solo los pedidos de este cliente, más nuevos primero
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-creado')
 
     contexto = {
@@ -410,43 +501,49 @@ def mis_pedidos_view(request):
     }
     return render(request, 'mis_pedidos.html', contexto)
 
+
 @login_required
 @user_passes_test(admin)
 def lista_pedidos_admin_view(request):
-    # La dueña puede ver todos los pedidos ordenados del más reciente al más antiguo
+    # La dueña ve todos los pedidos, del más reciente al más antiguo
     pedidos = Pedido.objects.all().order_by('-creado')
     contexto = {
         'pedidos': pedidos,
-        'estados': Pedido.ESTADOS, # Pasamos los estados permitidos para el selector
+        'estados': Pedido.ESTADOS,  # estados permitidos para el selector
     }
     return render(request, 'lista_pedidos_admin.html', contexto)
+
 
 @login_required
 @user_passes_test(admin)
 def cambiar_estado_pedido_view(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    
+
     if request.method == 'POST':
         nuevo_estado = request.POST.get('estado')
         estados_validos = [e[0] for e in Pedido.ESTADOS]
-        
+
         if nuevo_estado in estados_validos:
             pedido.estado = nuevo_estado
             pedido.save()
-            
+
             # Registramos el cambio en el historial del pedido
             HistorialEstadoPedido.objects.create(
                 pedido=pedido,
                 estado=nuevo_estado,
-                comentario=f"Estado actualizado por la administración.",
+                comentario="Estado actualizado por la administración.",
                 usuario=request.user
             )
-            
-            messages.success(request, f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!")
+
+            messages.success(
+                request,
+                f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!"
+            )
         else:
             messages.error(request, "Estado inválido.")
-            
+
     return redirect('lista_pedidos_admin')
+
 
 # =========================================================
 # HU: PEDIDOS PENDIENTES (DUEÑA)
@@ -492,16 +589,17 @@ def _extraer_fecha_pedido(comentarios):
         return parse_date(match.group(1))
     return None
 
+
 @login_required
 @user_passes_test(admin)
 @require_POST
 def aceptar_pedido_view(request, pedido_id):
     """Cambia el pedido a 'confirmado' y resta un cupo a la fecha elegida."""
     pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
-    
+
     # 1. Extraer la fecha y restar el cupo
     fecha_entrega = _extraer_fecha_pedido(pedido.comentarios)
-    
+
     if fecha_entrega:
         cupo, creado = CupoFecha.objects.get_or_create(
             fecha=fecha_entrega,
@@ -521,7 +619,16 @@ def aceptar_pedido_view(request, pedido_id):
     pedido.estado = 'confirmado'
     pedido.save()
 
+    # 3. Registrar en el historial
+    HistorialEstadoPedido.objects.create(
+        pedido=pedido,
+        estado='confirmado',
+        comentario="Pedido aceptado por la administración.",
+        usuario=request.user
+    )
+
     return redirect('todos_los_pedidos')
+
 
 @login_required
 @user_passes_test(admin)
@@ -529,12 +636,20 @@ def aceptar_pedido_view(request, pedido_id):
 def marcar_entregado_view(request, pedido_id):
     """Cambia el estado a 'entregado', lo que hará que desaparezca de la lista activa."""
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    
+
     pedido.estado = 'entregado'
     pedido.save()
-    
+
+    HistorialEstadoPedido.objects.create(
+        pedido=pedido,
+        estado='entregado',
+        comentario="Pedido marcado como entregado.",
+        usuario=request.user
+    )
+
     messages.success(request, f"¡Pedido #{pedido.id} entregado con éxito! Ya no aparecerá en la lista.")
     return redirect('todos_los_pedidos')
+
 
 @login_required
 @user_passes_test(admin)
@@ -551,11 +666,11 @@ def todos_los_pedidos_view(request):
 
     if busqueda:
         pedidos = pedidos.filter(
-            Q(nombre_contacto__icontains = busqueda) |
-            Q(telefono_contacto__icontains = busqueda) |
-            Q(direccion_entrega__icontains = busqueda) |
-            Q(creado__date__icontains = busqueda) |
-            Q(detalles__producto__nombre__icontains = busqueda)
+            Q(nombre_contacto__icontains=busqueda) |
+            Q(telefono_contacto__icontains=busqueda) |
+            Q(direccion_entrega__icontains=busqueda) |
+            Q(creado__date__icontains=busqueda) |
+            Q(detalles__producto__nombre__icontains=busqueda)
         ).distinct()
 
     return render(

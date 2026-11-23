@@ -10,7 +10,7 @@ from django.db.models import Prefetch, Q
 from .models import (
     Producto, Categoria, Resena, RespuestaResena, Carrito, 
     Pedido, DetallePedido, ItemCarrito, FechaBloqueada,
-    CupoFecha, ConfiguracionAgenda
+    CupoFecha, ConfiguracionAgenda, HistorialEstadoPedido
 )
 from .forms import ResenaForm
 

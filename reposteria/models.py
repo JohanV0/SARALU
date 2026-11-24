@@ -373,6 +373,7 @@ class Pedido(models.Model):
         ('confirmado', 'Confirmado'),
         ('preparacion', 'En preparación'),
         ('entregado', 'Entregado'),
+        ('rechazado', 'Rechazado'),     
         ('cancelado', 'Cancelado'),
     ]
 

@@ -96,6 +96,18 @@
           </div>
 
           {# Campo dinámico de Dirección o Info de Tienda #}
+
+          {# Teléfono de contacto #}
+          <div class="mt-5">
+            <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
+              Teléfono de contacto
+            </label>
+            <input type="tel" name="telefono" id="input-telefono" required
+                   value="{{ request.user.perfil.telefono|default:'' }}"
+                   placeholder="Ej: 3151234567"
+                   class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
+          </div>
+          
           <div id="campo-domicilio" class="mt-5">
             <label for="input-direccion" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
               Dirección exacta de entrega

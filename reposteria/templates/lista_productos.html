@@ -4,9 +4,6 @@
 
 {% block content %}
 
-{# ============================================================ #}
-{# LISTA DE PRODUCTOS — misma estética que el home              #}
-{# ============================================================ #}
 <section id="lista-productos"
          class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
   <div class="absolute inset-0 bg-mantequilla/35 rounded-[2rem] lg:rounded-[3rem]"></div>
@@ -44,16 +41,62 @@
         Nuevo producto
       </a>
     </div>
+    <form method="get" class="mb-8 lg:mb-10">
+      <div class="flex flex-col sm:flex-row gap-3">
+      
+        <!-- 1) Búsqueda por texto -->
+        <input
+          type="text"
+          name="buscar"
+          value="{{ busqueda|default:'' }}"
+          placeholder="Buscar por nombre del producto"
+          aria-label="Buscar por nombre del producto"
+          class="flex-1 rounded-full bg-white px-5 py-3 text-sm lg:text-base text-chocolate shadow-soft border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-chocolate/40 placeholder:text-cafe/60"
+        >
+      
+        <!-- 2) Filtro por choices (estado) -->
+        <select
+          name="estado"
+          aria-label="Filtrar por estado"
+          class="rounded-full bg-white px-5 py-3 text-sm lg:text-base text-chocolate shadow-soft border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-chocolate/40"
+        >
+          <option value="">Todos los estados</option>
+          {% for valor, etiqueta in estados %}
+            <option value="{{ valor }}" {% if estado == valor %}selected{% endif %}>
+              {{ etiqueta }}
+            </option>
+          {% endfor %}
+        </select>
+      
+        <!-- Botón buscar -->
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-chocolate/90 hover:-translate-y-0.5 transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.3-4.3"/>
+          </svg>
+          Buscar
+        </button>
+      
+        <!-- Limpiar: aparece si hay CUALQUIER filtro activo -->
+        {% if busqueda or estado %}
+          <a href="{% url 'lista_productos' %}"
+             class="inline-flex items-center justify-center gap-2 rounded-full bg-crema px-5 py-3 text-sm lg:text-base font-semibold text-chocolate ring-1 ring-chocolate/15 hover:bg-mantequilla transition-all">
+            Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
 
     {# ---------- LISTA ---------- #}
-    {% if productos %}
+    {% if page_obj %}
       <ul class="flex flex-col gap-4 lg:gap-5 3xl:gap-6">
 
-        {% for producto in productos %}
+        {% for producto in page_obj %}
           <li>
             <article class="group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 3xl:gap-6 overflow-hidden rounded-[1.7rem] lg:rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift">
-
-              {# --- Imagen / miniatura --- #}
               <div class="relative h-40 sm:h-24 3xl:h-28 w-full sm:w-24 3xl:w-28 shrink-0 overflow-hidden rounded-[1.25rem] bg-rosaClaro">
                 {% if producto.imagen %}
                   <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
@@ -163,6 +206,64 @@
         {% endfor %}
 
       </ul>
+      {# --- PAGINACIÓN --- #}
+      {% if page_obj.has_other_pages %}
+        <nav class="mt-12 mb-8 flex flex-wrap items-center justify-center gap-1 md:gap-2">
+          
+          {# Botón Anterior #}
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}"
+               aria-label="Página anterior"
+               class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </a>
+          {% else %}
+            <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </span>
+          {% endif %}
+
+          {# Números de Página #}
+          {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+              <span aria-current="page"
+                    class="relative grid h-10 w-10 place-items-center rounded-full bg-chocolate font-display text-sm font-bold text-mantequilla shadow-soft">
+                {{ i }}
+                <span class="absolute -right-0.5 -top-0.5 text-[10px] leading-none text-mantequilla">★</span>
+              </span>
+            {% elif i == 1 or i == page_obj.paginator.num_pages or i >= page_obj.number|add:'-1' and i <= page_obj.number|add:'1' %}
+              <a href="?page={{ i }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}"
+                 class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-semibold text-chocolate/70 transition hover:bg-rosaClaro hover:text-chocolate">
+                {{ i }}
+              </a>
+            {% elif i == page_obj.number|add:'-2' or i == page_obj.number|add:'2' %}
+              <span class="grid h-10 w-6 place-items-center text-chocolate/30 select-none">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {# Botón Siguiente #}
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}"
+               aria-label="Página siguiente"
+               class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          {% else %}
+            <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          {% endif %}
+        </nav>
+      {% endif %}
+      
     {% else %}
       {# ---------- ESTADO VACÍO ---------- #}
       <div class="rounded-[2rem] bg-crema px-6 py-20 text-center shadow-soft">
@@ -192,8 +293,8 @@
         </a>
       </div>
     {% endif %}
-
   </div>
+  
 </section>
 
 {% endblock %}

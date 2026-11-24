@@ -35,7 +35,7 @@
     </h1>
 
     <p class="mt-4 lg:mt-6 max-w-2xl text-sm lg:text-base text-cafe">
-      Haz clic en cualquier pedido para ver todos los detalles de tu compra.
+      Haz clic en cualquier pedido para ver todos los detalles de tu compra y cómo va su estado.
     </p>
   </div>
   
@@ -152,12 +152,15 @@
               <p class="font-display text-2xl lg:text-3xl font-bold text-chocolate">{{ pedido.total|cop }}</p>
             </div>
             
-            <!-- Etiqueta de estado con colores dinámicos -->
-            <span class="px-4 py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-widest2 shadow-sm
+            <!-- Etiqueta de estado con colores dinámicos (se actualiza cuando la dueña cambia el estado) -->
+            <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-widest2 shadow-sm
               {% if pedido.estado == 'pendiente' %} bg-mantequilla text-chocolate
+              {% elif pedido.estado == 'confirmado' %} bg-azul text-chocolate
+              {% elif pedido.estado == 'preparacion' %} bg-rosaClaro text-chocolate
               {% elif pedido.estado == 'entregado' %} bg-green-100 text-green-700
-              {% elif pedido.estado == 'cancelado' %} bg-red-100 text-red-700
+              {% elif pedido.estado == 'rechazado' or pedido.estado == 'cancelado' %} bg-red-100 text-red-700
               {% else %} bg-azul text-chocolate {% endif %}">
+              <span class="h-1.5 w-1.5 rounded-full bg-current {% if pedido.estado == 'pendiente' or pedido.estado == 'preparacion' %}animate-pulse{% endif %}"></span>
               {{ pedido.get_estado_display }}
             </span>
           </div>
@@ -189,6 +192,44 @@
 
             <!-- Cuerpo del Modal -->
             <div class="p-6 lg:p-8 space-y-8">
+
+              <!-- Estado actual del pedido + historial de cambios -->
+              <div class="bg-white p-4 rounded-2xl ring-1 ring-chocolate/5">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-[10px] font-bold uppercase tracking-widest2 text-cafe">Estado del pedido</span>
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-widest2
+                    {% if pedido.estado == 'pendiente' %} bg-mantequilla text-chocolate
+                    {% elif pedido.estado == 'confirmado' %} bg-azul text-chocolate
+                    {% elif pedido.estado == 'preparacion' %} bg-rosaClaro text-chocolate
+                    {% elif pedido.estado == 'entregado' %} bg-green-100 text-green-700
+                    {% elif pedido.estado == 'rechazado' or pedido.estado == 'cancelado' %} bg-red-100 text-red-700
+                    {% else %} bg-azul text-chocolate {% endif %}">
+                    <span class="h-1.5 w-1.5 rounded-full bg-current {% if pedido.estado == 'pendiente' or pedido.estado == 'preparacion' %}animate-pulse{% endif %}"></span>
+                    {{ pedido.get_estado_display }}
+                  </span>
+                </div>
+
+                {% if pedido.historial_lista %}
+                  <ul class="mt-4 space-y-2 border-t border-chocolate/10 pt-3">
+                    {% for h in pedido.historial_lista %}
+                      <li class="flex gap-3 rounded-xl bg-crema/60 p-3 ring-1 ring-chocolate/5">
+                        <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full {% if forloop.first %}bg-chocolate{% else %}bg-chocolate/30{% endif %}"></span>
+                        <div class="min-w-0">
+                          <p class="text-xs font-bold uppercase tracking-widest2 text-chocolate">
+                            {{ h.get_estado_display|default:h.estado }}
+                          </p>
+                          {% if h.comentario %}
+                            <p class="mt-0.5 text-sm text-cafe break-words">{{ h.comentario }}</p>
+                          {% endif %}
+                          {% if h.creado %}
+                            <p class="mt-1 text-[11px] text-chocolate/50">{{ h.creado|date:"d/m/Y · H:i" }}</p>
+                          {% endif %}
+                        </div>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
               
               <!-- Info de Entrega (Fechas, Hora, Dirección) -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -205,8 +246,8 @@
                     <span class="text-[10px] font-bold uppercase tracking-widest2">Fecha de entrega</span>
                   </div>
                   <p class="font-semibold text-chocolate">
-                    {% if pedido.fecha_entrega_mostrar %}
-                      {{ pedido.fecha_entrega_mostrar|date:"d \d\e F \d\e Y" }}
+                    {% if pedido.entrega_fecha %}
+                      {{ pedido.entrega_fecha|date:"d \d\e F \d\e Y" }}
                     {% else %}
                       Por confirmar
                     {% endif %}
@@ -223,8 +264,8 @@
                     <span class="text-[10px] font-bold uppercase tracking-widest2">Hora estimada</span>
                   </div>
                   <p class="font-semibold text-chocolate">
-                    {% if pedido.hora_entrega_mostrar %}
-                      {{ pedido.hora_entrega_mostrar }}
+                    {% if pedido.entrega_hora %}
+                      {{ pedido.entrega_hora }}
                     {% else %}
                       Por confirmar
                     {% endif %}
@@ -241,13 +282,13 @@
                     <span class="text-[10px] font-bold uppercase tracking-widest2">Método de entrega</span>
                   </div>
                   <p class="font-semibold text-chocolate">{{ pedido.get_domicilio_display|default:"No especificado" }}</p>
-                  {% if pedido.direccion_entrega_mostrar %}
-                    <p class="text-sm text-cafe mt-1">{{ pedido.direccion_entrega_mostrar }}</p>
+                  {% if pedido.entrega_direccion %}
+                    <p class="text-sm text-cafe mt-1">{{ pedido.entrega_direccion }}</p>
                   {% endif %}
                 </div>
 
                 <!-- Tarjeta: Notas (solo aparece si el cliente escribió algo) -->
-                {% if pedido.notas_entrega_mostrar %}
+                {% if pedido.entrega_notas %}
                   <div class="bg-mantequilla/30 p-4 rounded-2xl ring-1 ring-mantequilla sm:col-span-2">
                     <div class="flex items-center gap-2 text-cafe mb-1">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -258,7 +299,7 @@
                       </svg>
                       <span class="text-[10px] font-bold uppercase tracking-widest2">Notas del pedido</span>
                     </div>
-                    <p class="text-sm text-chocolate italic">"{{ pedido.notas_entrega_mostrar }}"</p>
+                    <p class="text-sm text-chocolate italic">"{{ pedido.entrega_notas }}"</p>
                   </div>
                 {% endif %}
 
@@ -369,29 +410,93 @@
 
 </main>
 
-<!-- Script para abrir y cerrar los modales -->
+<!-- ============================================================ -->
+<!-- SCRIPT: ABRIR Y CERRAR LOS MODALES DE DETALLE DE PEDIDO       -->
+<!--                                                               -->
+<!-- Cómo funciona todo el sistema:                                -->
+<!--  1. Django genera un modal por cada pedido con un id único:   -->
+<!--     "modal-pedido-<id>" (ej. modal-pedido-9). Todos nacen     -->
+<!--     ocultos gracias a la clase "hidden" de Tailwind           -->
+<!--     (display: none).                                          -->
+<!--  2. La tarjeta de cada pedido llama a abrirModalPedido()      -->
+<!--     con el id de SU modal (atributo onclick del <button>).    -->
+<!--  3. El fondo oscuro, la X y la tecla Escape llaman a          -->
+<!--     cerrarModalPedido() para volver a ocultarlo.              -->
+<!--                                                               -->
+<!-- No se usa ninguna librería: es JavaScript puro que solo       -->
+<!-- agrega o quita clases CSS.                                    -->
+<!-- ============================================================ -->
 <script>
+  /**
+   * Abre el modal de un pedido.
+   *
+   * Se llama desde la tarjeta del pedido:
+   *   onclick="abrirModalPedido('modal-pedido-{{ pedido.id }}')"
+   *
+   * @param {string} idModal - id del modal que se quiere mostrar
+   *                           (ej. "modal-pedido-9").
+   */
   function abrirModalPedido(idModal) {
+    // Busca en la página el elemento cuyo id coincide con el recibido.
     const modal = document.getElementById(idModal);
+
+    // Si no existe (id mal escrito, por ejemplo), no hace nada
+    // en vez de lanzar un error en la consola.
     if (modal) {
+      // Quita "hidden" (display: none) y el modal pasa a verse.
+      // Sus clases "fixed inset-0 flex" lo extienden por toda la pantalla
+      // y lo centran.
       modal.classList.remove('hidden');
-      document.body.classList.add('overflow-hidden'); // Evita el scroll de fondo
+
+      // Bloquea el scroll de la página que queda detrás del modal.
+      // Así, al desplazarse, solo se mueve el contenido del modal
+      // (que tiene su propio overflow-y-auto) y no el fondo.
+      document.body.classList.add('overflow-hidden');
     }
   }
 
+  /**
+   * Cierra el modal de un pedido.
+   *
+   * Se llama desde tres lugares del HTML:
+   *   - El fondo oscuro difuminado (clic fuera de la ventana).
+   *   - El botón con la X de la cabecera del modal.
+   *   - (La tecla Escape se maneja más abajo.)
+   *
+   * @param {string} idModal - id del modal que se quiere ocultar.
+   */
   function cerrarModalPedido(idModal) {
+    // Igual que al abrir: localiza el modal por su id.
     const modal = document.getElementById(idModal);
+
     if (modal) {
+      // Vuelve a poner "hidden" y el modal desaparece.
       modal.classList.add('hidden');
+
+      // Devuelve el scroll a la página, que estaba bloqueado al abrir.
       document.body.classList.remove('overflow-hidden');
     }
   }
 
-  // Cerrar modal con la tecla Escape
-  document.addEventListener('keydown', function(event) {
+  /**
+   * Cierra con la tecla Escape cualquier modal que esté abierto.
+   *
+   * Es un único listener para toda la página (no uno por modal):
+   * escucha las teclas en todo el documento.
+   */
+  document.addEventListener('keydown', function (event) {
+    // Solo reacciona a Escape; cualquier otra tecla se ignora.
     if (event.key === 'Escape') {
+      // Selector CSS:
+      //   [id^="modal-pedido-"]  -> elementos cuyo id EMPIEZA por "modal-pedido-"
+      //   :not(.hidden)          -> ...y que NO estén ocultos (es decir, abiertos)
+      // Devuelve una lista con los modales visibles en ese momento
+      // (normalmente solo uno).
       const modalesAbiertos = document.querySelectorAll('[id^="modal-pedido-"]:not(.hidden)');
-      modalesAbiertos.forEach(modal => {
+
+      // Recorre cada modal abierto y lo cierra de la misma forma que
+      // cerrarModalPedido(): agrega "hidden" y libera el scroll del body.
+      modalesAbiertos.forEach(function (modal) {
         modal.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
       });

@@ -11,6 +11,21 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from urllib.parse import quote 
 from django.conf import settings  
+<<<<<<< HEAD
+=======
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
+from django.db.models import Prefetch, Q, F, Count
+from .models import (
+    Producto, Categoria, Resena, RespuestaResena, Carrito,
+    Pedido, DetallePedido, ItemCarrito, FechaBloqueada,
+    CupoFecha, ConfiguracionAgenda, HistorialEstadoPedido
+)
+>>>>>>> origin/paula10
 from .forms import ResenaForm
 
 from .models import (
@@ -37,8 +52,13 @@ def admin(user):
 
 
 def catalogo_view(request):
+<<<<<<< HEAD
     categoria_code = request.GET.get('categoria')        # "TARTAS", "CUPCAKES", ...
     productos = Producto.objects.select_related('categoria').prefetch_related('imagenes').order_by("nombre")
+=======
+    categoria_code = request.GET.get('categoria')
+    productos = Producto.objects.select_related('categoria').prefetch_related('imagenes')
+>>>>>>> origin/paula10
     categorias = Categoria.objects.all()
 
     if categoria_code:
@@ -73,9 +93,9 @@ def detalle_producto_view(request, producto_id):
     )
     productos_relacionados = (
         Producto.objects
-        .filter(categoria=producto.categoria)  # misma categoría
-        .exclude(id=producto.id)               # sin el actual
-        .order_by('-id')[:4]                   # los 4 más nuevos
+        .filter(categoria=producto.categoria)
+        .exclude(id=producto.id)
+        .order_by('-id')[:4]
     )
     resenas = producto.resenas.all().order_by('-fecha_creacion')
     resena_usuario = None
@@ -87,7 +107,6 @@ def detalle_producto_view(request, producto_id):
         if request.method == 'POST':
             accion = request.POST.get('accion')
 
-            # ---------- ACCIÓN: RESPONDER (solo staff) ----------
             if accion == 'responder':
                 if not request.user.is_staff:
                     messages.error(request, 'No tienes permiso para responder reseñas.')
@@ -110,13 +129,11 @@ def detalle_producto_view(request, producto_id):
                 messages.success(request, 'Respuesta publicada correctamente.')
                 return redirect('producto_detalle', producto_id=producto.id)
 
-            # ---------- ACCIÓN: ELIMINAR reseña propia ----------
             if accion == 'eliminar' and resena_usuario:
                 resena_usuario.delete()
                 messages.success(request, 'Tu reseña ha sido eliminada.')
                 return redirect('producto_detalle', producto_id=producto.id)
 
-            # ---------- ACCIÓN: GUARDAR / EDITAR reseña ----------
             if accion == 'guardar':
                 form = ResenaForm(request.POST, instance=resena_usuario)
                 if form.is_valid():
@@ -129,7 +146,6 @@ def detalle_producto_view(request, producto_id):
                     messages.success(request, mensaje)
                     return redirect('producto_detalle', producto_id=producto.id)
         else:
-            # Si el usuario es staff, no mostramos el formulario de reseña
             if not request.user.is_staff:
                 form = ResenaForm(instance=resena_usuario)
 
@@ -143,8 +159,6 @@ def detalle_producto_view(request, producto_id):
     return render(request, 'detalle_producto.html', contexto)
 
 
-# CORRECCIÓN: solo admin, solo POST y get_object_or_404
-# (en la plantilla el botón debe ser un <form method="post"> con {% csrf_token %})
 @login_required
 @user_passes_test(admin)
 @require_POST
@@ -169,16 +183,14 @@ def editar_producto(request, producto_id):
         porciones = request.POST.get("porciones")
         ventas = request.POST.get("ventas")
         categoria_id = request.POST.get("categoria")
-        estado = request.POST.get("estado")  # 'DISPONIBLE' o 'AGOTADO'
+        estado = request.POST.get("estado")
 
-        # Leemos los checkboxes según el HTML
         destacado = 'destacado' in request.POST
         mas_vendido = 'mas_vendido' in request.POST
         es_nuevo = 'nuevo' in request.POST
 
         if not (nombre and precio and stock and porciones and categoria_id):
             messages.error(request, "Faltan campos obligatorios.")
-            # CORRECCIÓN: mismo nombre de plantilla que el render final
             return render(request, "editar-producto.html", {
                 "producto": producto,
                 "categorias": categorias,
@@ -199,7 +211,6 @@ def editar_producto(request, producto_id):
         if categoria_id:
             producto.categoria = get_object_or_404(Categoria, id=categoria_id)
 
-        # Guardamos la imagen si se subió una nueva
         if request.FILES.get('imagen'):
             producto.imagen = request.FILES['imagen']
 
@@ -213,7 +224,6 @@ def editar_producto(request, producto_id):
     })
 
 
-# CORRECCIÓN: protegida con login y admin
 @login_required
 @user_passes_test(admin)
 def nuevo_producto(request):
@@ -288,18 +298,20 @@ def lista_productos(request):
 
 @login_required
 def armar_pedido_view(request):
+<<<<<<< HEAD
     carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
     items_carrito = carrito.items.select_related('producto').all()
+=======
+    carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
+    items_carrito = carrito.items.all()
+>>>>>>> origin/paula10
 
-    # Si el carrito está vacío, rebota al catálogo
     if not items_carrito.exists():
         messages.warning(request, "Debes elegir al menos un producto para armar un pedido.")
         return redirect('catalogo')
 
-    # Calculamos el total
     subtotal = sum(item.subtotal() for item in items_carrito)
 
-    # GUARDAR EL PEDIDO CUANDO SE ENVÍA EL FORMULARIO
     if request.method == 'POST':
         tipo_entrega = request.POST.get('tipo_entrega', 'domicilio').strip()
         fecha_str = request.POST.get('fecha', '').strip()
@@ -309,26 +321,21 @@ def armar_pedido_view(request):
         comentarios_cliente = request.POST.get('comentarios', '').strip()
         telefono_ingresado = request.POST.get('telefono', '').strip()
 
-        # --- Validar el teléfono (solo dígitos, entre 7 y 15) ---
         telefono = re.sub(r'\D', '', telefono_ingresado)
         if not (7 <= len(telefono) <= 15):
             messages.error(request, "Ingresa un número de teléfono válido para contactarte.")
             return redirect('armar_pedido')
 
-        # --- Validar tipo de entrega ---
-        # Si tu modelo tiene Pedido.TIPOS_ENTREGA usa: [t[0] for t in Pedido.TIPOS_ENTREGA]
         tipos_validos = ['domicilio', 'recojo']
         if tipo_entrega not in tipos_validos:
             messages.error(request, "Selecciona un tipo de entrega válido.")
             return redirect('armar_pedido')
 
-        # --- Validar fecha y hora obligatorias ---
         fecha_obj = parse_date(fecha_str) if fecha_str else None
         if not fecha_obj or not hora:
             messages.error(request, "Selecciona la fecha y la hora de entrega.")
             return redirect('armar_pedido')
 
-        # --- Validar fecha bloqueada ---
         if FechaBloqueada.objects.filter(fecha=fecha_obj).exists():
             messages.error(
                 request,
@@ -336,18 +343,14 @@ def armar_pedido_view(request):
             )
             return redirect('armar_pedido')
 
-        # --- Ubicación según el tipo de entrega ---
         if tipo_entrega == 'recojo':
             ubicacion_texto = "La Arboleda Campestre, Conjunto Almendros"
         else:
-            # En domicilio la dirección es obligatoria (max 250 = Pedido.direccion_entrega)
             if not direccion_cliente:
                 messages.error(request, "Ingresa la dirección de entrega para el domicilio.")
                 return redirect('armar_pedido')
             ubicacion_texto = direccion_cliente[:250]
 
-        # Nota ordenada en los comentarios del pedido
-        # "Fecha de entrega" debe coincidir con _extraer_fecha_pedido
         nota_horario = (
             f"Entrega: {tipo_entrega.upper()} | Dirección: {ubicacion_texto} | "
             f"Fecha de entrega: {fecha_str} | Hora: {hora}"
@@ -355,10 +358,8 @@ def armar_pedido_view(request):
         if comentarios_cliente:
             nota_horario += f" | Notas: {comentarios_cliente}"
 
-        # Evaluamos los items una sola vez (con su producto)
         items = list(items_carrito.select_related('producto'))
 
-        # --- Validar stock ANTES de crear nada ---
         for item in items:
             if item.cantidad > item.producto.stock:
                 messages.error(
@@ -367,7 +368,6 @@ def armar_pedido_view(request):
                 )
                 return redirect('ver_carrito')
 
-        # Todo en una transacción: o se guarda todo o nada
         with transaction.atomic():
             nuevo_pedido = Pedido.objects.create(
                 cliente=request.user,
@@ -388,7 +388,6 @@ def armar_pedido_view(request):
                     cantidad=item.cantidad,
                     precio_unitario=item.producto.precio
                 )
-                # Descuenta stock y suma ventas de forma segura
                 Producto.objects.filter(id=item.producto_id).update(
                     stock=F('stock') - item.cantidad,
                     ventas=F('ventas') + item.cantidad
@@ -397,10 +396,8 @@ def armar_pedido_view(request):
                     f"• {item.cantidad} x {item.producto.nombre} (${item.subtotal():,.0f})"
                 )
 
-            # Vaciamos el carrito
             items_carrito.delete()
 
-        # Armamos el mensaje y redirigimos a WhatsApp
         mensaje = (
             f"Hola, quiero confirmar mi pedido #{nuevo_pedido.id}\n\n"
             f"Cliente: {request.user.username}\n"
@@ -417,7 +414,6 @@ def armar_pedido_view(request):
         url_whatsapp = f"https://wa.me/{settings.WHATSAPP_NUMERO}?text={quote(mensaje)}"
         return redirect(url_whatsapp)
 
-    # Fechas bloqueadas como lista de strings para el JSON del calendario
     fechas_qs = FechaBloqueada.objects.all().order_by('fecha')
     fechas_bloqueadas_json = [f.fecha.strftime('%Y-%m-%d') for f in fechas_qs]
 
@@ -426,7 +422,6 @@ def armar_pedido_view(request):
         'subtotal': subtotal,
         'fechas_bloqueadas': fechas_qs,
         'fechas_bloqueadas_json': fechas_bloqueadas_json,
-        # Precarga el teléfono con el del perfil (si lo tiene)
         'telefono_inicial': getattr(getattr(request.user, 'perfil', None), 'telefono', ''),
     }
     return render(request, 'armar_pedido.html', contexto)
@@ -436,8 +431,6 @@ def armar_pedido_view(request):
 def ver_carrito_view(request):
     carrito, creado = Carrito.objects.get_or_create(usuario=request.user)
     items = carrito.items.all()
-
-    # Total acumulado
     total = sum(item.subtotal() for item in items)
 
     contexto = {
@@ -449,7 +442,6 @@ def ver_carrito_view(request):
 
 @login_required
 def eliminar_item_carrito(request, item_id):
-    # Eliminar un producto del carrito
     item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
     nombre_producto = item.producto.nombre
     item.delete()
@@ -474,7 +466,6 @@ def agregar_al_carrito(request, producto_id):
     return redirect('ver_carrito')
 
 
-# CORRECCIÓN: protegida con login y admin
 @login_required
 @user_passes_test(admin)
 def avanzar_estado_categoria(request, producto_id):
@@ -490,14 +481,12 @@ def avanzar_estado_categoria(request, producto_id):
     return redirect('lista_productos')
 
 
-# CORRECCIÓN: protegida con login y admin
 @login_required
 @user_passes_test(admin)
 def gestionar_fechas_bloqueadas_view(request):
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
-        # 1. Acción de BLOQUEAR
         if accion == 'bloquear':
             fecha_str = request.POST.get('fecha')
             motivo = request.POST.get('motivo', '')
@@ -517,7 +506,6 @@ def gestionar_fechas_bloqueadas_view(request):
                     messages.error(request, "Formato de fecha inválido.")
             return redirect('gestionar_fechas_bloqueadas')
 
-        # 2. Acción de HABILITAR (Desbloquear)
         elif accion == 'habilitar':
             fechas_ids = request.POST.getlist('fechas_seleccionadas')
             if fechas_ids:
@@ -531,9 +519,35 @@ def gestionar_fechas_bloqueadas_view(request):
     return render(request, 'bloquear_fechas.html', {'fechas_bloqueadas': fechas_bloqueadas})
 
 
-# HU-033: MIS PEDIDOS (CLIENTE)
+# =========================================================
+# HU: MIS PEDIDOS (CLIENTE)
+# - Muestra el estado actual de cada pedido (se actualiza cuando la
+#   dueña lo cambia desde el panel, porque ambos leen Pedido.estado)
+# - Adjunta el historial de cambios de estado (con su comentario)
+# =========================================================
+def _datos_entrega_pedido(pedido):
+    """
+    Lee los datos que el cliente registró al hacer el pedido.
+    Se guardan en `pedido.comentarios` con este formato (ver armar_pedido_view):
+    "Entrega: X | Dirección: Y | Fecha de entrega: YYYY-MM-DD | Hora: HH:MM | Notas: Z"
+    """
+    texto = pedido.comentarios or ''
+
+    m_hora = re.search(r"Hora:\s*([^|]+)", texto)
+    m_dir = re.search(r"Dirección:\s*([^|]+)", texto)
+    m_notas = re.search(r"Notas:\s*(.+)$", texto, re.S)
+
+    return {
+        'fecha': _extraer_fecha_pedido(texto),
+        'hora': m_hora.group(1).strip() if m_hora else '',
+        'direccion': (m_dir.group(1).strip() if m_dir else '') or (pedido.direccion_entrega or ''),
+        'notas': m_notas.group(1).strip() if m_notas else '',
+    }
+
+
 @login_required
 def mis_pedidos_view(request):
+<<<<<<< HEAD
     busqueda = request.GET.get("buscar", "").strip()
     estado = request.GET.get("estado", "").strip()
 
@@ -563,61 +577,111 @@ def mis_pedidos_view(request):
     }
     
     return render(request, 'mis_pedidos.html', contexto)
+=======
+    pedidos = list(
+        Pedido.objects
+        .filter(cliente=request.user)
+        .prefetch_related('detalles__producto')
+        .order_by('-creado')
+    )
+
+    # Historial de estados agrupado por pedido (el más reciente primero)
+    historiales = (
+        HistorialEstadoPedido.objects
+        .filter(pedido__in=pedidos)
+        .order_by('-id')
+    )
+    por_pedido = {}
+    for h in historiales:
+        por_pedido.setdefault(h.pedido_id, []).append(h)
+
+    for pedido in pedidos:
+        pedido.historial_lista = por_pedido.get(pedido.id, [])
+
+        datos = _datos_entrega_pedido(pedido)
+        pedido.entrega_fecha = datos['fecha']
+        pedido.entrega_hora = datos['hora']
+        pedido.entrega_direccion = datos['direccion']
+        pedido.entrega_notas = datos['notas']
+
+    return render(request, 'mis_pedidos.html', {'pedidos': pedidos})
+>>>>>>> origin/paula10
 
 
 @login_required
 @user_passes_test(admin)
+<<<<<<< HEAD
 def lista_pedidos_admin_view(request):  
     # La dueña puede ver todos los pedidos ordenados del más reciente al más antiguo
+=======
+def lista_pedidos_admin_view(request):
+>>>>>>> origin/paula10
     pedidos = Pedido.objects.all().order_by('-creado')
     contexto = {
         'pedidos': pedidos,
-        'estados': Pedido.ESTADOS,  # estados permitidos para el selector
+        'estados': Pedido.ESTADOS,
     }
     return render(request, 'lista_pedidos_admin.html', contexto)
 
 
+# =========================================================
+# HU: CAMBIAR ESTADO DE UN PEDIDO (DUEÑA)
+# =========================================================
 @login_required
 @user_passes_test(admin)
+@require_POST
 def cambiar_estado_pedido_view(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
+    nuevo_estado = request.POST.get('estado', '').strip()
+    comentario = request.POST.get('comentario', '').strip()
+    estados_validos = [e[0] for e in Pedido.ESTADOS]
 
-    if request.method == 'POST':
-        nuevo_estado = request.POST.get('estado')
-        estados_validos = [e[0] for e in Pedido.ESTADOS]
+    if nuevo_estado not in estados_validos:
+        messages.error(request, "Estado inválido.")
+        return redirect('todos_los_pedidos')
 
-        if nuevo_estado in estados_validos:
-            pedido.estado = nuevo_estado
-            pedido.save()
+    if pedido.estado == nuevo_estado:
+        messages.info(
+            request,
+            f"El pedido #{pedido.id} ya está en '{pedido.get_estado_display()}'."
+        )
+        return redirect('todos_los_pedidos')
 
-            # Registramos el cambio en el historial del pedido
-            HistorialEstadoPedido.objects.create(
-                pedido=pedido,
-                estado=nuevo_estado,
-                comentario="Estado actualizado por la administración.",
-                usuario=request.user
-            )
+    estado_anterior = pedido.estado
 
-            messages.success(
-                request,
-                f"¡El estado del pedido #{pedido.id} fue actualizado a '{pedido.get_estado_display()}'!"
-            )
-        else:
-            messages.error(request, "Estado inválido.")
+    with transaction.atomic():
+        pedido.estado = nuevo_estado
+        pedido.save()
 
-    return redirect('lista_pedidos_admin')
+        HistorialEstadoPedido.objects.create(
+            pedido=pedido,
+            estado=nuevo_estado,
+            comentario=comentario or (
+                f"Cambio de '{dict(Pedido.ESTADOS)[estado_anterior]}' "
+                f"a '{pedido.get_estado_display()}' por la administración."
+            ),
+            usuario=request.user,
+        )
+
+    messages.success(
+        request,
+        f"Pedido #{pedido.id} actualizado a '{pedido.get_estado_display()}'."
+    )
+    return redirect('todos_los_pedidos')
 
 
 # =========================================================
 # HU: PEDIDOS PENDIENTES (DUEÑA)
 # =========================================================
-
 @login_required
 @user_passes_test(admin)
 def pedidos_pendientes_view(request):
+<<<<<<< HEAD
     busqueda = request.GET.get("buscar", "").strip()
     estado = request.GET.get("estado", "").strip()
 
+=======
+>>>>>>> origin/paula10
     detalles_qs = (
         DetallePedido.objects
         .select_related('producto')
@@ -629,7 +693,7 @@ def pedidos_pendientes_view(request):
         .filter(estado='pendiente')
         .select_related('cliente', 'cupon', 'direccion')
         .prefetch_related(Prefetch('detalles', queryset=detalles_qs))
-        .order_by('creado')  # el más viejo primero
+        .order_by('creado')
     )
 
     if busqueda:
@@ -658,15 +722,10 @@ def pedidos_pendientes_view(request):
     return render(request, 'pedidos_pendientes.html', contexto)
 
 
-# =========================================================
-# HU: ACEPTAR Y ENTREGAR PEDIDOS
-# =========================================================
-
 def _extraer_fecha_pedido(comentarios):
     """Extrae la fecha 'YYYY-MM-DD' del texto de comentarios del pedido."""
     if not comentarios:
         return None
-    # Busca el patrón "Fecha de entrega: YYYY-MM-DD"
     match = re.search(r"Fecha de entrega:\s*(\d{4}-\d{2}-\d{2})", comentarios)
     if match:
         return parse_date(match.group(1))
@@ -677,32 +736,11 @@ def _extraer_fecha_pedido(comentarios):
 @user_passes_test(admin)
 @require_POST
 def aceptar_pedido_view(request, pedido_id):
-    """Cambia el pedido a 'confirmado' y resta un cupo a la fecha elegida."""
     pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
 
-    # 1. Extraer la fecha y restar el cupo
-    fecha_entrega = _extraer_fecha_pedido(pedido.comentarios)
-
-    if fecha_entrega:
-        cupo, creado = CupoFecha.objects.get_or_create(
-            fecha=fecha_entrega,
-            defaults={'cupos_disponibles': ConfiguracionAgenda.obtener().cupo_maximo_por_dia}
-        )
-        # Restamos 1, evitando que baje de 0
-        if cupo.cupos_disponibles > 0:
-            cupo.cupos_disponibles -= 1
-            cupo.save()
-            messages.success(request, f"Pedido #{pedido.id} aceptado. Se restó 1 cupo para el {fecha_entrega}.")
-        else:
-            messages.warning(request, f"Pedido #{pedido.id} aceptado. Pero NO quedaban cupos para el {fecha_entrega}.")
-    else:
-        messages.info(request, f"Pedido #{pedido.id} aceptado. (No se encontró fecha para restar cupo).")
-
-    # 2. Cambiar estado
     pedido.estado = 'confirmado'
     pedido.save()
 
-    # 3. Registrar en el historial
     HistorialEstadoPedido.objects.create(
         pedido=pedido,
         estado='confirmado',
@@ -710,6 +748,7 @@ def aceptar_pedido_view(request, pedido_id):
         usuario=request.user
     )
 
+    messages.success(request, f"Pedido #{pedido.id} aceptado.")
     return redirect('todos_los_pedidos')
 
 
@@ -717,7 +756,6 @@ def aceptar_pedido_view(request, pedido_id):
 @user_passes_test(admin)
 @require_POST
 def marcar_entregado_view(request, pedido_id):
-    """Cambia el estado a 'entregado', lo que hará que desaparezca de la lista activa."""
     pedido = get_object_or_404(Pedido, id=pedido_id)
 
     pedido.estado = 'entregado'
@@ -734,30 +772,66 @@ def marcar_entregado_view(request, pedido_id):
     return redirect('todos_los_pedidos')
 
 
+# =========================================================
+# HU: TODOS LOS PEDIDOS (PANEL PRINCIPAL DE LA DUEÑA)
+# - Por defecto muestra: confirmado + preparación + entregado + rechazado + cancelado
+# - Chips de filtro: confirmado, preparacion, entregado, rechazado, cancelado
+#   (pendiente vive en pedidos_pendientes_view)
+# =========================================================
 @login_required
 @user_passes_test(admin)
 def todos_los_pedidos_view(request):
     busqueda = request.GET.get("buscar", "").strip()
+    estado_filtro = request.GET.get("estado", "").strip()
+    estados_validos = [e[0] for e in Pedido.ESTADOS]
 
-    pedidos = (
+    base_qs = (
         Pedido.objects
-        .filter(estado__in=['confirmado', 'preparacion'])
         .select_related('cliente')
         .prefetch_related('detalles__producto__imagenes')
-        .order_by('creado')
+        .order_by('-creado')
     )
+
+    # Chips: solo estados que NO son 'pendiente'
+    if estado_filtro in estados_validos and estado_filtro != 'pendiente':
+        pedidos = base_qs.filter(estado=estado_filtro)
+    else:
+        # Por defecto: todo lo que ya salió de "pendiente"
+        pedidos = base_qs.filter(
+            estado__in=['confirmado', 'preparacion', 'entregado', 'rechazado', 'cancelado']
+        )
+        estado_filtro = ''
 
     if busqueda:
         pedidos = pedidos.filter(
             Q(nombre_contacto__icontains=busqueda) |
             Q(telefono_contacto__icontains=busqueda) |
             Q(direccion_entrega__icontains=busqueda) |
-            Q(creado__date__icontains=busqueda) |
             Q(detalles__producto__nombre__icontains=busqueda)
         ).distinct()
+
+    # Conteos: garantizamos las 6 claves (0 por defecto) para evitar VariableDoesNotExist
+    conteos = {estado: 0 for estado, _ in Pedido.ESTADOS}
+    for estado, total in (
+        Pedido.objects
+        .values_list('estado')
+        .annotate(total=Count('id'))
+        .values_list('estado', 'total')
+    ):
+        conteos[estado] = total
 
     return render(
         request,
         'todos_los_pedidos.html',
+<<<<<<< HEAD
         {'pedidos': pedidos, 'busqueda': busqueda},
+=======
+        {
+            'pedidos': pedidos,
+            'busqueda': busqueda,
+            'estados': Pedido.ESTADOS,
+            'estado_actual': estado_filtro,
+            'conteos': conteos,
+        },
+>>>>>>> origin/paula10
     )

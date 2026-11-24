@@ -6,6 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}SARALU — Repostería Artesanal{% endblock %}</title>
 
+  <!-- Aplica los ajustes de accesibilidad guardados ANTES de pintar (evita parpadeos) -->
+  <script>
+    (function () {
+      try {
+        var s = JSON.parse(localStorage.getItem('saralu-acc') || '{}');
+        var h = document.documentElement;
+        (s.modes || []).forEach(function (c) { h.classList.add(c); });
+        if (s.size && s.size !== 100) h.style.fontSize = s.size + '%';
+      } catch (e) {}
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -54,8 +66,112 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lexend:wght@400;600&family=Pacifico&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- CSS DE ACCESIBILIDAD -->
+  <link rel="stylesheet" href="{% static 'css/accessibility.css' %}">
+    <style id="acc-styles">
+    /* ===== Panel ===== */
+    #acc-toggle:focus-visible, #acc-panel button:focus-visible { outline: 3px solid #ffd97a; outline-offset: 2px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #f4b8c8; border-radius: 9999px; }
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #f4b8c8 transparent; }
+
+    .acc-item {
+      position: relative; display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; gap: .35rem; padding: .6rem .2rem .5rem; min-height: 4.6rem;
+      border-radius: 1rem; background: #fff; border: 2px solid rgba(74,53,40,.06); color: #4a3528;
+      font-family: 'Nunito', sans-serif; font-size: .62rem; font-weight: 800; line-height: 1.1;
+      text-align: center; cursor: pointer; box-shadow: 0 6px 18px -12px rgba(74,53,40,.25);
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+    .acc-item:hover { transform: translateY(-2px); background: #fbe3ea; border-color: #f4b8c8; }
+    .acc-item:active { transform: scale(.95); }
+    .acc-item-icon {
+      display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 9999px;
+      background: #fbe3ea; color: #4a3528; transition: background .2s ease, color .2s ease;
+    }
+    .acc-item:hover .acc-item-icon { background: #fff; }
+    .acc-dot {
+      position: absolute; top: .3rem; right: .3rem; width: .8rem; height: .8rem; border-radius: 9999px;
+      border: 2px solid rgba(74,53,40,.18); background: #fff; display: grid; place-items: center;
+      transition: all .2s ease;
+    }
+    .acc-item.is-active { background: #ffd97a; border-color: #4a3528; }
+    .acc-item.is-active .acc-item-icon { background: #4a3528; color: #ffd97a; }
+    .acc-item.is-active .acc-dot { background: #4a3528; border-color: #4a3528; }
+    .acc-item.is-active .acc-dot::after { content: "✓"; color: #ffd97a; font-size: .5rem; font-weight: 900; line-height: 1; }
+
+    /* ===== MODOS ===== */
+
+    /* Grises / Invertir (combinables) */
+    html.acc-grayscale { filter: grayscale(1) !important; }
+    html.acc-invert { filter: invert(1) hue-rotate(180deg) !important; }
+    html.acc-grayscale.acc-invert { filter: grayscale(1) invert(1) !important; }
+    html.acc-invert img, html.acc-invert video, html.acc-invert picture { filter: invert(1) hue-rotate(180deg) !important; }
+    html.acc-grayscale.acc-invert img, html.acc-grayscale.acc-invert video, html.acc-grayscale.acc-invert picture { filter: invert(1) !important; }
+
+    /* Alto contraste */
+    html.acc-high-contrast body { background: #fff !important; color: #000 !important; }
+    html.acc-high-contrast body *:not(svg):not(svg *) { text-shadow: none !important; }
+    html.acc-high-contrast body * { color: #000 !important; border-color: #000 !important; }
+    html.acc-high-contrast [class*="bg-crema"],
+    html.acc-high-contrast [class*="bg-rosa"],
+    html.acc-high-contrast [class*="bg-white"] { background-color: #fff !important; }
+    html.acc-high-contrast [class*="bg-mantequilla"] { background-color: #ffff00 !important; }
+    html.acc-high-contrast [class*="bg-chocolate"],
+    html.acc-high-contrast [class*="bg-cafe"] { background-color: #000 !important; }
+    html.acc-high-contrast [class*="bg-chocolate"],
+    html.acc-high-contrast [class*="bg-chocolate"] *,
+    html.acc-high-contrast [class*="bg-cafe"],
+    html.acc-high-contrast [class*="bg-cafe"] * { color: #ffff00 !important; }
+    html.acc-high-contrast a { text-decoration: underline !important; }
+    html.acc-high-contrast img { filter: contrast(1.15); }
+    html.acc-high-contrast #acc-panel { border-color: #000 !important; background: #fff !important; }
+    html.acc-high-contrast .acc-item { background: #fff !important; border: 2px solid #000 !important; }
+    html.acc-high-contrast .acc-item-icon { background: #fff !important; border: 2px solid #000; }
+    html.acc-high-contrast .acc-item.is-active { background: #ffff00 !important; }
+    html.acc-high-contrast .acc-item.is-active .acc-item-icon { background: #000 !important; color: #ffff00 !important; }
+    html.acc-high-contrast .acc-item.is-active .acc-item-icon * { color: #ffff00 !important; }
+    html.acc-high-contrast .acc-dot { background: #fff !important; }
+    html.acc-high-contrast .acc-item.is-active .acc-dot { background: #000 !important; }
+    html.acc-high-contrast .acc-item.is-active .acc-dot::after { color: #ffff00 !important; }
+
+    /* Dislexia */
+    html.acc-dyslexia body,
+    html.acc-dyslexia body *:not(svg):not(svg *) {
+      font-family: 'Lexend', 'Comic Sans MS', 'Trebuchet MS', sans-serif !important;
+    }
+
+    /* Resaltar enlaces */
+    html.acc-links a {
+      background-color: #ffd97a !important; color: #000 !important;
+      text-decoration: underline !important; text-decoration-thickness: 2px !important;
+      text-underline-offset: 3px; outline: 2px solid #4a3528; outline-offset: 1px; border-radius: .35rem;
+    }
+    html.acc-links a * { color: #000 !important; }
+
+    /* Cursor grande */
+    html.acc-big-cursor, html.acc-big-cursor body, html.acc-big-cursor body * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l15 9-6.5 1.5L16 20l-3 1-3.5-7.5L4 17z' fill='%234a3528' stroke='white' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 4 2, auto !important;
+    }
+    html.acc-big-cursor a, html.acc-big-cursor button, html.acc-big-cursor [role="button"],
+    html.acc-big-cursor a *, html.acc-big-cursor button * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l15 9-6.5 1.5L16 20l-3 1-3.5-7.5L4 17z' fill='%23ffd97a' stroke='%234a3528' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 4 2, pointer !important;
+    }
+
+    /* Interlineado */
+    html.acc-line-height body *:not(svg):not(svg *) { line-height: 1.9 !important; }
+
+    /* Espaciado */
+    html.acc-letter-spacing body *:not(svg):not(svg *) { letter-spacing: .12em !important; word-spacing: .16em !important; }
+
+    /* Sin animación */
+    html.acc-reduce-motion *, html.acc-reduce-motion *::before, html.acc-reduce-motion *::after {
+      animation: none !important; transition: none !important; scroll-behavior: auto !important;
+    }
+  </style>
 </head>
 
 <body class="bg-white font-body text-base lg:text-lg xl:text-xl 3xl:text-2xl text-chocolate antialiased selection:bg-rosaClaro selection:text-chocolate p-2 md:p-4">
@@ -85,12 +201,11 @@
     {% block navbar %}
       <header id="main-navbar"
               class="sticky top-0 z-50 w-full will-change-transform transition-transform duration-300 ease-out">
-        
-        <!-- Fondo cambiado al mismo rosa claro del hero (bg-rosaClaro) -->
+
         <div class="bg-rosaClaro rounded-3xl md:rounded-4xl lg:rounded-[2rem] border-0 lg:border-[6px] border-white relative mb-4 shadow-sm">
-          
+
           <div class="relative z-10 mx-auto w-full max-w-9xl px-3 pt-4 pb-2 sm:px-6 sm:pt-5 sm:pb-3 lg:px-8 lg:pt-6 lg:pb-4">
-            
+
             <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 sm:gap-y-3 lg:flex-nowrap lg:gap-6">
 
               {# -------- 1. BOTÓN ADMIN -------- #}
@@ -109,12 +224,12 @@
                 </button>
               {% endif %}
 
-              {# -------- 2. LOGO (Texto café) -------- #}
+              {# -------- 2. LOGO -------- #}
               <a href="{% url 'home' %}" class="order-2 group flex items-center gap-2 sm:gap-3 shrink-0">
                 <div class="grid h-9 w-9 sm:h-11 sm:w-11 lg:h-14 lg:w-14 place-items-center bg-white rounded-full shadow-sm overflow-hidden shrink-0 border border-chocolate/10">
                   <img src="{% static 'img/logo.png' %}" alt="Logo SARALU" class="h-full w-full object-contain p-0 scale-[1.15] transition-transform duration-300 group-hover:scale-[1.25]" />
                 </div>
-                
+
                 <span class="flex flex-col leading-none">
                   <span class="font-script font-bold text-xl sm:text-2xl lg:text-4xl text-chocolate transition duration-300 group-hover:text-cafe" style="-webkit-text-stroke: 0.5px #4a3528;">
                     Saralu<span class="text-xs sm:text-sm lg:text-lg align-top ml-0.5 text-rosa" style="-webkit-text-stroke: 0;">♥</span>
@@ -125,7 +240,7 @@
                 </span>
               </a>
 
-              {# -------- 3. NAV LINKS (Texto café) -------- #}
+              {# -------- 3. NAV LINKS -------- #}
               <nav class="order-6 lg:order-3 w-full lg:w-auto lg:flex-1 mt-1 lg:mt-0 flex justify-center">
                 <ul class="flex flex-nowrap items-center justify-start lg:justify-center gap-x-1 sm:gap-x-2 lg:gap-x-2 pt-2.5 pb-1 lg:pt-0 lg:pb-0 border-t lg:border-t-0 border-chocolate/10 text-xs sm:text-sm lg:text-base font-bold text-chocolate overflow-x-auto w-full lg:w-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {% block nav_links %}
@@ -139,8 +254,8 @@
 
               {# -------- 4. GRUPO DERECHO -------- #}
               <div class="order-3 lg:order-4 ml-auto lg:ml-0 flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0">
-                
-                {# PERFIL (Fondo blanco para contrastar) #}
+
+                {# PERFIL #}
                 {% block user_menu %}
                   {% if user.is_authenticated %}
                     <div class="relative shrink-0" id="user-menu-wrapper">
@@ -238,7 +353,7 @@
                   {% endif %}
                 {% endblock %}
 
-                {# CARRITO (Café para contrastar) #}
+                {# CARRITO #}
                 {% if not user.is_staff %}
                   <a href="{% url 'ver_carrito' %}"
                      class="relative grid h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 place-items-center rounded-xl sm:rounded-2xl bg-chocolate text-crema shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all shrink-0"
@@ -258,14 +373,14 @@
                   </a>
                 {% endif %}
 
-                {# CATÁLOGO (Café para contrastar) #}
+                {# CATÁLOGO #}
                 <div class="hidden lg:flex shrink-0">
                   <a href="{% url 'catalogo' %}"
                      class="inline-flex items-center justify-center rounded-xl sm:rounded-2xl bg-chocolate px-4 py-2 sm:px-5 sm:py-3 text-sm sm:text-base font-bold text-crema shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all whitespace-nowrap">
                     Catálogo
                   </a>
                 </div>
-                
+
               </div>
 
             </div>
@@ -277,17 +392,17 @@
     {% block content %}{% endblock %}
 
     {# ============================================================ #}
-    {# FOOTER PROFESIONAL                                           #}
+    {# FOOTER                                                        #}
     {# ============================================================ #}
     {% block footer %}
       <footer class="relative overflow-hidden bg-rosaClaro mx-4 lg:mx-8 mb-4 lg:mb-6 rounded-3xl lg:rounded-[2rem] mt-8">
-        
+
         <span class="absolute top-4 left-6 text-mantequilla text-lg animate-pulse z-10">✦</span>
         <span class="absolute bottom-4 right-6 text-rosa text-base animate-bounce z-10">✦</span>
 
         <div class="mx-auto w-full max-w-9xl px-6 sm:px-8 lg:px-12 py-8 lg:py-10">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            
+
             <!-- Columna 1: Logo y Eslogan -->
             <div class="flex flex-col sm:flex-row items-center sm:justify-start gap-3">
               <div class="grid h-10 w-10 lg:h-12 lg:w-12 place-items-center bg-white rounded-full shadow-sm overflow-hidden shrink-0 border border-chocolate/10">
@@ -322,6 +437,129 @@
     {% endblock %}
 
   </div>
+
+  <!-- ================= BOTÓN FLOTANTE ACCESIBILIDAD ================= -->
+  <button type="button"
+          id="acc-toggle"
+          class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[100] grid h-11 w-11 md:h-12 md:w-12 place-items-center rounded-full bg-chocolate text-mantequilla shadow-lift ring-4 ring-white hover:bg-cafe hover:-translate-y-0.5 transition-all duration-300"
+          aria-label="Menú de accesibilidad"
+          aria-expanded="false"
+          aria-controls="acc-panel">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="4" r="2"/>
+      <path d="M19 13v-2c-1.54.02-3.09-.75-4.07-1.83l-1.29-1.43c-.17-.19-.38-.34-.61-.45-.01 0-.01-.01-.02-.01H13c-.35-.2-.75-.3-1.19-.26C10.76 7.11 10 8.04 10 9.09V15c0 1.1.9 2 2 2h5v5h2v-5.5c0-1.1-.9-2-2-2h-3v-3.45c1.29 1.07 3.25 1.94 5 1.95zm-6.17 5c-.41 1.16-1.52 2-2.83 2-1.66 0-3-1.34-3-3 0-1.31.84-2.41 2-2.83V12.1c-2.28.46-4 2.48-4 4.9 0 2.76 2.24 5 5 5 2.42 0 4.44-1.72 4.9-4h-2.07z"/>
+    </svg>
+  </button>
+
+  <!-- ================= PANEL DE ACCESIBILIDAD ================= -->
+  <aside id="acc-panel"
+         role="dialog"
+         aria-label="Menú de accesibilidad"
+         style="opacity:0; visibility:hidden; pointer-events:none; transform:translateY(12px) scale(.95); transform-origin:bottom right; transition:opacity .25s ease, transform .25s ease, visibility .25s;"
+         class="fixed bottom-[4.5rem] right-4 md:bottom-[5rem] md:right-6 z-[100] w-[272px] max-w-[calc(100vw-2rem)] max-h-[70vh] bg-crema border-4 border-white shadow-lift rounded-3xl flex flex-col overflow-hidden text-base">
+
+    <!-- HEADER -->
+    <div class="relative bg-rosaClaro px-4 py-3 shrink-0 overflow-hidden">
+      <span class="absolute top-1.5 right-12 text-mantequilla text-xs animate-pulse">✦</span>
+      <div class="flex items-center justify-between">
+        <div class="leading-none">
+          <h2 class="font-script text-xl text-chocolate">Accesibilidad</h2>
+          <p class="mt-1 text-[8px] font-bold uppercase tracking-widest2 text-chocolate/50">Hazlo a tu medida</p>
+        </div>
+        <button type="button" id="acc-close"
+                class="grid h-7 w-7 place-items-center rounded-full bg-white/70 text-chocolate hover:bg-white hover:rotate-90 transition-all duration-300"
+                aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="flex-1 overflow-y-auto px-3 py-3 space-y-3 custom-scrollbar">
+
+      <!-- Tamaño de texto -->
+      <div class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-soft border border-chocolate/5">
+        <button type="button" data-acc-action="text-minus"
+                class="grid h-9 w-9 place-items-center rounded-xl bg-rosaClaro text-chocolate font-display font-bold text-sm hover:bg-rosa active:scale-95 transition-all"
+                aria-label="Reducir texto">A−</button>
+        <div class="flex-1 text-center leading-none">
+          <span id="acc-text-level-label" class="font-display font-bold text-lg text-chocolate">100%</span>
+          <p class="mt-0.5 text-[8px] font-bold uppercase tracking-widest2 text-cafe">Texto</p>
+        </div>
+        <button type="button" data-acc-action="text-plus"
+                class="grid h-9 w-9 place-items-center rounded-xl bg-mantequilla text-chocolate font-display font-bold text-sm hover:brightness-95 active:scale-95 transition-all"
+                aria-label="Aumentar texto">A+</button>
+      </div>
+
+      <!-- Opciones (3 columnas) -->
+      <div class="grid grid-cols-3 gap-2">
+
+        <button type="button" class="acc-item" data-acc-toggle="high-contrast" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span>
+          <span>Alto contraste</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="grayscale" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg></span>
+          <span>Grises</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="invert" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg></span>
+          <span>Invertir</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="dyslexia" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13.4a.6.6 0 0 1 .6.6v13.8a.6.6 0 0 1-.6.6H6a2 2 0 0 0-2 2z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span>
+          <span>Dislexia</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="links" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+          <span>Enlaces</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="cursor" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3l7 18 2-8 8-2L4 3z"/></svg></span>
+          <span>Cursor</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="line-height" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg></span>
+          <span>Interlineado</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="letter-spacing" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 20V8m0 0h3a3 3 0 0 1 0 6H4m0 0h4"/><path d="M14 4l4 16 4-16"/></svg></span>
+          <span>Espaciado</span>
+          <span class="acc-dot"></span>
+        </button>
+
+        <button type="button" class="acc-item" data-acc-toggle="motion" aria-pressed="false">
+          <span class="acc-item-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></span>
+          <span>Sin animación</span>
+          <span class="acc-dot"></span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="px-3 py-2.5 bg-rosaClaro/60 border-t border-chocolate/5 shrink-0">
+      <button type="button" data-acc-action="reset"
+              class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-chocolate py-2 text-[11px] font-bold text-crema shadow-soft hover:bg-cafe active:scale-95 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Restablecer ajustes
+      </button>
+    </div>
+  </aside>
 
   <script>
     console.log('[SARALU] base.html scripts cargados');
@@ -467,6 +705,136 @@
         });
         observer.observe(drawer, { attributes: true, attributeFilter: ['class'] });
       }
+    })();
+
+    // ==============================================
+    // LÓGICA DE ACCESIBILIDAD (WIDGET FLOTANTE)
+    // ==============================================
+    (function () {
+      var KEY    = 'saralu-acc';
+      var html   = document.documentElement;
+      var panel  = document.getElementById('acc-panel');
+      var toggle = document.getElementById('acc-toggle');
+      var close  = document.getElementById('acc-close');
+      var label  = document.getElementById('acc-text-level-label');
+      if (!panel || !toggle) return;
+
+      var MAP = {
+        'high-contrast': 'acc-high-contrast',
+        'grayscale':     'acc-grayscale',
+        'invert':        'acc-invert',
+        'dyslexia':      'acc-dyslexia',
+        'links':         'acc-links',
+        'cursor':        'acc-big-cursor',
+        'motion':        'acc-reduce-motion',
+        'line-height':   'acc-line-height',
+        'letter-spacing':'acc-letter-spacing'
+      };
+      var ALL_CLASSES = Object.keys(MAP).map(function (k) { return MAP[k]; });
+
+      var SIZE_MIN = 87.5, SIZE_MAX = 150, SIZE_STEP = 12.5;
+      var size = 100;
+
+      /* ---------- Guardado ---------- */
+      function save() {
+        try {
+          var modes = ALL_CLASSES.filter(function (c) { return html.classList.contains(c); });
+          localStorage.setItem(KEY, JSON.stringify({ modes: modes, size: size }));
+        } catch (e) {}
+      }
+
+      function applySize() {
+        html.style.fontSize = size === 100 ? '' : size + '%';
+        if (label) label.textContent = Math.round(size) + '%';
+      }
+
+      function syncButtons() {
+        panel.querySelectorAll('[data-acc-toggle]').forEach(function (btn) {
+          var cls    = MAP[btn.getAttribute('data-acc-toggle')];
+          var active = html.classList.contains(cls);
+          btn.classList.toggle('is-active', active);
+          btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+      }
+
+      /* ---------- Cargar estado guardado ---------- */
+      try {
+        var saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+        if (saved.size) size = saved.size;
+        (saved.modes || []).forEach(function (c) {
+          if (ALL_CLASSES.indexOf(c) !== -1) html.classList.add(c);
+        });
+      } catch (e) {}
+      applySize();
+      syncButtons();
+
+      /* ---------- Abrir / cerrar ---------- */
+      var isOpen = false;
+
+      function setOpen(open) {
+        isOpen = open;
+        panel.style.opacity       = open ? '1' : '0';
+        panel.style.visibility    = open ? 'visible' : 'hidden';
+        panel.style.pointerEvents = open ? 'auto' : 'none';
+        panel.style.transform     = open ? 'translateY(0) scale(1)' : 'translateY(12px) scale(.95)';
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.style.backgroundColor = open ? '#ffd97a' : '';
+        toggle.style.color           = open ? '#4a3528' : '';
+      }
+
+      window.toggleAccessibility = function () { setOpen(!isOpen); };
+
+      toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setOpen(!isOpen);
+      });
+
+      if (close) close.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setOpen(false);
+        toggle.focus();
+      });
+
+      document.addEventListener('click', function (e) {
+        if (isOpen && !panel.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen) { setOpen(false); toggle.focus(); }
+      });
+
+      /* ---------- Acciones y modos ---------- */
+      panel.addEventListener('click', function (e) {
+
+        var actionBtn = e.target.closest('[data-acc-action]');
+        if (actionBtn) {
+          var action = actionBtn.getAttribute('data-acc-action');
+
+          if (action === 'text-plus') {
+            size = Math.min(size + SIZE_STEP, SIZE_MAX);
+            applySize();
+          } else if (action === 'text-minus') {
+            size = Math.max(size - SIZE_STEP, SIZE_MIN);
+            applySize();
+          } else if (action === 'reset') {
+            ALL_CLASSES.forEach(function (c) { html.classList.remove(c); });
+            size = 100;
+            applySize();
+            syncButtons();
+          }
+          save();
+          return;
+        }
+
+        var toggleBtn = e.target.closest('[data-acc-toggle]');
+        if (toggleBtn) {
+          var cls = MAP[toggleBtn.getAttribute('data-acc-toggle')];
+          if (!cls) return;
+          html.classList.toggle(cls);
+          syncButtons();
+          save();
+        }
+      });
     })();
   </script>
 

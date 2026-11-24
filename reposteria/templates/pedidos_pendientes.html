@@ -35,17 +35,38 @@
 
       <div class="self-start lg:self-auto inline-flex items-center gap-2.5 rounded-full bg-chocolate px-5 py-2.5 lg:px-6 lg:py-3 text-sm lg:text-base font-bold text-mantequilla shadow-soft">
         <span class="grid h-6 w-6 lg:h-7 lg:w-7 place-items-center rounded-full bg-mantequilla text-chocolate text-xs lg:text-sm font-display font-bold">
-          {{ pedidos|length }}
+          {{ page_obj.paginator.count|default:0 }}
         </span>
-        <span>pendiente{{ pedidos|length|pluralize:"s" }}</span>
+        <span>pendiente{{ page_obj.paginator.count|pluralize:"s" }}</span>
       </div>
     </div>
 
-    {% if pedidos %}
-      <div class="flex flex-col gap-5 lg:gap-6 3xl:gap-8">
-        {% for pedido in pedidos %}
-          <article class="overflow-hidden rounded-[1.7rem] lg:rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
+    {# ---------- FORMULARIO DE BÚSQUEDA ---------- #}
+    <form method="get" class="mb-8 lg:mb-10">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input type="text" name="buscar" value="{{ busqueda|default:'' }}" placeholder="Buscar por cliente, teléfono o producto" aria-label="Buscar pedidos"
+               class="flex-1 rounded-full bg-white px-5 py-3 text-sm lg:text-base text-chocolate shadow-soft border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-chocolate/40 placeholder:text-cafe/60">
+      
+        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-chocolate/90 hover:-translate-y-0.5 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+          </svg>
+          Buscar
+        </button>
+      
+        {% if busqueda %}
+          <a href="{% url 'pedidos_pendientes' %}" class="inline-flex items-center justify-center gap-2 rounded-full bg-crema px-5 py-3 text-sm lg:text-base font-semibold text-chocolate ring-1 ring-chocolate/15 hover:bg-mantequilla transition-all">
+            Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
 
+    {% if page_obj %}
+      <div class="flex flex-col gap-5 lg:gap-6 3xl:gap-8">
+        {% for pedido in page_obj %}
+          <article class="overflow-hidden rounded-[1.7rem] lg:rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
+            {# ... (Todo el contenido de la tarjeta del pedido se mantiene igual) ... #}
             {# ---------- CABECERA ---------- #}
             <header class="rounded-[1.35rem] bg-mantequilla/60 px-4 py-3 lg:px-5 lg:py-4 flex flex-wrap items-center justify-between gap-3 border border-mantequilla/40">
               <div class="flex items-center gap-3">
@@ -54,12 +75,9 @@
                 </span>
                 <div>
                   <p class="font-display text-base lg:text-lg font-bold text-chocolate">{{ pedido.nombre_contacto }}</p>
-                  <p class="text-xs lg:text-sm text-cafe">
-                    {{ pedido.creado|date:"d/m/Y · H:i" }}
-                  </p>
+                  <p class="text-xs lg:text-sm text-cafe">{{ pedido.creado|date:"d/m/Y · H:i" }}</p>
                 </div>
               </div>
-
               <div class="flex flex-wrap items-center gap-2">
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-chocolate px-3 py-1.5 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-mantequilla">
                   <span class="h-1.5 w-1.5 rounded-full bg-mantequilla"></span>
@@ -72,30 +90,20 @@
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 mt-3 md:mt-4">
-
               {# ---------- PRODUCTOS ---------- #}
               <div class="lg:col-span-2">
                 <h2 class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-mantequilla"></span>
-                  Productos solicitados
+                  <span class="h-2 w-2 rounded-full bg-mantequilla"></span> Productos solicitados
                 </h2>
-
                 <ul class="flex flex-col gap-3">
                   {% for detalle in pedido.detalles.all %}
                     <li class="flex gap-3 lg:gap-4 rounded-[1.35rem] bg-white p-3 lg:p-4 shadow-soft">
                       <div class="relative h-20 w-20 lg:h-24 lg:w-24 shrink-0 overflow-hidden rounded-[1rem] bg-rosaClaro">
-                        <img src="{{ detalle.producto.imagen_principal }}"
-                             alt="{{ detalle.producto.nombre }}"
-                             class="h-full w-full object-cover">
+                        <img src="{{ detalle.producto.imagen_principal }}" alt="{{ detalle.producto.nombre }}" class="h-full w-full object-cover">
                       </div>
                       <div class="flex-1 min-w-0">
-                        <p class="font-display font-bold text-chocolate text-sm lg:text-base truncate">
-                          {{ detalle.producto.nombre }}
-                        </p>
-                        <p class="text-xs lg:text-sm text-cafe mt-0.5">
-                          {{ detalle.producto.porciones }} porción{{ detalle.producto.porciones|pluralize:"es" }} ·
-                          Cantidad: <strong class="text-chocolate">{{ detalle.cantidad }}</strong>
-                        </p>
+                        <p class="font-display font-bold text-chocolate text-sm lg:text-base truncate">{{ detalle.producto.nombre }}</p>
+                        <p class="text-xs lg:text-sm text-cafe mt-0.5">{{ detalle.producto.porciones }} porción{{ detalle.producto.porciones|pluralize:"es" }} · Cantidad: <strong class="text-chocolate">{{ detalle.cantidad }}</strong></p>
                         <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs lg:text-sm text-cafe">
                           <span>Unitario: ${{ detalle.precio_unitario|floatformat:2 }}</span>
                           <span class="text-chocolate/20">·</span>
@@ -104,103 +112,59 @@
                       </div>
                     </li>
                   {% empty %}
-                    <li class="rounded-[1.35rem] bg-white p-4 text-sm text-cafe shadow-soft">
-                      Este pedido no tiene productos.
-                    </li>
+                    <li class="rounded-[1.35rem] bg-white p-4 text-sm text-cafe shadow-soft">Este pedido no tiene productos.</li>
                   {% endfor %}
                 </ul>
               </div>
 
               {# ---------- INFO DEL PEDIDO ---------- #}
               <div class="lg:col-span-1 flex flex-col gap-4">
-
-                {# Datos de entrega #}
                 <div class="rounded-[1.35rem] bg-white p-4 lg:p-5 shadow-soft">
                   <h2 class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2">
-                    <span class="h-2 w-2 rounded-full bg-azul"></span>
-                    Datos de entrega
+                    <span class="h-2 w-2 rounded-full bg-azul"></span> Datos de entrega
                   </h2>
                   <dl class="space-y-2 text-sm lg:text-base">
-                    <div class="flex justify-between gap-2">
-                      <dt class="text-cafe">Cliente</dt>
-                      <dd class="font-semibold text-chocolate text-right">{{ pedido.nombre_contacto }}</dd>
-                    </div>
-                    <div class="flex justify-between gap-2">
-                      <dt class="text-cafe">Teléfono</dt>
-                      <dd class="font-semibold text-chocolate text-right">
-                        {{ pedido.telefono_contacto|default:"—" }}
-                      </dd>
-                    </div>
-                    <div class="flex justify-between gap-2">
-                      <dt class="text-cafe">Modalidad</dt>
-                      <dd class="font-semibold text-chocolate text-right">{{ pedido.get_domicilio_display }}</dd>
-                    </div>
+                    <div class="flex justify-between gap-2"><dt class="text-cafe">Cliente</dt><dd class="font-semibold text-chocolate text-right">{{ pedido.nombre_contacto }}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-cafe">Teléfono</dt><dd class="font-semibold text-chocolate text-right">{{ pedido.telefono_contacto|default:"—" }}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-cafe">Modalidad</dt><dd class="font-semibold text-chocolate text-right">{{ pedido.get_domicilio_display }}</dd></div>
                     {% if pedido.domicilio == 'domicilio' and pedido.direccion_entrega %}
-                      <div class="flex justify-between gap-2">
-                        <dt class="text-cafe">Dirección</dt>
-                        <dd class="font-semibold text-chocolate text-right">{{ pedido.direccion_entrega }}</dd>
-                      </div>
+                      <div class="flex justify-between gap-2"><dt class="text-cafe">Dirección</dt><dd class="font-semibold text-chocolate text-right">{{ pedido.direccion_entrega }}</dd></div>
                     {% endif %}
                   </dl>
                 </div>
 
-                {# Comentarios del cliente #}
                 <div class="rounded-[1.35rem] bg-white p-4 lg:p-5 shadow-soft flex flex-col">
                   <h2 class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2">
-                    <span class="h-2 w-2 rounded-full bg-rosa"></span>
-                    Comentarios del cliente
+                    <span class="h-2 w-2 rounded-full bg-rosa"></span> Comentarios del cliente
                   </h2>
                   {% if pedido.comentarios %}
-                    <!-- Contenedor oculto que el script leerá -->
                     <div class="comment-content hidden">{{ pedido.comentarios }}</div>
-                    <!-- Aquí se inyectará el HTML separado -->
                     <div class="comment-output flex-1"></div>
                   {% else %}
                     <div class="flex-1 flex items-center justify-center rounded-[1rem] bg-cafe/5 border-2 border-dashed border-cafe/10 p-4 min-h-[100px]">
                       <p class="text-sm text-cafe/50 italic flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                         Sin comentarios.
                       </p>
                     </div>
                   {% endif %}
                 </div>
 
-                {# Totales y Botón Aceptar #}
                 <div class="mt-auto rounded-[1.35rem] bg-chocolate text-mantequilla p-4 lg:p-5 shadow-soft">
-                  <div class="flex justify-between text-sm lg:text-base mb-1.5">
-                    <span class="text-mantequilla/70">Subtotal</span>
-                    <span>{{ pedido.subtotal|cop }}</span>
-                  </div>
+                  <div class="flex justify-between text-sm lg:text-base mb-1.5"><span class="text-mantequilla/70">Subtotal</span><span>${{ pedido.subtotal|floatformat:2 }}</span></div>
                   {% if pedido.descuento %}
-                    <div class="flex justify-between text-sm lg:text-base mb-1.5">
-                      <span class="text-mantequilla/70">
-                        Descuento{% if pedido.cupon %} ({{ pedido.cupon.codigo }}){% endif %}
-                      </span>
-                      <span>{{ pedido.descuento|cop }}</span>
-                    </div>
+                    <div class="flex justify-between text-sm lg:text-base mb-1.5"><span class="text-mantequilla/70">Descuento{% if pedido.cupon %} ({{ pedido.cupon.codigo }}){% endif %}</span><span>-${{ pedido.descuento|floatformat:2 }}</span></div>
                   {% endif %}
-                  <div class="flex justify-between items-baseline border-t border-mantequilla/20 pt-2 mt-2">
-                    <span class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2">Total</span>
-                    <span class="font-display text-lg lg:text-2xl font-bold">{{ pedido.total|cop }}</span>
-                  </div>
+                  <div class="flex justify-between items-baseline border-t border-mantequilla/20 pt-2 mt-2"><span class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2">Total</span><span class="font-display text-lg lg:text-2xl font-bold">${{ pedido.total|floatformat:2 }}</span></div>
 
-                  {# --- BOTÓN ACEPTAR PEDIDO --- #}
                   <form method="post" action="{% url 'aceptar_pedido' pedido.id %}" class="mt-4">
                     {% csrf_token %}
                     <button type="submit" class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-mantequilla px-5 py-3 text-sm lg:text-base font-bold text-chocolate shadow-soft hover:bg-white hover:-translate-y-1 transition-all">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 11l3 3L22 4" />
-                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>
                       Aceptar pedido
                     </button>
                   </form>
-                  {# --------------------------- #}
-
                 </div>
-
               </div>
             </div>
           </article>
@@ -210,27 +174,63 @@
       {# ---------- ESTADO VACÍO ---------- #}
       <div class="rounded-[2rem] bg-crema px-6 py-20 text-center shadow-soft">
         <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-mantequilla text-chocolate">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-            <rect x="9" y="3" width="6" height="4" rx="2" />
-            <path d="M9 12h6M9 16h6" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="2" /><path d="M9 12h6M9 16h6" /></svg>
         </div>
-        <h3 class="mt-5 font-display text-xl lg:text-2xl font-semibold text-chocolate">
-          No hay pedidos pendientes
-        </h3>
+        <h3 class="mt-5 font-display text-xl lg:text-2xl font-semibold text-chocolate">No hay pedidos pendientes</h3>
         <p class="mt-2 max-w-md mx-auto text-sm lg:text-base text-cafe">
-          Cuando un cliente realice un pedido, aparecerá aquí para que puedas revisarlo.
+          {% if busqueda %}
+            No se encontraron resultados para "{{ busqueda }}". Intenta con otro término.
+          {% else %}
+            Cuando un cliente realice un pedido, aparecerá aquí para que puedas revisarlo.
+          {% endif %}
         </p>
       </div>
+    {% endif %}
+
+    {# --- PAGINACIÓN CORREGIDA --- #}
+    {% if page_obj.has_other_pages %}
+      <nav class="mt-12 mb-8 flex flex-wrap items-center justify-center gap-1 md:gap-2">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}" aria-label="Página anterior" class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
+          </a>
+        {% else %}
+          <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
+          </span>
+        {% endif %}
+
+        {% for i in page_obj.paginator.page_range %}
+          {% if page_obj.number == i %}
+            <span aria-current="page" class="relative grid h-10 w-10 place-items-center rounded-full bg-chocolate font-display text-sm font-bold text-mantequilla shadow-soft">
+              {{ i }}
+              <span class="absolute -right-0.5 -top-0.5 text-[10px] leading-none text-mantequilla">★</span>
+            </span>
+          {% elif i == 1 or i == page_obj.paginator.num_pages or i >= page_obj.number|add:'-1' and i <= page_obj.number|add:'1' %}
+            <a href="?page={{ i }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}" class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-semibold text-chocolate/70 transition hover:bg-rosaClaro hover:text-chocolate">
+              {{ i }}
+            </a>
+          {% elif i == page_obj.number|add:'-2' or i == page_obj.number|add:'2' %}
+            <span class="grid h-10 w-6 place-items-center text-chocolate/30 select-none">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}" aria-label="Página siguiente" class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+          </a>
+        {% else %}
+          <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+          </span>
+        {% endif %}
+      </nav>
     {% endif %}
 
   </div>
 </section>
 
-<!-- SCRIPT PARA SEPARAR DATOS Y COMENTARIOS -->
+<!-- SCRIPT PARA SEPARAR DATOS Y COMENTARIOS (Se mantiene igual) -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.comment-content').forEach(inputEl => {
@@ -239,7 +239,6 @@
 
       const outputEl = inputEl.nextElementSibling;
       
-      // Si no contiene el separador |, se muestra tal cual con el diseño simple
       if (!rawText.includes('|')) {
         outputEl.innerHTML = `
           <div class="relative flex-1 rounded-[1rem] bg-[#FFFDF5] p-4 lg:p-5 text-sm lg:text-base text-chocolate border-l-4 border-mantequilla shadow-sm overflow-hidden">
@@ -250,7 +249,6 @@
         return;
       }
 
-      // Lógica para separar por "|"
       const parts = rawText.split('|').map(p => p.trim());
       let logistics = [];
       let notes = '';
@@ -266,7 +264,6 @@
 
       let html = '';
 
-      // Bloque 1: Datos Básicos del Pedido (Hora, Fecha, Dirección)
       if (logistics.length > 0) {
         html += '<div class="rounded-[1rem] bg-[#FFFDF5] p-4 lg:p-5 border border-mantequilla/40 shadow-sm mb-3">';
         html += '<h4 class="text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-3 flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-azul"></span> Datos básicos</h4>';
@@ -276,10 +273,7 @@
           if (colonIndex !== -1) {
             const key = item.substring(0, colonIndex).trim();
             const value = item.substring(colonIndex + 1).trim();
-            html += `<li class="flex justify-between gap-4 border-b border-chocolate/5 pb-1.5 last:border-0 last:pb-0">
-                        <span class="text-cafe font-medium">${escapeHTML(key)}</span>
-                        <span class="font-bold text-chocolate text-right">${escapeHTML(value)}</span>
-                     </li>`;
+            html += `<li class="flex justify-between gap-4 border-b border-chocolate/5 pb-1.5 last:border-0 last:pb-0"><span class="text-cafe font-medium">${escapeHTML(key)}</span><span class="font-bold text-chocolate text-right">${escapeHTML(value)}</span></li>`;
           } else {
             html += `<li class="font-medium text-chocolate">${escapeHTML(item)}</li>`;
           }
@@ -287,7 +281,6 @@
         html += '</ul></div>';
       }
 
-      // Bloque 2: Notas del Cliente (El comentario como tal)
       if (notes) {
         html += '<div class="relative rounded-[1rem] bg-[#FFF5F5] p-4 lg:p-5 border-l-4 border-rosa shadow-sm overflow-hidden">';
         html += '<h4 class="text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-rosa"></span> Notas del cliente</h4>';

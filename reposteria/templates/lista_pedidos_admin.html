@@ -1,5 +1,6 @@
 {% extends "layout/base.html" %}
 {% load static %}
+{% load moneda %}
 
 {% block title %}Gestión de Pedidos — SARALU{% endblock %}
 
@@ -48,7 +49,7 @@
             </div>
 
             <h3 class="font-display text-xl font-semibold text-chocolate mb-1">
-              {{ pedido.get_domicilio_display }} — Total: ${{ pedido.total|floatformat:0 }}
+              {{ pedido.get_domicilio_display }} — Total: {{ pedido.total|cop }}
             </h3>
 
             <!-- Productos del pedido -->

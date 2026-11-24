@@ -1,5 +1,6 @@
 {% extends "layout/base.html" %}
 {% load static %}
+{% load moneda %}
 {% block title %}SARALU — Pedidos pendientes{% endblock %}
 
 {% block content %}
@@ -98,7 +99,7 @@
                         <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs lg:text-sm text-cafe">
                           <span>Unitario: ${{ detalle.precio_unitario|floatformat:2 }}</span>
                           <span class="text-chocolate/20">·</span>
-                          <span class="font-bold text-chocolate">Subtotal: ${{ detalle.subtotal|floatformat:2 }}</span>
+                          <span class="font-bold text-chocolate">Subtotal:{{ detalle.subtotal|cop }}</span>
                         </div>
                       </div>
                     </li>
@@ -170,19 +171,19 @@
                 <div class="mt-auto rounded-[1.35rem] bg-chocolate text-mantequilla p-4 lg:p-5 shadow-soft">
                   <div class="flex justify-between text-sm lg:text-base mb-1.5">
                     <span class="text-mantequilla/70">Subtotal</span>
-                    <span>${{ pedido.subtotal|floatformat:2 }}</span>
+                    <span>{{ pedido.subtotal|cop }}</span>
                   </div>
                   {% if pedido.descuento %}
                     <div class="flex justify-between text-sm lg:text-base mb-1.5">
                       <span class="text-mantequilla/70">
                         Descuento{% if pedido.cupon %} ({{ pedido.cupon.codigo }}){% endif %}
                       </span>
-                      <span>-${{ pedido.descuento|floatformat:2 }}</span>
+                      <span>{{ pedido.descuento|cop }}</span>
                     </div>
                   {% endif %}
                   <div class="flex justify-between items-baseline border-t border-mantequilla/20 pt-2 mt-2">
                     <span class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2">Total</span>
-                    <span class="font-display text-lg lg:text-2xl font-bold">${{ pedido.total|floatformat:2 }}</span>
+                    <span class="font-display text-lg lg:text-2xl font-bold">{{ pedido.total|cop }}</span>
                   </div>
 
                   {# --- BOTÓN ACEPTAR PEDIDO --- #}

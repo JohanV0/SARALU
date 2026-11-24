@@ -1,5 +1,6 @@
 {% extends "layout/base.html" %}
 {% load static %}
+{% load moneda %}
 
 {% block title %}Armar Pedido — SARALU{% endblock %}
 
@@ -266,7 +267,7 @@
                   </div>
 
                   <p class="font-display text-sm lg:text-base font-bold whitespace-nowrap text-chocolate">
-                    ${{ item.subtotal|floatformat:0 }}
+                    {{ item.subtotal|cop }}
                   </p>
 
                 </div>
@@ -282,7 +283,7 @@
             <div class="mt-6 space-y-3 border-t border-dashed border-chocolate/20 pt-5">
               <div class="flex items-center justify-between text-sm lg:text-base text-cafe">
                 <span>Subtotal</span>
-                <span class="font-semibold text-chocolate">${{ subtotal|floatformat:0 }}</span>
+                <span class="font-semibold text-chocolate">{{ subtotal|cop }}</span>
               </div>
               <div class="flex items-center justify-between text-sm lg:text-base text-cafe">
                 <span>Envío</span>
@@ -297,7 +298,7 @@
                 </span>
               </div>
               <span class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
-                ${{ subtotal|floatformat:0 }}
+                {{ subtotal|cop }}
               </span>
             </div>
 

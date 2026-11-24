@@ -1,5 +1,6 @@
 {% extends "layout/base.html" %}
 {% load static %}
+{% load moneda %}
 
 {% block title %}Catálogo — SARALU{% endblock %}
 {% block content %}
@@ -199,7 +200,7 @@
                 </p>
               {% endif %}
               <div class="mt-auto flex items-center justify-between pt-6">
-                <p class="font-display text-xl lg:text-2xl font-bold text-chocolate">${{ producto.precio|floatformat:0 }}</p>
+                <p class="font-display text-xl lg:text-2xl font-bold text-chocolate">{{ producto.precio|cop }}</p>
                 
                 <div class="flex items-center gap-2">
                   <a href="{% url 'producto_detalle' producto.id %}"

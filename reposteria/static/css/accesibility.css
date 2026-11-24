@@ -1,0 +1,248 @@
+/* =====================================================================
+   SARALU — ACCESIBILIDAD
+   1) Scroll y foco del panel
+   2) Tarjetas de opciones
+   3) Modos de accesibilidad (clases sobre <html>)
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   1) SCROLL Y FOCO
+   --------------------------------------------------------------------- */
+#acc-toggle:focus-visible,
+#acc-panel button:focus-visible {
+  outline: 3px solid #ffd97a;
+  outline-offset: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #f4b8c8; border-radius: 9999px; }
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #f4b8c8 transparent; }
+
+
+/* ---------------------------------------------------------------------
+   2) TARJETAS DE OPCIONES
+   --------------------------------------------------------------------- */
+.acc-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .35rem;
+  padding: .6rem .2rem .5rem;
+  min-height: 4.6rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  border: 2px solid rgba(74, 53, 40, .06);
+  color: #4a3528;
+  font-family: 'Nunito', sans-serif;
+  font-size: .62rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px -12px rgba(74, 53, 40, .25);
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.acc-item:hover {
+  transform: translateY(-2px);
+  background: #fbe3ea;
+  border-color: #f4b8c8;
+}
+.acc-item:active { transform: scale(.95); }
+
+.acc-item-icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: #fbe3ea;
+  color: #4a3528;
+  transition: background .2s ease, color .2s ease;
+}
+.acc-item:hover .acc-item-icon { background: #ffffff; }
+
+.acc-dot {
+  position: absolute;
+  top: .3rem;
+  right: .3rem;
+  width: .8rem;
+  height: .8rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(74, 53, 40, .18);
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  transition: all .2s ease;
+}
+
+/* Estado activo */
+.acc-item.is-active {
+  background: #ffd97a;
+  border-color: #4a3528;
+}
+.acc-item.is-active .acc-item-icon { background: #4a3528; color: #ffd97a; }
+.acc-item.is-active .acc-dot { background: #4a3528; border-color: #4a3528; }
+.acc-item.is-active .acc-dot::after {
+  content: "✓";
+  color: #ffd97a;
+  font-size: .5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+
+/* ---------------------------------------------------------------------
+   3) MODOS DE ACCESIBILIDAD
+   --------------------------------------------------------------------- */
+
+/* --- Escala de grises / Invertir (combinables) --- */
+html.acc-grayscale { filter: grayscale(1); }
+
+html.acc-invert { filter: invert(1) hue-rotate(180deg); }
+
+html.acc-grayscale.acc-invert { filter: grayscale(1) invert(1); }
+
+/* Las imágenes y videos conservan su aspecto al invertir */
+html.acc-invert img,
+html.acc-invert video,
+html.acc-invert picture {
+  filter: invert(1) hue-rotate(180deg);
+}
+html.acc-grayscale.acc-invert img,
+html.acc-grayscale.acc-invert video,
+html.acc-grayscale.acc-invert picture {
+  filter: invert(1);
+}
+
+
+/* --- Alto contraste --- */
+html.acc-high-contrast body {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+html.acc-high-contrast body * {
+  text-shadow: none !important;
+}
+
+/* Textos */
+html.acc-high-contrast [class*="text-chocolate"],
+html.acc-high-contrast [class*="text-cafe"],
+html.acc-high-contrast [class*="text-crema"] {
+  color: #000000 !important;
+}
+
+/* Fondos claros → blanco */
+html.acc-high-contrast [class*="bg-crema"],
+html.acc-high-contrast [class*="bg-rosaClaro"],
+html.acc-high-contrast [class*="bg-white"],
+html.acc-high-contrast [class*="bg-rosa"] {
+  background-color: #ffffff !important;
+}
+
+/* Fondos amarillos → amarillo fuerte con texto negro */
+html.acc-high-contrast [class*="bg-mantequilla"] {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+}
+
+/* Fondos oscuros (botones) → negro con texto amarillo */
+html.acc-high-contrast [class*="bg-chocolate"] {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+}
+html.acc-high-contrast [class*="bg-chocolate"] * { color: #ffff00 !important; }
+
+/* Bordes y enlaces */
+html.acc-high-contrast a,
+html.acc-high-contrast button {
+  border-color: #000000 !important;
+}
+html.acc-high-contrast a { text-decoration: underline !important; }
+
+/* Tarjetas y contenedores con bordes visibles */
+html.acc-high-contrast [class*="rounded-"][class*="shadow"] {
+  outline: 2px solid #000000;
+}
+
+/* Panel de accesibilidad legible también en alto contraste */
+html.acc-high-contrast #acc-panel { border-color: #000000 !important; }
+html.acc-high-contrast .acc-item { border-color: #000000; background: #ffffff; color: #000000; }
+html.acc-high-contrast .acc-item-icon { background: #ffffff; color: #000000; border: 2px solid #000000; }
+html.acc-high-contrast .acc-item.is-active {
+  background: #ffff00 !important;
+  border-color: #000000;
+}
+html.acc-high-contrast .acc-item.is-active .acc-item-icon {
+  background: #000000 !important;
+  color: #ffff00 !important;
+}
+html.acc-high-contrast .acc-item.is-active .acc-dot { background: #000000; }
+html.acc-high-contrast .acc-item.is-active .acc-dot::after { color: #ffff00; }
+
+
+/* --- Fuente para dislexia --- */
+html.acc-dyslexia,
+html.acc-dyslexia body,
+html.acc-dyslexia body * {
+  font-family: 'Lexend', 'Comic Sans MS', 'Trebuchet MS', sans-serif !important;
+}
+
+
+/* --- Resaltar enlaces --- */
+html.acc-links a {
+  background-color: #ffd97a !important;
+  color: #000000 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px;
+  outline: 2px solid #4a3528;
+  outline-offset: 1px;
+  border-radius: .35rem;
+}
+html.acc-links a * { color: #000000 !important; }
+
+
+/* --- Cursor grande --- */
+html.acc-big-cursor,
+html.acc-big-cursor body,
+html.acc-big-cursor body * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l15 9-6.5 1.5L16 20l-3 1-3.5-7.5L4 17z' fill='%234a3528' stroke='white' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 4 2, auto !important;
+}
+html.acc-big-cursor a,
+html.acc-big-cursor button,
+html.acc-big-cursor [role="button"],
+html.acc-big-cursor a *,
+html.acc-big-cursor button * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l15 9-6.5 1.5L16 20l-3 1-3.5-7.5L4 17z' fill='%23ffd97a' stroke='%234a3528' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 4 2, pointer !important;
+}
+
+
+/* --- Altura de línea --- */
+html.acc-line-height body *:not(svg):not(svg *) {
+  line-height: 1.9 !important;
+}
+
+
+/* --- Espaciado entre letras y palabras --- */
+html.acc-letter-spacing body *:not(svg):not(svg *) {
+  letter-spacing: .12em !important;
+  word-spacing: .16em !important;
+}
+
+
+/* --- Reducir movimiento --- */
+html.acc-reduce-motion *,
+html.acc-reduce-motion *::before,
+html.acc-reduce-motion *::after {
+  animation: none !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}

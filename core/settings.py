@@ -128,3 +128,5 @@ EMAIL_HOST_USER = "saralureposteria@gmail.com"
 EMAIL_HOST_PASSWORD = "zjoy chka zlpj kyds"
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+WHATSAPP_NUMERO = "573208363321" 

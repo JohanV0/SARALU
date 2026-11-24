@@ -268,7 +268,7 @@ def lista_productos(request):
         productos = productos.filter(estado=estado)
     estados = Producto._meta.get_field('estado').choices 
 
-    paginator = Paginator(productos, 8)
+    paginator = Paginator(productos, 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -551,7 +551,7 @@ def mis_pedidos_view(request):
     if estado:
         pedidos = pedidos.filter(estado=estado)
 
-    paginator = Paginator(pedidos, 8) 
+    paginator = Paginator(pedidos, 4) 
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     
@@ -644,7 +644,7 @@ def pedidos_pendientes_view(request):
     if estado:
         pedidos = pedidos.filter(estado=estado)
 
-    paginator = Paginator(pedidos, 8) 
+    paginator = Paginator(pedidos, 4) 
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     
@@ -738,6 +738,7 @@ def marcar_entregado_view(request, pedido_id):
 @user_passes_test(admin)
 def todos_los_pedidos_view(request):
     busqueda = request.GET.get("buscar", "").strip()
+    estado = request.GET.get("estado","").strip()
 
     pedidos = (
         Pedido.objects
@@ -756,8 +757,18 @@ def todos_los_pedidos_view(request):
             Q(detalles__producto__nombre__icontains=busqueda)
         ).distinct()
 
-    return render(
-        request,
-        'todos_los_pedidos.html',
-        {'pedidos': pedidos, 'busqueda': busqueda},
-    )
+    paginator = Paginator(pedidos, 4) 
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    extra_query = query_params.urlencode()
+
+    contexto = {
+            'page_obj': page_obj, 
+            'busqueda': busqueda,
+            'extra_query': extra_query
+    }
+
+    return render(request,'todos_los_pedidos.html',contexto)

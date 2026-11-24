@@ -1,0 +1,633 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load moneda %}
+{% block title %}SARALU — Gestión de pedidos{% endblock %}
+
+{% block content %}
+<section id="todos-pedidos" class="relative py-6 sm:py-10 lg:py-16 3xl:py-24 mx-2 sm:mx-4 lg:mx-8 my-4 sm:my-6 rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
+  <div class="absolute inset-0 bg-azul/10 rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[3rem]"></div>
+  <span class="absolute top-6 left-6 sm:top-10 sm:left-10 text-mantequilla text-xl sm:text-3xl animate-pulse z-10">✦</span>
+  <span class="absolute bottom-8 right-6 sm:bottom-20 sm:right-10 text-azul text-lg sm:text-2xl animate-bounce z-10">✦</span>
+  <span class="absolute top-1/3 right-1/4 text-azul/50 text-base sm:text-xl z-10">✦</span>
+  <span class="absolute bottom-1/4 left-1/3 text-chocolate/30 text-sm sm:text-lg z-10">✦</span>
+
+  <div class="relative mx-auto w-full max-w-[1500px] px-3 sm:px-6 lg:px-10 2xl:px-14 3xl:px-20">
+
+    {# ============ ENCABEZADO ============ #}
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 mb-6 sm:mb-8 lg:mb-10">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs lg:text-sm font-bold uppercase tracking-widest2 text-cafe">
+          <span class="h-2 w-2 rounded-full bg-azul"></span>
+          Panel de administración
+        </span>
+        <h1 class="font-display mt-1 sm:mt-2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-chocolate">
+          Gestión de pedidos
+        </h1>
+        <p class="mt-1 sm:mt-2 max-w-2xl text-xs sm:text-sm lg:text-base text-cafe">
+          Cambia el estado de los pedidos para organizar la producción diaria de la pastelería.
+        </p>
+      </div>
+      <div class="self-start lg:self-auto inline-flex items-center gap-1.5 rounded-full bg-chocolate px-3 py-1.5 sm:px-5 sm:py-2.5 text-xs sm:text-sm lg:text-base font-bold text-mantequilla shadow-soft">
+        <span class="grid h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 place-items-center rounded-full bg-mantequilla text-chocolate text-[10px] sm:text-xs font-display font-bold">
+          {{ pedidos|length }}
+        </span>
+        <span>mostrando</span>
+      </div>
+    </div>
+
+    {# ============ CHIPS DE FILTRO ============ #}
+    <div id="filtros-container" class="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-4 sm:mb-6">
+      <a href="{% url 'todos_los_pedidos' %}{% if busqueda %}?buscar={{ busqueda|urlencode }}{% endif %}"
+         class="w-full sm:w-auto justify-between sm:justify-start inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-widest2 transition-all
+                {% if not estado_actual %}bg-chocolate text-mantequilla shadow-soft{% else %}bg-white text-chocolate ring-1 ring-chocolate/15 hover:bg-mantequilla{% endif %}">
+        <span>Todos</span>
+        <span class="rounded-full bg-mantequilla text-chocolate px-2 py-0.5 text-[10px] sm:text-xs">
+          {{ conteos.confirmado|add:conteos.preparacion|add:conteos.entregado|add:conteos.rechazado|add:conteos.cancelado }}
+        </span>
+      </a>
+
+      {% for val, label in estados %}
+        {% if val != 'pendiente' %}
+          <a href="?estado={{ val }}{% if busqueda %}&buscar={{ busqueda|urlencode }}{% endif %}"
+             class="w-full sm:w-auto justify-between sm:justify-start inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-widest2 transition-all
+                    {% if estado_actual == val %}bg-chocolate text-mantequilla shadow-soft{% else %}bg-white text-chocolate ring-1 ring-chocolate/15 hover:bg-mantequilla{% endif %}">
+            <span>{{ label }}</span>
+            <span class="rounded-full bg-mantequilla text-chocolate px-2 py-0.5 text-[10px] sm:text-xs">
+              {% if val == 'confirmado' %}{{ conteos.confirmado }}
+              {% elif val == 'preparacion' %}{{ conteos.preparacion }}
+              {% elif val == 'entregado' %}{{ conteos.entregado }}
+              {% elif val == 'rechazado' %}{{ conteos.rechazado }}
+              {% elif val == 'cancelado' %}{{ conteos.cancelado }}
+              {% endif %}
+            </span>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {# ============ BUSCADOR ============ #}
+    <form method="get" class="mb-6 sm:mb-8">
+      {% if estado_actual %}<input type="hidden" name="estado" value="{{ estado_actual }}">{% endif %}
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <input type="text" name="buscar" value="{{ busqueda|default:'' }}"
+               placeholder="Buscar por cliente, fecha o producto..."
+               aria-label="Buscar pedidos"
+               class="flex-1 rounded-full bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-sm sm:text-base text-chocolate shadow-soft border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-chocolate/40 placeholder:text-cafe/60">
+        <button type="submit"
+                class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-mantequilla shadow-soft hover:bg-chocolate/90 hover:-translate-y-0.5 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+          </svg>
+          Buscar
+        </button>
+        {% if busqueda or estado_actual %}
+          <a href="{% url 'todos_los_pedidos' %}"
+             class="inline-flex items-center justify-center gap-2 rounded-full bg-crema px-4 sm:px-5 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-chocolate ring-1 ring-chocolate/15 hover:bg-mantequilla transition-all">
+            Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
+
+    {# ============ LISTADO DE PEDIDOS ============ #}
+    {% if pedidos %}
+      <div class="flex flex-col gap-4 sm:gap-6">
+        {% for pedido in pedidos %}
+          
+          <!-- Tarjeta Principal -->
+          <article class="overflow-hidden rounded-[1.2rem] sm:rounded-[1.5rem] bg-white border border-chocolate/5 shadow-sm hover:shadow-md transition-all relative pl-2 sm:pl-3">
+
+            <!-- Detalle azul a la izquierda -->
+            <div class="absolute left-0 top-0 bottom-0 w-1.5 sm:w-2 bg-azul"></div>
+
+            {# ---------- CABECERA DEL PEDIDO (SIEMPRE VISIBLE) ---------- #}
+            <header class="px-3 py-3 sm:px-4 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-mantequilla/20 to-azul/10">
+              
+              <!-- Bloque Izquierdo: ID, Nombre y Fecha -->
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-xl bg-chocolate text-mantequilla font-display font-bold text-sm sm:text-base shrink-0 shadow-sm">
+                  #{{ pedido.id }}
+                </span>
+                <div>
+                  <p class="font-display text-base sm:text-lg font-bold text-chocolate leading-tight">{{ pedido.nombre_contacto }}</p>
+                  <p class="text-xs sm:text-sm text-cafe mt-0.5 flex items-center gap-1">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                    </svg>
+                    {{ pedido.creado|date:"d/m/Y · H:i" }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Bloque Derecho: Info Básica + Botón (Reestructurado para móvil) -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-chocolate/10">
+                
+                <!-- Fila superior: Estado y Total (columnas de ancho fijo y centradas) -->
+                <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
+                  <!-- Badge de Estado -->
+                  <div class="flex sm:w-44 justify-center">
+                    {% if pedido.estado == 'pendiente' %}
+                      <span class="inline-flex w-full items-center justify-center gap-1.5 rounded bg-azul/30 px-2.5 py-1 text-xs sm:text-sm font-bold uppercase tracking-widest2 text-chocolate">
+                        <span class="h-1.5 w-1.5 rounded-full bg-azul animate-pulse"></span> {{ pedido.get_estado_display }}
+                      </span>
+                    {% elif pedido.estado == 'confirmado' %}
+                      <span class="inline-flex w-full items-center justify-center gap-1.5 rounded bg-mantequilla px-2.5 py-1 text-xs sm:text-sm font-bold uppercase tracking-widest2 text-chocolate">
+                        <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span> {{ pedido.get_estado_display }}
+                      </span>
+                    {% elif pedido.estado == 'preparacion' %}
+                      <span class="inline-flex w-full items-center justify-center gap-1.5 rounded bg-rosaClaro px-2.5 py-1 text-xs sm:text-sm font-bold uppercase tracking-widest2 text-chocolate">
+                        <span class="h-1.5 w-1.5 rounded-full bg-rosa animate-pulse"></span> {{ pedido.get_estado_display }}
+                      </span>
+                    {% elif pedido.estado == 'entregado' %}
+                      <span class="inline-flex w-full items-center justify-center gap-1.5 rounded bg-chocolate/10 px-2.5 py-1 text-xs sm:text-sm font-bold uppercase tracking-widest2 text-chocolate/70">
+                        <span class="h-1.5 w-1.5 rounded-full bg-chocolate/50"></span> {{ pedido.get_estado_display }}
+                      </span>
+                    {% else %}
+                      <span class="inline-flex w-full items-center justify-center gap-1.5 rounded bg-rosa/20 px-2.5 py-1 text-xs sm:text-sm font-bold uppercase tracking-widest2 text-chocolate">
+                        <span class="h-1.5 w-1.5 rounded-full bg-rosa"></span> {{ pedido.get_estado_display }}
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Total -->
+                  <span class="sm:w-28 text-center font-display font-bold text-chocolate text-base sm:text-xl leading-none whitespace-nowrap">
+                    {{ pedido.total|cop }}
+                  </span>
+                </div>
+
+                <!-- Botón de Detalles (Full width en móvil, alineado abajo) -->
+                <button type="button" 
+                        onclick="toggleDetails('{{ pedido.id }}', this)" 
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-azul px-4 py-2.5 sm:py-2 text-sm sm:text-sm font-bold text-chocolate hover:bg-chocolate hover:text-mantequilla transition-all shadow-sm group shrink-0 mt-1 sm:mt-0">
+                  <span>Ver detalles</span>
+                  <svg id="chevron-{{ pedido.id }}" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+              </div>
+
+            </header>
+
+            <!-- CONTENEDOR OCULTO CON TODOS LOS DETALLES -->
+            <div id="details-{{ pedido.id }}" class="hidden p-3 sm:p-4 bg-crema/30">
+              
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+
+                {# ---------- COLUMNA IZQUIERDA: PRODUCTOS + NOTAS ---------- #}
+                <div class="lg:col-span-7 flex flex-col gap-3">
+                  
+                  {# Productos #}
+                  <div class="rounded-[0.8rem] sm:rounded-[1rem] bg-white p-3 shadow-sm border border-chocolate/5">
+                    <h2 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-1.5">
+                      <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-azul"></span>
+                      Productos solicitados
+                    </h2>
+                    <div class="flex flex-col gap-2">
+                      {% for detalle in pedido.detalles.all %}
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-[0.6rem] sm:rounded-[0.8rem] bg-crema/40 p-2 sm:p-3 border border-chocolate/5">
+                          
+                          <div class="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-[0.5rem] sm:rounded-[0.8rem] bg-azul/20 flex items-center justify-center">
+                            {% if detalle.producto.imagen %}
+                              <img src="{{ detalle.producto.imagen.url }}" alt="{{ detalle.producto.nombre }}" class="h-full w-full object-cover">
+                            {% else %}
+                              <img src="{{ detalle.producto.imagen_principal }}" alt="{{ detalle.producto.nombre }}" class="h-full w-full object-cover">
+                            {% endif %}
+                          </div>
+                          
+                          <div class="flex-1 min-w-0 flex flex-col justify-center">
+                            <p class="font-display font-bold text-chocolate text-sm sm:text-base leading-tight truncate">{{ detalle.producto.nombre }}</p>
+                            <p class="text-xs sm:text-sm text-cafe mt-0.5">
+                              {{ detalle.producto.porciones }} porción{{ detalle.producto.porciones|pluralize:"es" }}
+                              <span class="mx-1 text-chocolate/20">·</span>
+                              Cant: <strong class="text-chocolate font-bold">{{ detalle.cantidad }}</strong>
+                            </p>
+                            
+                            <div class="mt-1.5 flex flex-wrap items-center justify-between gap-1 text-xs sm:text-sm">
+                              <span class="text-cafe">Unit: {{ detalle.precio_unitario|cop }}</span>
+                              <span class="font-bold text-chocolate bg-mantequilla/60 px-2 py-0.5 rounded">Subtotal: {{ detalle.subtotal|cop }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      {% empty %}
+                        <div class="rounded-[0.5rem] bg-crema/40 p-3 text-center text-xs text-cafe">
+                          Este pedido no tiene productos.
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  {# Datos y Notas #}
+                  {% if pedido.comentarios %}
+                    <div class="rounded-[0.8rem] sm:rounded-[1rem] bg-white p-3 shadow-sm border border-chocolate/5 flex flex-col">
+                      <h2 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-1.5">
+                        <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-azul"></span>
+                        Datos y Notas del pedido
+                      </h2>
+                      <div class="comment-content hidden">{{ pedido.comentarios }}</div>
+                      <div class="comment-output text-xs sm:text-sm flex-1"></div>
+                    </div>
+                  {% endif %}
+                </div>
+
+                {# ---------- COLUMNA DERECHA: ENTREGA + TOTALES ---------- #}
+                <div class="lg:col-span-5 flex flex-col gap-3">
+                  
+                  {# Detalles de entrega #}
+                  <div class="rounded-[0.8rem] sm:rounded-[1rem] bg-white p-3 shadow-sm border border-chocolate/5">
+                    <h2 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe mb-2 flex items-center gap-1.5">
+                      <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-azul"></span>
+                      Detalles de entrega
+                    </h2>
+                    <dl class="space-y-2 text-xs sm:text-sm">
+                      <div class="flex flex-row justify-between items-start gap-2 border-b border-chocolate/5 pb-2">
+                        <dt class="text-cafe shrink-0">Cliente</dt>
+                        <dd class="font-semibold text-chocolate text-right">{{ pedido.nombre_contacto }}</dd>
+                      </div>
+                      <div class="flex flex-row justify-between items-start gap-2 border-b border-chocolate/5 pb-2">
+                        <dt class="text-cafe shrink-0">Teléfono</dt>
+                        <dd class="font-semibold text-chocolate text-right">{{ pedido.telefono_contacto|default:"No registrado" }}</dd>
+                      </div>
+                      {% if pedido.domicilio == 'domicilio' and pedido.direccion_entrega %}
+                        <div class="flex flex-row justify-between items-start gap-2">
+                          <dt class="text-cafe shrink-0">Dirección</dt>
+                          <dd class="font-semibold text-chocolate text-right">{{ pedido.direccion_entrega }}</dd>
+                        </div>
+                      {% endif %}
+                    </dl>
+                  </div>
+
+                  {# Totales y Selector #}
+                  <div class="mt-auto rounded-[0.8rem] sm:rounded-[1rem] bg-white p-3 sm:p-4 shadow-sm border border-chocolate/5 relative overflow-hidden">
+                    <div class="flex justify-between text-xs sm:text-sm mb-1">
+                      <span class="text-cafe">Subtotal</span>
+                      <span class="text-chocolate">{{ pedido.subtotal|cop }}</span>
+                    </div>
+                    {% if pedido.descuento %}
+                      <div class="flex justify-between text-xs sm:text-sm mb-1 text-azul">
+                        <span>Descuento</span>
+                        <span>{{ pedido.descuento|cop }}</span>
+                      </div>
+                    {% endif %}
+
+                    <div class="flex justify-between items-baseline border-t border-chocolate/10 pt-2 mt-2">
+                      <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest2 text-cafe">Total a cobrar</span>
+                      <span class="font-display text-lg sm:text-xl font-bold text-chocolate">{{ pedido.total|cop }}</span>
+                    </div>
+
+                    {# Selector de estado #}
+                    <div class="mt-4 space-y-2">
+                      <form method="post" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="space-y-2">
+                        {% csrf_token %}
+                        <label for="estado-{{ pedido.id }}" class="block text-[10px] font-bold uppercase tracking-widest2 text-cafe">
+                          Cambiar estado
+                        </label>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                          <div class="relative w-full sm:flex-1">
+                            <select id="estado-{{ pedido.id }}" name="estado"
+                                    class="w-full rounded-full bg-crema text-chocolate pl-3 pr-8 py-2 text-xs sm:text-sm font-bold shadow-sm border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-azul appearance-none cursor-pointer">
+                              {% for val, label in estados %}
+                                <option value="{{ val }}" {% if pedido.estado == val %}selected{% endif %}>{{ label }}</option>
+                              {% endfor %}
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-chocolate">
+                              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9l6 6 6-6"/>
+                              </svg>
+                            </div>
+                          </div>
+                          
+                          <button type="submit"
+                                  class="w-full sm:w-auto rounded-full bg-azul px-4 py-2 text-xs sm:text-sm font-bold text-chocolate shadow-sm hover:bg-chocolate hover:text-mantequilla transition-all text-center">
+                            Actualizar
+                          </button>
+                        </div>
+
+                        <input type="text" name="comentario" placeholder="Comentario (opcional)" maxlength="300"
+                               class="w-full rounded-full bg-crema text-chocolate px-4 py-2 text-xs sm:text-sm placeholder:text-cafe/50 border border-chocolate/10 focus:outline-none focus:ring-2 focus:ring-azul mt-1">
+                      </form>
+
+                      {% if pedido.estado != 'entregado' %}
+                        <form method="post" action="{% url 'marcar_entregado' pedido.id %}" class="pt-1">
+                          {% csrf_token %}
+                          <button type="submit"
+                                  class="group w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-transparent border border-chocolate/20 px-4 py-2 text-xs sm:text-sm font-bold text-cafe hover:bg-azul/10 hover:text-chocolate hover:border-chocolate/40 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Marcar entregado
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </article>
+        {% endfor %}
+      </div>
+
+    {# ============ SIN RESULTADOS ============ #}
+    {% elif busqueda %}
+      <div class="rounded-[1.5rem] sm:rounded-[2rem] bg-white px-4 sm:px-6 py-12 sm:py-20 text-center shadow-soft border border-chocolate/5">
+        <div class="mx-auto grid h-14 w-14 sm:h-20 sm:w-20 place-items-center rounded-full bg-azul/20 text-chocolate">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-9 sm:w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+          </svg>
+        </div>
+        <h3 class="mt-4 sm:mt-6 font-display text-xl sm:text-2xl font-semibold text-chocolate">Sin resultados</h3>
+        <p class="mt-2 text-sm sm:text-base text-cafe max-w-md mx-auto">
+          No encontramos pedidos que coincidan con "<strong>{{ busqueda }}</strong>".
+        </p>
+        <a href="{% url 'todos_los_pedidos' %}"
+           class="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 text-sm font-bold text-mantequilla shadow-soft hover:-translate-y-0.5 transition-all">
+          Limpiar búsqueda
+        </a>
+      </div>
+
+    {# ============ SIN PEDIDOS ============ #}
+    {% else %}
+      <div class="rounded-[1.5rem] sm:rounded-[2rem] bg-white px-4 sm:px-6 py-12 sm:py-20 text-center shadow-soft border border-chocolate/5">
+        <div class="mx-auto grid h-14 w-14 sm:h-20 sm:w-20 place-items-center rounded-full bg-azul/20 text-chocolate">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-9 sm:w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <h3 class="mt-4 sm:mt-6 font-display text-xl sm:text-2xl font-semibold text-chocolate">
+          {% if estado_actual %}Sin pedidos en este estado{% else %}Todo al día{% endif %}
+        </h3>
+        <p class="mt-2 text-sm sm:text-base text-cafe max-w-md mx-auto">
+          {% if estado_actual %}No hay pedidos con ese estado por ahora.{% else %}No tienes pedidos activos. ¡Buen trabajo!{% endif %}
+        </p>
+      </div>
+    {% endif %}
+{# --- PAGINACIÓN --- #}
+{% if page_obj.has_other_pages %}
+  <nav class="mt-8 mb-4 flex flex-wrap items-center justify-center gap-1 md:gap-2">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda|urlencode }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}"
+         aria-label="Página anterior"
+         class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
+      </a>
+    {% else %}
+      <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
+      </span>
+    {% endif %}
+
+    {% for i in page_obj.paginator.page_range %}
+      {% if page_obj.number == i %}
+        <span aria-current="page"
+              class="relative grid h-10 w-10 place-items-center rounded-full bg-chocolate font-display text-sm font-bold text-mantequilla shadow-soft">
+          {{ i }}
+          <span class="absolute -right-0.5 -top-0.5 text-[10px] leading-none text-mantequilla">★</span>
+        </span>
+      {% elif i == 1 or i == page_obj.paginator.num_pages or i >= page_obj.number|add:'-1' and i <= page_obj.number|add:'1' %}
+        <a href="?page={{ i }}{% if busqueda %}&buscar={{ busqueda|urlencode }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}"
+           class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-semibold text-chocolate/70 transition hover:bg-rosaClaro hover:text-chocolate">
+          {{ i }}
+        </a>
+      {% elif i == page_obj.number|add:'-2' or i == page_obj.number|add:'2' %}
+        <span class="grid h-10 w-6 place-items-center text-chocolate/30 select-none">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda|urlencode }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}"
+         aria-label="Página siguiente"
+         class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+      </a>
+    {% else %}
+      <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+      </span>
+    {% endif %}
+  </nav>
+{% endif %}
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCRIPT DEL PANEL DE GESTIÓN DE PEDIDOS                        -->
+<!--                                                               -->
+<!-- Hace tres cosas, todas con JavaScript puro (sin librerías):   -->
+<!--  1. Ordena los chips de filtro por la longitud de su texto.   -->
+<!--  2. Convierte el texto plano de "comentarios" de cada pedido  -->
+<!--     en tarjetas con "Datos básicos" y "Notas del cliente".    -->
+<!--  3. Muestra/oculta el detalle de cada pedido (botón           -->
+<!--     "Ver detalles") y gira la flechita.                       -->
+<!-- ============================================================ -->
+<script>
+  // Espera a que el HTML esté completamente cargado antes de buscar
+  // elementos en la página. Si el script corriera antes, getElementById
+  // y querySelectorAll no encontrarían nada.
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // ----------------------------------------------------------
+    // 1. ORDENAR FILTROS POR LONGITUD DE TEXTO
+    // ----------------------------------------------------------
+    // Los chips (Todos, Entregado, Rechazado...) se ordenan del texto más
+    // corto al más largo, para que la fila se vea pareja. Se hace aquí en
+    // el navegador porque Django los pinta en el orden de Pedido.ESTADOS.
+    const filtrosContainer = document.getElementById('filtros-container');
+
+    // Solo se ejecuta si el contenedor existe en la página.
+    if (filtrosContainer) {
+      // .children es una lista "viva" que no tiene .sort(); Array.from la
+      // convierte en un arreglo normal con los chips (<a>) dentro.
+      const chips = Array.from(filtrosContainer.children);
+
+      // sort() compara de a dos chips (a y b). Si devuelve un número
+      // negativo, "a" va antes que "b"; si es positivo, va después.
+      chips.sort((a, b) => {
+        // El primer <span> de cada chip contiene su nombre (Todos,
+        // Entregado, etc.). El segundo <span> es el contador y se ignora.
+        const textA = a.querySelector('span').textContent.trim();
+        const textB = b.querySelector('span').textContent.trim();
+
+        // Resta de longitudes: el texto más corto queda primero.
+        return textA.length - textB.length;
+      });
+
+      // appendChild sobre un elemento que ya está en el DOM lo MUEVE, no
+      // lo duplica. Al recorrerlos en el nuevo orden, cada chip se
+      // reubica al final y la fila queda ordenada.
+      chips.forEach(chip => filtrosContainer.appendChild(chip));
+    }
+
+    // ----------------------------------------------------------
+    // 2. SEPARAR DATOS Y COMENTARIOS
+    // ----------------------------------------------------------
+    // En la base de datos, Pedido.comentarios es UN solo texto. Cuando el
+    // cliente arma el pedido queda así (ver armar_pedido_view):
+    //   "Entrega: DOMICILIO | Dirección: ... | Fecha de entrega: ... | Hora: ... | Notas: ..."
+    // Django lo imprime dentro de un <div class="comment-content hidden">
+    // (oculto) y justo después hay un <div class="comment-output"> vacío.
+    // Este bloque lee el texto oculto y escribe el resultado bonito en el
+    // contenedor vacío.
+    document.querySelectorAll('.comment-content').forEach(inputEl => {
+      // Texto crudo del comentario, sin espacios al inicio ni al final.
+      const rawText = inputEl.textContent.trim();
+
+      // Si está vacío, o Django imprimió "None" (campo sin valor), no hay
+      // nada que mostrar. "return" dentro de forEach salta al siguiente
+      // pedido.
+      if (!rawText || rawText === 'None') return;
+
+      // El contenedor de salida es el elemento hermano que viene justo
+      // después del div oculto.
+      const outputEl = inputEl.nextElementSibling;
+
+      // CASO A: el texto NO tiene "|", así que no sigue el formato de
+      // datos separados (por ejemplo, un comentario escrito a mano).
+      // Se muestra completo como una sola nota.
+      if (!rawText.includes('|')) {
+        // innerHTML pone HTML dentro del contenedor. Por seguridad, el
+        // texto del usuario siempre pasa por escapeHTML() antes (ver abajo).
+        outputEl.innerHTML = `
+          <div class="relative flex-1 rounded-[0.6rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-3 text-xs sm:text-sm text-chocolate border-l-4 border-azul shadow-sm overflow-hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-2 -right-2 h-12 w-12 sm:h-16 sm:w-16 text-azul/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+              <p class="relative z-10 whitespace-pre-line leading-relaxed font-medium break-words">${escapeHTML(rawText)}</p>
+          </div>
+        `;
+        return; // Ya terminó con este pedido; pasa al siguiente.
+      }
+
+      // CASO B: el texto sí viene en formato "Clave: valor | Clave: valor".
+      // split('|') lo parte en pedazos y map(trim) limpia los espacios
+      // de cada uno.
+      const parts = rawText.split('|').map(p => p.trim());
+
+      // "logistics" guarda los datos de entrega (Entrega, Dirección,
+      // Fecha, Hora...). "notes" guarda lo que el cliente escribió como nota.
+      let logistics = [];
+      let notes = '';
+
+      // Clasifica cada pedazo: ¿es una nota o es un dato de entrega?
+      parts.forEach(part => {
+        // En minúsculas para comparar sin importar cómo se escribió.
+        const lower = part.toLowerCase();
+
+        // Si empieza por "notas:", "comentarios:" o "comentario:" es la
+        // nota del cliente. Se guarda solo lo que va DESPUÉS de los dos
+        // puntos (substring desde la posición del ":" + 1).
+        if (lower.startsWith('notas:') || lower.startsWith('comentarios:') || lower.startsWith('comentario:')) {
+          notes = part.substring(part.indexOf(':') + 1).trim();
+        } else {
+          // Cualquier otro pedazo es un dato básico de la entrega.
+          logistics.push(part);
+        }
+      });
+
+      // Aquí se va armando, pedazo a pedazo, el HTML final.
+      let html = '';
+
+      // --- Tarjeta "Datos básicos" (solo si hay algún dato) ---
+      if (logistics.length > 0) {
+        html += '<div class="rounded-[0.6rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-3 border border-azul/30 shadow-sm mb-2">';
+        html += '<h4 class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-1.5 flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-azul"></span> Datos básicos</h4>';
+        html += '<ul class="space-y-1.5 text-xs sm:text-sm">';
+
+        // Un <li> por cada dato.
+        logistics.forEach(item => {
+          // Busca los dos puntos que separan la clave del valor
+          // ("Hora: 10:00" -> clave "Hora", valor "10:00"). Se usa el
+          // PRIMER ":" para que el valor pueda tener más (como la hora).
+          const colonIndex = item.indexOf(':');
+
+          if (colonIndex !== -1) {
+            // Tiene formato "clave: valor": se muestra en dos columnas,
+            // clave a la izquierda y valor en negrita a la derecha.
+            const key = item.substring(0, colonIndex).trim();
+            const value = item.substring(colonIndex + 1).trim();
+            html += `<li class="flex flex-row justify-between gap-2 border-b border-chocolate/5 pb-1 last:border-0 last:pb-0">
+                        <span class="text-cafe font-medium shrink-0">${escapeHTML(key)}</span>
+                        <span class="font-bold text-chocolate text-right break-words">${escapeHTML(value)}</span>
+                     </li>`;
+          } else {
+            // No tiene ":" (texto suelto): se muestra tal cual en una línea.
+            html += `<li class="font-medium text-chocolate break-words">${escapeHTML(item)}</li>`;
+          }
+        });
+
+        // Cierra la lista y la tarjeta.
+        html += '</ul></div>';
+      }
+
+      // --- Tarjeta "Notas del cliente" (solo si escribió alguna) ---
+      if (notes) {
+        html += '<div class="relative rounded-[0.6rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-3 border-l-4 border-azul shadow-sm overflow-hidden">';
+        html += '<h4 class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-1.5 flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-azul"></span> Notas del cliente</h4>';
+        // Comillas decorativas de fondo (ícono SVG).
+        html += '<svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-2 -right-2 h-10 w-10 sm:h-12 sm:w-12 text-azul/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>';
+        html += `<p class="relative z-10 whitespace-pre-line leading-relaxed font-medium italic text-chocolate text-xs sm:text-sm break-words">"${escapeHTML(notes)}"</p>`;
+        html += '</div>';
+      }
+
+      // Por último, se inserta todo el HTML armado en el contenedor de
+      // salida de este pedido.
+      outputEl.innerHTML = html;
+    });
+  });
+
+  // ----------------------------------------------------------
+  // 3. TOGGLE PARA VER DETALLES
+  // ----------------------------------------------------------
+  /**
+   * Muestra u oculta el detalle de un pedido (botón "Ver detalles").
+   *
+   * Se llama desde el botón de cada pedido:
+   *   onclick="toggleDetails('{{ pedido.id }}', this)"
+   * Está fuera de DOMContentLoaded a propósito: así queda disponible
+   * globalmente y el onclick del HTML puede encontrarla.
+   *
+   * @param {string} id  - id del pedido; sirve para armar los ids
+   *                       "details-<id>" y "chevron-<id>".
+   * @param {Element} btn - el propio botón (this), para actualizar su
+   *                        atributo de accesibilidad aria-expanded.
+   */
+  function toggleDetails(id, btn) {
+    // Panel con los detalles y flechita de ESTE pedido (cada uno tiene
+    // sus ids únicos gracias al id del pedido).
+    const detailsDiv = document.getElementById('details-' + id);
+    const chevron = document.getElementById('chevron-' + id);
+
+    // Si el panel tiene "hidden", está cerrado: hay que abrirlo.
+    if (detailsDiv.classList.contains('hidden')) {
+      detailsDiv.classList.remove('hidden');      // muestra el panel
+      chevron.classList.add('rotate-180');        // gira la flecha hacia arriba
+      btn.setAttribute('aria-expanded', 'true');  // avisa a lectores de pantalla: abierto
+    } else {
+      // Si no, está abierto: se cierra y todo vuelve a su estado inicial.
+      detailsDiv.classList.add('hidden');
+      chevron.classList.remove('rotate-180');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  /**
+   * Escapa caracteres especiales de HTML en un texto.
+   *
+   * Es importante porque arriba se usa innerHTML con texto que escribió
+   * el cliente. Sin esto, alguien podría meter etiquetas de script o imágenes con
+   * el atributo onerror en sus notas y ejecutarlas en el panel de la dueña
+   * (ataque XSS). Cada carácter peligroso se cambia por su equivalente
+   * seguro, así el navegador lo muestra como texto y no lo interpreta
+   * como código.
+   *
+   * @param {string} str - texto original.
+   * @returns {string} texto seguro para insertar con innerHTML.
+   */
+  function escapeHTML(str) {
+    // La expresión regular /[&<>'"]/g encuentra todos los caracteres
+    // peligrosos; la función los reemplaza usando este diccionario.
+    return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag]));
+  }
+</script>
+
+{% endblock %}

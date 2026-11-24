@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from decimal import Decimal
+from django.templatetags.static import static
+from decimal import Decimal, ROUND_HALF_UP
 
 
 # =========================================================
@@ -34,10 +35,12 @@ class Categoria(models.Model):
 class Producto(models.Model):
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)
+    # Precio en pesos colombianos (COP), sin centavos
     precio = models.DecimalField(
         max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+        decimal_places=0,
+        validators=[MinValueValidator(Decimal('1'))],
+        help_text="Precio en pesos colombianos (COP)",
     )
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True)
     stock = models.PositiveIntegerField(default=10)
@@ -67,6 +70,22 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    # === NUEVO: helper para fotos en plantillas ===
+    def imagen_principal(self):
+        """
+        Devuelve la URL de la mejor imagen disponible:
+        1) La imagen principal del producto (campo `imagen`)
+        2) La primera imagen de su galería (ImagenProducto)
+        3) El logo por defecto
+        Uso desde plantillas: {{ producto.imagen_principal }}
+        """
+        if self.imagen:
+            return self.imagen.url
+        primera = self.imagenes.first()
+        if primera:
+            return primera.imagen.url
+        return static('img/logo.png')
 
 
 class ImagenProducto(models.Model):
@@ -354,6 +373,7 @@ class Pedido(models.Model):
         ('confirmado', 'Confirmado'),
         ('preparacion', 'En preparación'),
         ('entregado', 'Entregado'),
+        ('rechazado', 'Rechazado'),     
         ('cancelado', 'Cancelado'),
     ]
 
@@ -405,25 +425,26 @@ class Pedido(models.Model):
         related_name='pedidos'
     )
 
+    # Valores en pesos colombianos (COP), sin centavos
     subtotal = models.DecimalField(
         'Subtotal',
         max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
+        decimal_places=0,
+        default=Decimal('0')
     )
 
     descuento = models.DecimalField(
         'Descuento',
         max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
+        decimal_places=0,
+        default=Decimal('0')
     )
 
     total = models.DecimalField(
         'Total',
         max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
+        decimal_places=0,
+        default=Decimal('0')
     )
 
     comentarios = models.TextField('Comentarios', blank=True)
@@ -434,11 +455,14 @@ class Pedido(models.Model):
     def contar_total(self):
         subtotal = sum(
             (detalle.subtotal() for detalle in self.detalles.all()),
-            Decimal('0.00')
+            Decimal('0')
         )
-        descuento = Decimal('0.00')
+        descuento = Decimal('0')
         if self.cupon and self.cupon.activo:
-            descuento = (subtotal * self.cupon.descuento_porcentaje) / Decimal('100')
+            # Se redondea al peso entero más cercano
+            descuento = (
+                subtotal * self.cupon.descuento_porcentaje / Decimal('100')
+            ).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
 
         self.subtotal = subtotal
         self.descuento = descuento
@@ -463,7 +487,7 @@ class DetallePedido(models.Model):
     )
 
     cantidad = models.PositiveSmallIntegerField(default=1)
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=0)
 
     def __str__(self):
         return f'{self.cantidad} - {self.producto.nombre}'
@@ -528,7 +552,7 @@ class Pago(models.Model):
     )
     metodo = models.CharField(max_length=20, choices=METODOS, default='efectivo')
     estado = models.CharField(max_length=15, choices=ESTADOS_PAGO, default='pendiente')
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    monto = models.DecimalField(max_digits=10, decimal_places=0)
     referencia = models.CharField(max_length=100, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
 

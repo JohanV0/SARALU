@@ -1,0 +1,514 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load moneda %}
+{% block title %}SARALU — Pedidos pendientes{% endblock %}
+
+{% block content %}
+
+{# ============================================================ #}
+{# PEDIDOS PENDIENTES — misma estética que el home              #}
+{# ============================================================ #}
+<section id="pedidos-pendientes"
+         class="relative py-4 sm:py-10 lg:py-16 3xl:py-24 mx-2 sm:mx-4 lg:mx-8 my-3 sm:my-6 rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
+  <div class="absolute inset-0 bg-azul/10 rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[3rem]"></div>
+  <span class="absolute top-4 left-4 sm:top-10 sm:left-10 text-mantequilla text-xl sm:text-3xl animate-pulse z-10">✦</span>
+  <span class="absolute bottom-6 right-4 sm:bottom-20 sm:right-10 text-azul text-lg sm:text-2xl animate-bounce z-10">✦</span>
+  <span class="absolute top-1/3 right-1/4 text-azul/50 text-base sm:text-xl z-10">✦</span>
+  <span class="absolute bottom-1/4 left-1/3 text-chocolate/30 text-sm sm:text-lg z-10">✦</span>
+
+  <div class="relative mx-auto w-full max-w-[1900px] px-2 sm:px-6 lg:px-10 2xl:px-14 3xl:px-20">
+
+    {# ---------- ENCABEZADO ---------- #}
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 mb-4 sm:mb-8 lg:mb-10">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+          <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-azul"></span>
+          Panel de administración
+        </span>
+        <h1 class="font-display mt-1 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-chocolate">
+          Pedidos pendientes
+        </h1>
+        <p class="mt-1 max-w-2xl text-[11px] sm:text-sm lg:text-base text-cafe">
+          Revisa las fotos, comentarios y detalles de cada solicitud recibida.
+        </p>
+      </div>
+
+      <div class="self-start lg:self-auto inline-flex items-center gap-1.5 rounded-full bg-chocolate px-3 py-1.5 sm:px-5 sm:py-2.5 text-[11px] sm:text-sm lg:text-base font-bold text-mantequilla shadow-soft">
+        <span class="grid h-4 w-4 sm:h-6 sm:w-6 lg:h-7 lg:w-7 place-items-center rounded-full bg-mantequilla text-chocolate text-[9px] sm:text-xs font-display font-bold">
+          {{ pedidos|length }}
+        </span>
+        <span>pendiente{{ page_obj.paginator.count|pluralize:"s" }}</span>
+      </div>
+    </div>
+
+    {% if pedidos %}
+      <div class="flex flex-col gap-3 sm:gap-4 lg:gap-6">
+        {% for pedido in pedidos %}
+          <!-- Tarjeta Principal: Blanca con borde sutil y sombra -->
+          <article class="overflow-hidden rounded-[1.1rem] sm:rounded-[1.5rem] lg:rounded-[2rem] bg-white border border-chocolate/5 shadow-sm hover:shadow-md transition-all relative pl-2 sm:pl-3">
+
+            <!-- Detalle de "costura" azul a la izquierda -->
+            <div class="absolute left-0 top-0 bottom-0 w-1.5 sm:w-2 bg-azul"></div>
+
+            {# ---------- CABECERA DEL PEDIDO (SIEMPRE VISIBLE) ---------- #}
+            <header class="px-2.5 py-2.5 sm:px-4 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 bg-gradient-to-r from-mantequilla/20 to-azul/10">
+              
+              <!-- Bloque Izquierdo: ID, Nombre y Fecha -->
+              <div class="flex items-center gap-2 sm:gap-3">
+                <span class="grid h-8 w-8 sm:h-10 sm:w-10 lg:h-11 lg:w-11 place-items-center rounded-xl bg-chocolate text-mantequilla font-display font-bold text-[10px] sm:text-sm lg:text-base shrink-0 shadow-sm">
+                  #{{ pedido.id }}
+                </span>
+                <div>
+                  <p class="font-display text-sm sm:text-base lg:text-lg font-bold text-chocolate leading-tight">{{ pedido.nombre_contacto }}</p>
+                  <p class="text-[9px] sm:text-xs text-cafe mt-0.5">
+                    {{ pedido.creado|date:"d/m/Y · H:i" }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Bloque Derecho: Info Básica + Botón -->
+              <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-5 w-full sm:w-auto mt-1 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-chocolate/5">
+                
+                <!-- Información Básica (Total y Modalidad) -->
+                <div class="flex flex-col items-start sm:items-end gap-0.5">
+                  <span class="font-display font-bold text-chocolate text-base sm:text-xl lg:text-2xl leading-none">
+                    {{ pedido.total|cop }}
+                  </span>
+                  <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-chocolate/70 bg-white/60 px-1.5 py-0.5 rounded border border-chocolate/5">
+                    {{ pedido.get_domicilio_display }}
+                  </span>
+                </div>
+
+                <!-- Botón de Detalles -->
+                <button type="button" 
+                        onclick="toggleDetails('{{ pedido.id }}', this)" 
+                        class="inline-flex items-center gap-1.5 rounded-full bg-azul px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold text-chocolate hover:bg-chocolate hover:text-mantequilla transition-all shadow-sm group">
+                  <span>Ver detalles</span>
+                  <svg id="chevron-{{ pedido.id }}" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+              </div>
+
+            </header>
+
+            <!-- CONTENEDOR OCULTO CON TODOS LOS DETALLES -->
+            <div id="details-{{ pedido.id }}" class="hidden p-2.5 sm:p-4 bg-crema/30">
+              
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-4">
+
+                {# ---------- COLUMNA IZQUIERDA: PRODUCTOS + COMENTARIOS ---------- #}
+                <div class="lg:col-span-7 flex flex-col gap-2 sm:gap-3">
+                  
+                  {# Productos solicitados #}
+                  <div>
+                    <h2 class="text-[9px] sm:text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-1 sm:mb-2 flex items-center gap-1.5">
+                      <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-chocolate"></span>
+                      Productos solicitados
+                    </h2>
+
+                    <ul class="flex flex-col gap-1.5 sm:gap-2">
+                      {% for detalle in pedido.detalles.all %}
+                        <li class="flex gap-2 sm:gap-3 rounded-[0.7rem] sm:rounded-[1rem] bg-white p-1.5 sm:p-2.5 shadow-sm border border-chocolate/5">
+                          <div class="relative h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 shrink-0 overflow-hidden rounded-[0.5rem] sm:rounded-[0.8rem] bg-azul/20">
+                            <img src="{{ detalle.producto.imagen_principal }}"
+                                 alt="{{ detalle.producto.nombre }}"
+                                 class="h-full w-full object-cover">
+                          </div>
+                          <div class="flex-1 min-w-0 flex flex-col justify-center">
+                            <p class="font-display font-bold text-chocolate text-[11px] sm:text-sm lg:text-base truncate">
+                              {{ detalle.producto.nombre }}
+                            </p>
+                            <p class="text-[9px] sm:text-xs text-cafe mt-0.5">
+                              {{ detalle.producto.porciones }} porción{{ detalle.producto.porciones|pluralize:"es" }} ·
+                              Cant: <strong class="text-chocolate">{{ detalle.cantidad }}</strong>
+                            </p>
+                            <div class="mt-0.5 sm:mt-1 flex flex-wrap items-center gap-x-1.5 sm:gap-x-3 gap-y-0.5 text-[9px] sm:text-xs lg:text-sm text-cafe">
+                              <span>Unit: ${{ detalle.precio_unitario|floatformat:2 }}</span>
+                              <span class="text-chocolate/20 hidden sm:inline">·</span>
+                              <span class="font-bold text-chocolate">Subtotal: {{ detalle.subtotal|cop }}</span>
+                            </div>
+                          </div>
+                        </li>
+                      {% empty %}
+                        <li class="rounded-[0.7rem] bg-white p-2 text-[10px] sm:text-sm text-cafe shadow-sm border border-chocolate/5">
+                          Este pedido no tiene productos.
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+
+                  {# Comentarios del cliente #}
+                  <div class="rounded-[0.7rem] sm:rounded-[1rem] bg-white p-2 sm:p-3 shadow-sm border border-chocolate/5 flex flex-col mt-0.5">
+                    <h2 class="text-[9px] sm:text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-1 sm:mb-2 flex items-center gap-1.5">
+                      <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-azul"></span>
+                      Comentarios del cliente
+                    </h2>
+                    {% if pedido.comentarios %}
+                      <div class="comment-content hidden">{{ pedido.comentarios }}</div>
+                      <div class="comment-output flex-1"></div>
+                    {% else %}
+                      <div class="flex-1 flex items-center justify-center rounded-[0.5rem] sm:rounded-[0.8rem] bg-cafe/5 border-2 border-dashed border-cafe/10 p-2 min-h-[40px]">
+                        <p class="text-[9px] sm:text-xs text-cafe/50 italic flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          Sin comentarios.
+                        </p>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                </div>
+
+                {# ---------- COLUMNA DERECHA: ENTREGA + TOTALES ---------- #}
+                <div class="lg:col-span-5 flex flex-col gap-2 sm:gap-3">
+
+                  {# Datos de entrega #}
+                  <div class="rounded-[0.7rem] sm:rounded-[1rem] bg-white p-2 sm:p-3 shadow-sm border border-chocolate/5">
+                    <h2 class="text-[9px] sm:text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe mb-1 sm:mb-2 flex items-center gap-1.5">
+                      <span class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-azul"></span>
+                      Datos de entrega
+                    </h2>
+                    <dl class="space-y-1 sm:space-y-1.5 text-[10px] sm:text-sm lg:text-base">
+                      <div class="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-chocolate/5 pb-1">
+                        <dt class="text-cafe">Cliente</dt>
+                        <dd class="font-semibold text-chocolate sm:text-right">{{ pedido.nombre_contacto }}</dd>
+                      </div>
+                      <div class="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-chocolate/5 pb-1">
+                        <dt class="text-cafe">Teléfono</dt>
+                        <dd class="font-semibold text-chocolate sm:text-right">
+                          {{ pedido.telefono_contacto|default:"—" }}
+                        </dd>
+                      </div>
+                      <div class="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-chocolate/5 pb-1">
+                        <dt class="text-cafe">Modalidad</dt>
+                        <dd class="font-semibold text-chocolate sm:text-right">{{ pedido.get_domicilio_display }}</dd>
+                      </div>
+                      {% if pedido.domicilio == 'domicilio' and pedido.direccion_entrega %}
+                        <div class="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                          <dt class="text-cafe">Dirección</dt>
+                          <dd class="font-semibold text-chocolate sm:text-right">{{ pedido.direccion_entrega }}</dd>
+                        </div>
+                      {% endif %}
+                    </dl>
+                  </div>
+
+                  {# Totales y Botones Aceptar / Rechazar #}
+                  <div class="mt-auto rounded-[0.7rem] sm:rounded-[1rem] bg-white p-2.5 sm:p-4 shadow-sm border border-chocolate/5">
+                    <div class="flex justify-between text-[10px] sm:text-sm lg:text-base mb-0.5 sm:mb-1">
+                      <span class="text-cafe">Subtotal</span>
+                      <span class="text-chocolate">{{ pedido.subtotal|cop }}</span>
+                    </div>
+                    {% if pedido.descuento %}
+                      <div class="flex justify-between text-[10px] sm:text-sm lg:text-base mb-0.5 sm:mb-1 text-azul">
+                        <span>Descuento{% if pedido.cupon %} ({{ pedido.cupon.codigo }}){% endif %}</span>
+                        <span>{{ pedido.descuento|cop }}</span>
+                      </div>
+                    {% endif %}
+                    <div class="flex justify-between items-baseline border-t border-chocolate/10 pt-1.5 mt-1.5">
+                      <span class="text-[9px] sm:text-xs lg:text-sm font-bold uppercase tracking-widest2 text-cafe">Total a cobrar</span>
+                      <span class="font-display text-base sm:text-xl lg:text-2xl font-bold text-chocolate">{{ pedido.total|cop }}</span>
+                    </div>
+
+                    {# --- BOTONES ACEPTAR / RECHAZAR --- #}
+                    <div class="mt-2.5 sm:mt-4 grid grid-cols-1 gap-1.5 sm:gap-2">
+                      {# Aceptar → confirmado #}
+                      <form method="post" action="{% url 'aceptar_pedido' pedido.id %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="w-full inline-flex items-center justify-center gap-1 sm:gap-1.5 rounded-full bg-chocolate px-3 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-sm font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-0.5 transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none"
+                               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                               stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 11l3 3L22 4" />
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                          </svg>
+                          Aceptar pedido
+                        </button>
+                      </form>
+
+                      {# Rechazar → RECHAZADO #}
+                      <form method="post" action="{% url 'cambiar_estado_pedido' pedido.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="estado" value="rechazado">
+                        <input type="hidden" name="comentario" value="Pedido rechazado por la administración.">
+                        <button type="submit"
+                                onclick="return confirm('¿Seguro que quieres rechazar este pedido? Pasará a la lista de rechazados.')"
+                                class="w-full inline-flex items-center justify-center gap-1 sm:gap-1.5 rounded-full bg-transparent border border-chocolate/20 px-3 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-sm font-bold text-cafe hover:bg-azul/10 hover:text-chocolate hover:border-chocolate/40 transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none"
+                               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                               stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Rechazar pedido
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      {# ---------- ESTADO VACÍO ---------- #}
+      <div class="rounded-[1.2rem] sm:rounded-[2rem] bg-white px-3 sm:px-6 py-8 sm:py-12 text-center shadow-soft border border-chocolate/5">
+        <div class="mx-auto grid h-10 w-10 sm:h-14 sm:w-14 place-items-center rounded-full bg-azul/20 text-chocolate">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-6 sm:w-6" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+            <rect x="9" y="3" width="6" height="4" rx="2" />
+            <path d="M9 12h6M9 16h6" />
+          </svg>
+        </div>
+        <h3 class="mt-2 sm:mt-4 font-display text-base sm:text-xl font-semibold text-chocolate">
+          No hay pedidos pendientes
+        </h3>
+        <p class="mt-1 max-w-md mx-auto text-[10px] sm:text-sm text-cafe">
+          Cuando un cliente realice un pedido, aparecerá aquí para que puedas revisarlo.
+        </p>
+      </div>
+    {% endif %}
+{# --- PAGINACIÓN --- #}
+{% if page_obj.has_other_pages %}
+  <nav class="mt-12 mb-8 flex flex-wrap items-center justify-center gap-1 md:gap-2">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}" aria-label="Página anterior" class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
+      </a>
+    {% else %}
+      <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
+      </span>
+    {% endif %}
+
+    {% for i in page_obj.paginator.page_range %}
+      {% if page_obj.number == i %}
+        <span aria-current="page" class="relative grid h-10 w-10 place-items-center rounded-full bg-chocolate font-display text-sm font-bold text-mantequilla shadow-soft">
+          {{ i }}
+          <span class="absolute -right-0.5 -top-0.5 text-[10px] leading-none text-mantequilla">★</span>
+        </span>
+      {% elif i == 1 or i == page_obj.paginator.num_pages or i >= page_obj.number|add:'-1' and i <= page_obj.number|add:'1' %}
+        <a href="?page={{ i }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}" class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-semibold text-chocolate/70 transition hover:bg-rosaClaro hover:text-chocolate">
+          {{ i }}
+        </a>
+      {% elif i == page_obj.number|add:'-2' or i == page_obj.number|add:'2' %}
+        <span class="grid h-10 w-6 place-items-center text-chocolate/30 select-none">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}" aria-label="Página siguiente" class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+      </a>
+    {% else %}
+      <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+      </span>
+    {% endif %}
+  </nav>
+{% endif %}
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCRIPT DEL PANEL DE PEDIDOS PENDIENTES                        -->
+<!--                                                               -->
+<!-- Hace dos cosas, con JavaScript puro (sin librerías):          -->
+<!--  1. toggleDetails(): muestra/oculta el detalle de cada        -->
+<!--     pedido (botón "Ver detalles") y gira la flechita.         -->
+<!--  2. Convierte el texto plano de "comentarios" de cada pedido  -->
+<!--     en tarjetas con "Datos básicos" y "Notas del cliente".    -->
+<!--                                                               -->
+<!-- Nota: la confirmación al pulsar "Rechazar pedido" no está     -->
+<!-- aquí; es un confirm() escrito directamente en el onclick de   -->
+<!-- ese botón (si la dueña cancela, el formulario no se envía).   -->
+<!-- ============================================================ -->
+<script>
+  // ----------------------------------------------------------
+  // 1. ABRIR Y CERRAR LOS DETALLES DE UN PEDIDO
+  // ----------------------------------------------------------
+  /**
+   * Muestra u oculta el detalle de un pedido (botón "Ver detalles").
+   *
+   * Se llama desde el botón de cada pedido:
+   *   onclick="toggleDetails('{{ pedido.id }}', this)"
+   * Está declarada fuera de DOMContentLoaded a propósito: así queda
+   * disponible globalmente y el onclick del HTML puede encontrarla.
+   *
+   * @param {string} id   - id del pedido; sirve para armar los ids
+   *                        "details-<id>" y "chevron-<id>".
+   * @param {Element} btn - el propio botón (this), para actualizar su
+   *                        atributo de accesibilidad aria-expanded.
+   */
+  function toggleDetails(id, btn) {
+    // Panel con los detalles y flechita de ESTE pedido (cada pedido tiene
+    // sus ids únicos gracias a su número).
+    const detailsDiv = document.getElementById('details-' + id);
+    const chevron = document.getElementById('chevron-' + id);
+
+    // Si el panel tiene "hidden", está cerrado: hay que abrirlo.
+    if (detailsDiv.classList.contains('hidden')) {
+      detailsDiv.classList.remove('hidden');      // muestra el panel
+      chevron.classList.add('rotate-180');        // gira la flecha hacia arriba
+      btn.setAttribute('aria-expanded', 'true');  // avisa a lectores de pantalla: abierto
+    } else {
+      // Si no, está abierto: se cierra y todo vuelve a su estado inicial.
+      detailsDiv.classList.add('hidden');
+      chevron.classList.remove('rotate-180');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  // ----------------------------------------------------------
+  // 2. SEPARAR DATOS Y COMENTARIOS
+  // ----------------------------------------------------------
+  // En la base de datos, Pedido.comentarios es UN solo texto. Cuando el
+  // cliente arma el pedido queda así (ver armar_pedido_view):
+  //   "Entrega: DOMICILIO | Dirección: ... | Fecha de entrega: ... | Hora: ... | Notas: ..."
+  // Django lo imprime dentro de un div oculto con la clase "comment-content"
+  // y justo después hay otro div vacío con la clase "comment-output".
+  // Este bloque lee el texto oculto y escribe el resultado bonito en el
+  // contenedor vacío.
+  //
+  // Espera a que el HTML esté completamente cargado antes de buscar
+  // elementos; si corriera antes, querySelectorAll no encontraría nada.
+  document.addEventListener('DOMContentLoaded', () => {
+    // Recorre el div oculto de cada pedido que tenga comentarios.
+    // (Los pedidos sin comentarios muestran "Sin comentarios." desde
+    // Django y no tienen este div, así que se saltan solos.)
+    document.querySelectorAll('.comment-content').forEach(inputEl => {
+      // Texto crudo del comentario, sin espacios al inicio ni al final.
+      const rawText = inputEl.textContent.trim();
+
+      // Si está vacío, o Django imprimió "None" (campo sin valor), no hay
+      // nada que mostrar. "return" dentro de forEach salta al siguiente
+      // pedido.
+      if (!rawText || rawText === 'None') return;
+
+      // El contenedor de salida es el elemento hermano que viene justo
+      // después del div oculto.
+      const outputEl = inputEl.nextElementSibling;
+
+      // CASO A: el texto NO tiene "|", así que no sigue el formato de
+      // datos separados (por ejemplo, un comentario escrito a mano).
+      // Se muestra completo como una sola nota con el diseño simple.
+      if (!rawText.includes('|')) {
+        // innerHTML pone HTML dentro del contenedor. Por seguridad, el
+        // texto del usuario siempre pasa por escapeHTML() antes (ver abajo).
+        outputEl.innerHTML = `
+          <div class="relative flex-1 rounded-[0.5rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-2 sm:p-3 text-[10px] sm:text-sm text-chocolate border-l-[3px] sm:border-l-4 border-azul shadow-sm overflow-hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-2 -right-2 h-10 w-10 sm:h-16 sm:w-16 text-azul/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+              <p class="relative z-10 whitespace-pre-line leading-relaxed font-medium break-words">${escapeHTML(rawText)}</p>
+          </div>
+        `;
+        return; // Ya terminó con este pedido; pasa al siguiente.
+      }
+
+      // CASO B: el texto sí viene en formato "Clave: valor | Clave: valor".
+      // split('|') lo parte en pedazos y map(trim) limpia los espacios
+      // de cada uno.
+      const parts = rawText.split('|').map(p => p.trim());
+
+      // "logistics" guarda los datos de entrega (Entrega, Dirección,
+      // Fecha, Hora...). "notes" guarda lo que el cliente escribió como nota.
+      let logistics = [];
+      let notes = '';
+
+      // Clasifica cada pedazo: ¿es una nota o es un dato de entrega?
+      parts.forEach(part => {
+        // En minúsculas para comparar sin importar cómo se escribió.
+        const lower = part.toLowerCase();
+
+        // Si empieza por "notas:", "comentarios:" o "comentario:" es la
+        // nota del cliente. Se guarda solo lo que va DESPUÉS de los dos
+        // puntos (substring desde la posición del ":" + 1).
+        if (lower.startsWith('notas:') || lower.startsWith('comentarios:') || lower.startsWith('comentario:')) {
+          notes = part.substring(part.indexOf(':') + 1).trim();
+        } else {
+          // Cualquier otro pedazo es un dato básico de la entrega.
+          logistics.push(part);
+        }
+      });
+
+      // Aquí se va armando, pedazo a pedazo, el HTML final.
+      let html = '';
+
+      // --- Bloque 1: tarjeta "Datos básicos" (solo si hay algún dato) ---
+      if (logistics.length > 0) {
+        html += '<div class="rounded-[0.5rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-2 sm:p-3 border border-azul/30 shadow-sm mb-1.5 sm:mb-2">';
+        html += '<h4 class="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-1 sm:mb-1.5 flex items-center gap-1"><span class="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-azul"></span> Datos básicos</h4>';
+        html += '<ul class="space-y-0.5 sm:space-y-1.5 text-[10px] sm:text-sm">';
+
+        // Un <li> por cada dato.
+        logistics.forEach(item => {
+          // Busca los dos puntos que separan la clave del valor
+          // ("Hora: 10:00" -> clave "Hora", valor "10:00"). Se usa el
+          // PRIMER ":" para que el valor pueda tener más (como la hora).
+          const colonIndex = item.indexOf(':');
+
+          if (colonIndex !== -1) {
+            // Tiene formato "clave: valor": en pantallas grandes se muestra
+            // en dos columnas (clave a la izquierda, valor en negrita a la
+            // derecha); en móvil, una debajo de la otra.
+            const key = item.substring(0, colonIndex).trim();
+            const value = item.substring(colonIndex + 1).trim();
+            html += `<li class="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-chocolate/5 pb-0.5 sm:pb-1 last:border-0 last:pb-0">
+                        <span class="text-cafe font-medium">${escapeHTML(key)}</span>
+                        <span class="font-bold text-chocolate sm:text-right break-words">${escapeHTML(value)}</span>
+                     </li>`;
+          } else {
+            // No tiene ":" (texto suelto): se muestra tal cual en una línea.
+            html += `<li class="font-medium text-chocolate break-words">${escapeHTML(item)}</li>`;
+          }
+        });
+
+        // Cierra la lista y la tarjeta.
+        html += '</ul></div>';
+      }
+
+      // --- Bloque 2: tarjeta "Notas del cliente" (solo si escribió alguna) ---
+      if (notes) {
+        html += '<div class="relative rounded-[0.5rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-2 sm:p-3 border-l-[3px] sm:border-l-4 border-azul shadow-sm overflow-hidden">';
+        html += '<h4 class="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-1 flex items-center gap-1"><span class="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-azul"></span> Notas del cliente</h4>';
+        // Comillas decorativas de fondo (ícono SVG).
+        html += '<svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-2 -right-2 h-8 w-8 sm:h-12 sm:w-12 text-azul/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>';
+        html += `<p class="relative z-10 whitespace-pre-line leading-relaxed font-medium italic text-chocolate text-[10px] sm:text-sm break-words">"${escapeHTML(notes)}"</p>`;
+        html += '</div>';
+      }
+
+      // Por último, se inserta todo el HTML armado en el contenedor de
+      // salida de este pedido.
+      outputEl.innerHTML = html;
+    });
+  });
+
+  // ----------------------------------------------------------
+  // 3. UTILIDAD DE SEGURIDAD
+  // ----------------------------------------------------------
+  /**
+   * Escapa caracteres especiales de HTML en un texto.
+   *
+   * Es importante porque arriba se usa innerHTML con texto que escribió
+   * el cliente. Sin esto, alguien podría meter etiquetas de script o
+   * imágenes con el atributo onerror en sus notas y ejecutarlas en el
+   * panel de la dueña (ataque XSS). Cada carácter peligroso se cambia por
+   * su equivalente seguro, así el navegador lo muestra como texto y no lo
+   * interpreta como código.
+   *
+   * @param {string} str - texto original.
+   * @returns {string} texto seguro para insertar con innerHTML.
+   */
+  function escapeHTML(str) {
+    // La expresión regular /[&<>'"]/g encuentra todos los caracteres
+    // peligrosos; la función los reemplaza usando este diccionario.
+    return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag]));
+  }
+</script>
+
+{% endblock %}

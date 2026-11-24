@@ -27,7 +27,7 @@
       </div>
       <div class="self-start lg:self-auto inline-flex items-center gap-2.5 rounded-full bg-chocolate px-5 py-2.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft">
         <span class="grid h-6 w-6 place-items-center rounded-full bg-mantequilla text-chocolate text-xs font-display font-bold">
-          {{ pedidos|length }}
+          {{ page_obj.paginator.count|default:0 }}
         </span>
         <span>en curso</span>
       </div>
@@ -64,9 +64,9 @@
     </form>
 
     {# ============ LISTADO DE PEDIDOS ============ #}
-    {% if pedidos %}
+    {% if page_obj %}
       <div class="flex flex-col gap-6 lg:gap-8">
-        {% for pedido in pedidos %}
+        {% for pedido in page_obj %}
           <article class="overflow-hidden rounded-[1.7rem] lg:rounded-[2.5rem] bg-crema p-4 md:p-5 shadow-soft hover:shadow-lift transition-all">
 
             {# ---------- CABECERA DEL PEDIDO ---------- #}
@@ -211,6 +211,60 @@
           </article>
         {% endfor %}
       </div>
+
+      {# --- PAGINACIÓN --- #}
+      {% if page_obj.has_other_pages %}
+        <nav class="mt-12 mb-8 flex flex-wrap items-center justify-center gap-1 md:gap-2">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}"
+               aria-label="Página anterior"
+               class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </a>
+          {% else %}
+            <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </span>
+          {% endif %}
+
+          {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+              <span aria-current="page"
+                    class="relative grid h-10 w-10 place-items-center rounded-full bg-chocolate font-display text-sm font-bold text-mantequilla shadow-soft">
+                {{ i }}
+                <span class="absolute -right-0.5 -top-0.5 text-[10px] leading-none text-mantequilla">★</span>
+              </span>
+            {% elif i == 1 or i == page_obj.paginator.num_pages or i >= page_obj.number|add:'-1' and i <= page_obj.number|add:'1' %}
+              <a href="?page={{ i }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}"
+                 class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-semibold text-chocolate/70 transition hover:bg-rosaClaro hover:text-chocolate">
+                {{ i }}
+              </a>
+            {% elif i == page_obj.number|add:'-2' or i == page_obj.number|add:'2' %}
+              <span class="grid h-10 w-6 place-items-center text-chocolate/30 select-none">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if busqueda %}&buscar={{ busqueda }}{% endif %}"
+               aria-label="Página siguiente"
+               class="group grid h-10 w-10 place-items-center rounded-full text-chocolate transition hover:bg-mantequilla">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          {% else %}
+            <span class="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full text-chocolate/25">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          {% endif %}
+        </nav>
+      {% endif %}
 
     {# ============ SIN RESULTADOS DE BÚSQUEDA ============ #}
     {% elif busqueda %}

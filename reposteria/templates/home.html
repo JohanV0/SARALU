@@ -1,5 +1,6 @@
 {% extends "layout/base.html" %}
 {% load static %}
+{% load moneda %}
 {% block title %}SARALU — Repostería Artesanal{% endblock %}
 {% block content %}
   <section id="inicio" class="relative overflow-hidden bg-crema pt-10 pb-16 lg:pt-16 lg:pb-24 px-4 sm:px-10 lg:px-20 3xl:px-32">
@@ -134,7 +135,7 @@
                     {{ producto.nombre }}
                   </h3>
                   <p class="mt-1 text-sm font-bold text-cafe">
-                    ${{ producto.precio|floatformat:0 }}
+                    {{ producto.precio|cop }}
                   </p>
                 </div>
               </a>
@@ -227,7 +228,7 @@
                 </p>
                 <div class="mt-6 flex items-center justify-between gap-4">
                   <p class="font-display text-xl md:text-2xl lg:text-3xl font-bold text-mantequilla">
-                    ${{ producto.precio|floatformat:0 }}
+                    {{ producto.precio|cop }}
                   </p>
                   <span class="inline-flex items-center gap-2 rounded-full bg-crema px-5 py-2.5 text-sm font-bold text-chocolate shadow-soft">
                     Ver producto →
@@ -255,7 +256,7 @@
                     </h3>
                   </a>
                   <p class="font-display text-sm lg:text-base font-bold whitespace-nowrap text-chocolate">
-                    ${{ producto.precio|floatformat:0 }}
+                    {{ producto.precio|cop }}
                   </p>
                 </div>
                 <form method="post" action="{% url 'agregar_al_carrito' producto.id %}" class="mt-3">
@@ -334,7 +335,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mt-7">
                   <p class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
-                    ${{ producto.precio|floatformat:0 }}
+                    {{ producto.precio|cop }}
                   </p>
                   <form method="post" action="{% url 'agregar_al_carrito' producto.id %}">
                     {% csrf_token %}

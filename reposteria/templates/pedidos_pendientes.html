@@ -1,5 +1,6 @@
 {% extends "layout/base.html" %}
 {% load static %}
+{% load moneda %}
 {% block title %}SARALU — Pedidos pendientes{% endblock %}
 
 {% block content %}
@@ -106,7 +107,7 @@
                         <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs lg:text-sm text-cafe">
                           <span>Unitario: ${{ detalle.precio_unitario|floatformat:2 }}</span>
                           <span class="text-chocolate/20">·</span>
-                          <span class="font-bold text-chocolate">Subtotal: ${{ detalle.subtotal|floatformat:2 }}</span>
+                          <span class="font-bold text-chocolate">Subtotal:{{ detalle.subtotal|cop }}</span>
                         </div>
                       </div>
                     </li>

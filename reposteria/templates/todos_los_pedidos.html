@@ -368,60 +368,137 @@
   </div>
 </section>
 
-<!-- SCRIPT PARA ORDENAR FILTROS, TOGGLE Y SEPARAR COMENTARIOS -->
+<!-- ============================================================ -->
+<!-- SCRIPT DEL PANEL DE GESTIÓN DE PEDIDOS                        -->
+<!--                                                               -->
+<!-- Hace tres cosas, todas con JavaScript puro (sin librerías):   -->
+<!--  1. Ordena los chips de filtro por la longitud de su texto.   -->
+<!--  2. Convierte el texto plano de "comentarios" de cada pedido  -->
+<!--     en tarjetas con "Datos básicos" y "Notas del cliente".    -->
+<!--  3. Muestra/oculta el detalle de cada pedido (botón           -->
+<!--     "Ver detalles") y gira la flechita.                       -->
+<!-- ============================================================ -->
 <script>
+  // Espera a que el HTML esté completamente cargado antes de buscar
+  // elementos en la página. Si el script corriera antes, getElementById
+  // y querySelectorAll no encontrarían nada.
   document.addEventListener('DOMContentLoaded', () => {
+
+    // ----------------------------------------------------------
     // 1. ORDENAR FILTROS POR LONGITUD DE TEXTO
+    // ----------------------------------------------------------
+    // Los chips (Todos, Entregado, Rechazado...) se ordenan del texto más
+    // corto al más largo, para que la fila se vea pareja. Se hace aquí en
+    // el navegador porque Django los pinta en el orden de Pedido.ESTADOS.
     const filtrosContainer = document.getElementById('filtros-container');
+
+    // Solo se ejecuta si el contenedor existe en la página.
     if (filtrosContainer) {
+      // .children es una lista "viva" que no tiene .sort(); Array.from la
+      // convierte en un arreglo normal con los chips (<a>) dentro.
       const chips = Array.from(filtrosContainer.children);
+
+      // sort() compara de a dos chips (a y b). Si devuelve un número
+      // negativo, "a" va antes que "b"; si es positivo, va después.
       chips.sort((a, b) => {
+        // El primer <span> de cada chip contiene su nombre (Todos,
+        // Entregado, etc.). El segundo <span> es el contador y se ignora.
         const textA = a.querySelector('span').textContent.trim();
         const textB = b.querySelector('span').textContent.trim();
+
+        // Resta de longitudes: el texto más corto queda primero.
         return textA.length - textB.length;
       });
+
+      // appendChild sobre un elemento que ya está en el DOM lo MUEVE, no
+      // lo duplica. Al recorrerlos en el nuevo orden, cada chip se
+      // reubica al final y la fila queda ordenada.
       chips.forEach(chip => filtrosContainer.appendChild(chip));
     }
 
+    // ----------------------------------------------------------
     // 2. SEPARAR DATOS Y COMENTARIOS
+    // ----------------------------------------------------------
+    // En la base de datos, Pedido.comentarios es UN solo texto. Cuando el
+    // cliente arma el pedido queda así (ver armar_pedido_view):
+    //   "Entrega: DOMICILIO | Dirección: ... | Fecha de entrega: ... | Hora: ... | Notas: ..."
+    // Django lo imprime dentro de un <div class="comment-content hidden">
+    // (oculto) y justo después hay un <div class="comment-output"> vacío.
+    // Este bloque lee el texto oculto y escribe el resultado bonito en el
+    // contenedor vacío.
     document.querySelectorAll('.comment-content').forEach(inputEl => {
+      // Texto crudo del comentario, sin espacios al inicio ni al final.
       const rawText = inputEl.textContent.trim();
+
+      // Si está vacío, o Django imprimió "None" (campo sin valor), no hay
+      // nada que mostrar. "return" dentro de forEach salta al siguiente
+      // pedido.
       if (!rawText || rawText === 'None') return;
 
+      // El contenedor de salida es el elemento hermano que viene justo
+      // después del div oculto.
       const outputEl = inputEl.nextElementSibling;
-      
+
+      // CASO A: el texto NO tiene "|", así que no sigue el formato de
+      // datos separados (por ejemplo, un comentario escrito a mano).
+      // Se muestra completo como una sola nota.
       if (!rawText.includes('|')) {
+        // innerHTML pone HTML dentro del contenedor. Por seguridad, el
+        // texto del usuario siempre pasa por escapeHTML() antes (ver abajo).
         outputEl.innerHTML = `
           <div class="relative flex-1 rounded-[0.6rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-3 text-xs sm:text-sm text-chocolate border-l-4 border-azul shadow-sm overflow-hidden">
               <svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-2 -right-2 h-12 w-12 sm:h-16 sm:w-16 text-azul/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
               <p class="relative z-10 whitespace-pre-line leading-relaxed font-medium break-words">${escapeHTML(rawText)}</p>
           </div>
         `;
-        return;
+        return; // Ya terminó con este pedido; pasa al siguiente.
       }
 
+      // CASO B: el texto sí viene en formato "Clave: valor | Clave: valor".
+      // split('|') lo parte en pedazos y map(trim) limpia los espacios
+      // de cada uno.
       const parts = rawText.split('|').map(p => p.trim());
+
+      // "logistics" guarda los datos de entrega (Entrega, Dirección,
+      // Fecha, Hora...). "notes" guarda lo que el cliente escribió como nota.
       let logistics = [];
       let notes = '';
 
+      // Clasifica cada pedazo: ¿es una nota o es un dato de entrega?
       parts.forEach(part => {
+        // En minúsculas para comparar sin importar cómo se escribió.
         const lower = part.toLowerCase();
+
+        // Si empieza por "notas:", "comentarios:" o "comentario:" es la
+        // nota del cliente. Se guarda solo lo que va DESPUÉS de los dos
+        // puntos (substring desde la posición del ":" + 1).
         if (lower.startsWith('notas:') || lower.startsWith('comentarios:') || lower.startsWith('comentario:')) {
           notes = part.substring(part.indexOf(':') + 1).trim();
         } else {
+          // Cualquier otro pedazo es un dato básico de la entrega.
           logistics.push(part);
         }
       });
 
+      // Aquí se va armando, pedazo a pedazo, el HTML final.
       let html = '';
 
+      // --- Tarjeta "Datos básicos" (solo si hay algún dato) ---
       if (logistics.length > 0) {
         html += '<div class="rounded-[0.6rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-3 border border-azul/30 shadow-sm mb-2">';
         html += '<h4 class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-1.5 flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-azul"></span> Datos básicos</h4>';
         html += '<ul class="space-y-1.5 text-xs sm:text-sm">';
+
+        // Un <li> por cada dato.
         logistics.forEach(item => {
+          // Busca los dos puntos que separan la clave del valor
+          // ("Hora: 10:00" -> clave "Hora", valor "10:00"). Se usa el
+          // PRIMER ":" para que el valor pueda tener más (como la hora).
           const colonIndex = item.indexOf(':');
+
           if (colonIndex !== -1) {
+            // Tiene formato "clave: valor": se muestra en dos columnas,
+            // clave a la izquierda y valor en negrita a la derecha.
             const key = item.substring(0, colonIndex).trim();
             const value = item.substring(colonIndex + 1).trim();
             html += `<li class="flex flex-row justify-between gap-2 border-b border-chocolate/5 pb-1 last:border-0 last:pb-0">
@@ -429,41 +506,82 @@
                         <span class="font-bold text-chocolate text-right break-words">${escapeHTML(value)}</span>
                      </li>`;
           } else {
+            // No tiene ":" (texto suelto): se muestra tal cual en una línea.
             html += `<li class="font-medium text-chocolate break-words">${escapeHTML(item)}</li>`;
           }
         });
+
+        // Cierra la lista y la tarjeta.
         html += '</ul></div>';
       }
 
+      // --- Tarjeta "Notas del cliente" (solo si escribió alguna) ---
       if (notes) {
         html += '<div class="relative rounded-[0.6rem] sm:rounded-[0.8rem] bg-[#F4F9FF] p-3 border-l-4 border-azul shadow-sm overflow-hidden">';
         html += '<h4 class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest2 text-cafe mb-1.5 flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-azul"></span> Notas del cliente</h4>';
+        // Comillas decorativas de fondo (ícono SVG).
         html += '<svg xmlns="http://www.w3.org/2000/svg" class="absolute -bottom-2 -right-2 h-10 w-10 sm:h-12 sm:w-12 text-azul/10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>';
         html += `<p class="relative z-10 whitespace-pre-line leading-relaxed font-medium italic text-chocolate text-xs sm:text-sm break-words">"${escapeHTML(notes)}"</p>`;
         html += '</div>';
       }
 
+      // Por último, se inserta todo el HTML armado en el contenedor de
+      // salida de este pedido.
       outputEl.innerHTML = html;
     });
   });
 
+  // ----------------------------------------------------------
   // 3. TOGGLE PARA VER DETALLES
+  // ----------------------------------------------------------
+  /**
+   * Muestra u oculta el detalle de un pedido (botón "Ver detalles").
+   *
+   * Se llama desde el botón de cada pedido:
+   *   onclick="toggleDetails('{{ pedido.id }}', this)"
+   * Está fuera de DOMContentLoaded a propósito: así queda disponible
+   * globalmente y el onclick del HTML puede encontrarla.
+   *
+   * @param {string} id  - id del pedido; sirve para armar los ids
+   *                       "details-<id>" y "chevron-<id>".
+   * @param {Element} btn - el propio botón (this), para actualizar su
+   *                        atributo de accesibilidad aria-expanded.
+   */
   function toggleDetails(id, btn) {
+    // Panel con los detalles y flechita de ESTE pedido (cada uno tiene
+    // sus ids únicos gracias al id del pedido).
     const detailsDiv = document.getElementById('details-' + id);
     const chevron = document.getElementById('chevron-' + id);
-    
+
+    // Si el panel tiene "hidden", está cerrado: hay que abrirlo.
     if (detailsDiv.classList.contains('hidden')) {
-      detailsDiv.classList.remove('hidden');
-      chevron.classList.add('rotate-180');
-      btn.setAttribute('aria-expanded', 'true');
+      detailsDiv.classList.remove('hidden');      // muestra el panel
+      chevron.classList.add('rotate-180');        // gira la flecha hacia arriba
+      btn.setAttribute('aria-expanded', 'true');  // avisa a lectores de pantalla: abierto
     } else {
+      // Si no, está abierto: se cierra y todo vuelve a su estado inicial.
       detailsDiv.classList.add('hidden');
       chevron.classList.remove('rotate-180');
       btn.setAttribute('aria-expanded', 'false');
     }
   }
 
+  /**
+   * Escapa caracteres especiales de HTML en un texto.
+   *
+   * Es importante porque arriba se usa innerHTML con texto que escribió
+   * el cliente. Sin esto, alguien podría meter etiquetas de script o imágenes con
+   * el atributo onerror en sus notas y ejecutarlas en el panel de la dueña
+   * (ataque XSS). Cada carácter peligroso se cambia por su equivalente
+   * seguro, así el navegador lo muestra como texto y no lo interpreta
+   * como código.
+   *
+   * @param {string} str - texto original.
+   * @returns {string} texto seguro para insertar con innerHTML.
+   */
   function escapeHTML(str) {
+    // La expresión regular /[&<>'"]/g encuentra todos los caracteres
+    // peligrosos; la función los reemplaza usando este diccionario.
     return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag]));
   }
 </script>

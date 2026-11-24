@@ -302,29 +302,93 @@
   {% endif %}
 </main>
 
-<!-- Script para abrir y cerrar los modales -->
+<!-- ============================================================ -->
+<!-- SCRIPT: ABRIR Y CERRAR LOS MODALES DE DETALLE DE PEDIDO       -->
+<!--                                                               -->
+<!-- Cómo funciona todo el sistema:                                -->
+<!--  1. Django genera un modal por cada pedido con un id único:   -->
+<!--     "modal-pedido-<id>" (ej. modal-pedido-9). Todos nacen     -->
+<!--     ocultos gracias a la clase "hidden" de Tailwind           -->
+<!--     (display: none).                                          -->
+<!--  2. La tarjeta de cada pedido llama a abrirModalPedido()      -->
+<!--     con el id de SU modal (atributo onclick del <button>).    -->
+<!--  3. El fondo oscuro, la X y la tecla Escape llaman a          -->
+<!--     cerrarModalPedido() para volver a ocultarlo.              -->
+<!--                                                               -->
+<!-- No se usa ninguna librería: es JavaScript puro que solo       -->
+<!-- agrega o quita clases CSS.                                    -->
+<!-- ============================================================ -->
 <script>
+  /**
+   * Abre el modal de un pedido.
+   *
+   * Se llama desde la tarjeta del pedido:
+   *   onclick="abrirModalPedido('modal-pedido-{{ pedido.id }}')"
+   *
+   * @param {string} idModal - id del modal que se quiere mostrar
+   *                           (ej. "modal-pedido-9").
+   */
   function abrirModalPedido(idModal) {
+    // Busca en la página el elemento cuyo id coincide con el recibido.
     const modal = document.getElementById(idModal);
+
+    // Si no existe (id mal escrito, por ejemplo), no hace nada
+    // en vez de lanzar un error en la consola.
     if (modal) {
+      // Quita "hidden" (display: none) y el modal pasa a verse.
+      // Sus clases "fixed inset-0 flex" lo extienden por toda la pantalla
+      // y lo centran.
       modal.classList.remove('hidden');
-      document.body.classList.add('overflow-hidden'); // Evita el scroll de fondo
+
+      // Bloquea el scroll de la página que queda detrás del modal.
+      // Así, al desplazarse, solo se mueve el contenido del modal
+      // (que tiene su propio overflow-y-auto) y no el fondo.
+      document.body.classList.add('overflow-hidden');
     }
   }
 
+  /**
+   * Cierra el modal de un pedido.
+   *
+   * Se llama desde tres lugares del HTML:
+   *   - El fondo oscuro difuminado (clic fuera de la ventana).
+   *   - El botón con la X de la cabecera del modal.
+   *   - (La tecla Escape se maneja más abajo.)
+   *
+   * @param {string} idModal - id del modal que se quiere ocultar.
+   */
   function cerrarModalPedido(idModal) {
+    // Igual que al abrir: localiza el modal por su id.
     const modal = document.getElementById(idModal);
+
     if (modal) {
+      // Vuelve a poner "hidden" y el modal desaparece.
       modal.classList.add('hidden');
+
+      // Devuelve el scroll a la página, que estaba bloqueado al abrir.
       document.body.classList.remove('overflow-hidden');
     }
   }
 
-  // Cerrar modal con la tecla Escape
-  document.addEventListener('keydown', function(event) {
+  /**
+   * Cierra con la tecla Escape cualquier modal que esté abierto.
+   *
+   * Es un único listener para toda la página (no uno por modal):
+   * escucha las teclas en todo el documento.
+   */
+  document.addEventListener('keydown', function (event) {
+    // Solo reacciona a Escape; cualquier otra tecla se ignora.
     if (event.key === 'Escape') {
+      // Selector CSS:
+      //   [id^="modal-pedido-"]  -> elementos cuyo id EMPIEZA por "modal-pedido-"
+      //   :not(.hidden)          -> ...y que NO estén ocultos (es decir, abiertos)
+      // Devuelve una lista con los modales visibles en ese momento
+      // (normalmente solo uno).
       const modalesAbiertos = document.querySelectorAll('[id^="modal-pedido-"]:not(.hidden)');
-      modalesAbiertos.forEach(modal => {
+
+      // Recorre cada modal abierto y lo cierra de la misma forma que
+      // cerrarModalPedido(): agrega "hidden" y libera el scroll del body.
+      modalesAbiertos.forEach(function (modal) {
         modal.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
       });

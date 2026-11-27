@@ -191,79 +191,46 @@
       </a>
     </div>
     
-    <!-- Redujimos la altura de las filas y el tamaño mínimo de las cartas -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 3xl:gap-8 lg:auto-rows-[240px] 2xl:auto-rows-[280px]">
+    {# === CARRUSEL MÓVIL / GRID DESKTOP === #}
+    <div class="flex md:grid md:grid-cols-4 gap-4 lg:gap-6 3xl:gap-8 items-stretch md:items-start overflow-x-auto snap-x snap-mandatory overscroll-x-contain scroll-smooth pb-4 -mx-6 px-6 md:mx-0 md:px-0 md:pb-0 md:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       {% for producto in destacados %}
         {% if producto.estado == 'DISPONIBLE' %}
-          {% if forloop.first %}
-            <!-- Destacado principal: reducido a min-h-[350px] -->
-            <a href="{% url 'producto_detalle' producto.id %}"
-               class="group relative block overflow-hidden rounded-[2rem] bg-chocolate lg:col-span-2 lg:row-span-2 sm:col-span-2 min-h-[350px] sm:min-h-[400px] lg:min-h-0">
-              {% if producto.imagen %}
-                <img
-                  src="{{ producto.imagen.url }}"
-                  alt="{{ producto.nombre }}"
-                  class="absolute inset-0 h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.04]"
-                />
-              {% endif %}
-              <div class="absolute inset-0 bg-gradient-to-t from-chocolate/95 via-chocolate/35 to-transparent"></div>
-              <span class="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-mantequilla px-4 py-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate">
-                <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
-                Destacado
-              </span>
-              <div class="absolute inset-x-0 bottom-0 p-6 md:p-8 3xl:p-10 text-crema">
-                <h3 class="font-display text-2xl md:text-3xl lg:text-4xl 3xl:text-5xl font-semibold leading-tight">
-                  {{ producto.nombre }}
-                </h3>
-                <p class="mt-3 max-w-xl text-sm md:text-base text-crema/75 line-clamp-2">
-                  {{ producto.descripcion }}
-                </p>
-                <div class="mt-6 flex items-center justify-between gap-4">
-                  <p class="font-display text-xl md:text-2xl lg:text-3xl font-bold text-mantequilla">
-                    {{ producto.precio|cop }}
-                  </p>
-                  <span class="inline-flex items-center gap-2 rounded-full bg-crema px-5 py-2.5 text-sm font-bold text-chocolate shadow-soft">
-                    Ver producto →
-                  </span>
-                </div>
-              </div>
-            </a>
-          {% else %}
-            <div class="group relative flex flex-col overflow-hidden rounded-[2rem] bg-rosaClaro transition hover:-translate-y-2 hover:shadow-lift">
-              <a href="{% url 'producto_detalle' producto.id %}"
-                 class="relative block w-full h-32 lg:h-36 2xl:h-40 shrink-0 overflow-hidden">
+          <div class="snap-start shrink-0 w-[85%] sm:w-[45%] md:w-auto group rounded-[1.7rem] bg-crema p-3 md:p-4 3xl:p-5 shadow-soft md:hover:-translate-y-2 md:hover:shadow-lift transition-all flex flex-col border border-white/50">
+            <a href="{% url 'producto_detalle' producto.id %}" class="block">
+              <div class="relative aspect-[4/3] w-full overflow-hidden rounded-[1.35rem] bg-rosaClaro">
                 {% if producto.imagen %}
                   <img
                     src="{{ producto.imagen.url }}"
                     alt="{{ producto.nombre }}"
-                    class="h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.06]"
+                    class="h-full w-full object-cover object-center transition duration-700 group-hover:scale-105"
                   />
                 {% endif %}
-              </a>
-              <div class="flex flex-1 flex-col justify-between p-4 lg:p-5">
-                <div class="flex items-start justify-between gap-3">
-                  <a href="{% url 'producto_detalle' producto.id %}" class="min-w-0">
-                    <h3 class="font-display text-base lg:text-lg font-semibold truncate text-chocolate hover:text-cafe transition">
-                      {{ producto.nombre }}
-                    </h3>
-                  </a>
-                  <p class="font-display text-sm lg:text-base font-bold whitespace-nowrap text-chocolate">
-                    {{ producto.precio|cop }}
-                  </p>
-                </div>
-                <form method="post" action="{% url 'agregar_al_carrito' producto.id %}" class="mt-3">
-                  {% csrf_token %}
-                  <button type="submit"
-                          class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-4 py-2 text-xs lg:text-sm font-bold text-mantequilla hover:bg-cafe transition">
-                    Añadir
-                  </button>
-                </form>
+                <!-- Detalle: cintilla superior tipo repostería -->
+                <div class="absolute top-0 inset-x-0 h-1.5 bg-[repeating-linear-gradient(45deg,#F9A8D4,#F9A8D4_10px,#FDE68A_10px,#FDE68A_20px)]"></div>
+                <span class="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-full bg-mantequilla font-display text-sm font-bold text-chocolate shadow-soft">
+                  {{ forloop.counter }}
+                </span>
               </div>
-            </div>
-          {% endif %}
+              <div class="pt-4 px-1">
+                <h3 class="font-display text-base lg:text-lg 3xl:text-xl font-semibold truncate text-chocolate">
+                  {{ producto.nombre }}
+                </h3>
+                <p class="mt-1 text-sm font-bold text-cafe">
+                  {{ producto.precio|cop }}
+                </p>
+              </div>
+            </a>
+            <form method="post" action="{% url 'agregar_al_carrito' producto.id %}" class="mt-4">
+              {% csrf_token %}
+              <button type="submit"
+                      class="w-full rounded-full bg-chocolate px-3 py-2.5 text-xs lg:text-sm font-bold text-mantequilla hover:bg-cafe transition">
+                Añadir al carrito
+              </button>
+            </form>
+          </div>
         {% endif %}
       {% empty %}
-        <div class="col-span-full flex flex-col items-center justify-center rounded-[2rem] bg-rosaClaro/50 px-6 py-20 text-center">
+        <div class="w-full md:col-span-full rounded-[2rem] bg-crema px-6 py-20 text-center shadow-soft">
           <span class="grid h-16 w-16 place-items-center rounded-full bg-mantequilla text-chocolate text-2xl">
             +
           </span>
@@ -273,6 +240,13 @@
         </div>
       {% endfor %}
     </div>
+    {% if destacados %}
+      <p class="md:hidden mt-2 text-center text-[10px] font-bold uppercase tracking-widest2 text-cafe/60 flex items-center justify-center gap-2 select-none">
+        <span aria-hidden="true">←</span>
+        <span>Desliza para ver más</span>
+        <span aria-hidden="true">→</span>
+      </p>
+    {% endif %}
   </section>
   {# ============================================================ #}
   {# PRODUCTOS NUEVOS                                               #}

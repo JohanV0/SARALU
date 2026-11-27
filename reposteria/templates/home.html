@@ -161,26 +161,21 @@
       {% endif %}
     </div>
   </section>
-
-  {# CATÁLOGO DESTACADO #}
-
+  {# ============================================================ #}
+  {# CATÁLOGO DESTACADO — Imágenes más pequeñas                   #}
+  {# ============================================================ #}
   <section id="catalogo-destacado"
-           class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-20 
-lg:py-24 3xl:py-32">
+           class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20 py-20 lg:py-24 3xl:py-32">
     <span class="absolute top-20 right-10 text-rosa text-3xl animate-pulse">✦</span>
-    <span class="absolute bottom-40 left-10 text-mantequilla text-2xl animate-
-bounce">✦</span>
+    <span class="absolute bottom-40 left-10 text-mantequilla text-2xl animate-bounce">✦</span>
     <span class="absolute top-1/2 right-1/3 text-azul text-xl">✦</span>
     <div class="mb-12 lg:mb-14 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
       <div>
-
-        <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase 
-tracking-widest2 text-cafe">
+        <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
           <span class="h-2 w-2 rounded-full bg-rosa"></span>
           Selección SARALU
         </span>
-        <h2 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold 
-tracking-tight text-chocolate">
+        <h2 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold tracking-tight text-chocolate">
           Catálogo destacado
         </h2>
         <p class="mt-3 max-w-2xl text-sm lg:text-base text-cafe">
@@ -188,29 +183,27 @@ tracking-tight text-chocolate">
         </p>
       </div>
       <a href="{% url 'catalogo' %}"
-         class="group inline-flex items-center gap-3 text-sm lg:text-base font-bold text-
-chocolate">
+         class="group inline-flex items-center gap-3 text-sm lg:text-base font-bold text-chocolate">
         Ver todo
-        <span class="grid h-9 w-9 place-items-center rounded-full bg-rosaClaro text-chocolate 
-transition group-hover:translate-x-1">
+        <span class="grid h-9 w-9 place-items-center rounded-full bg-rosaClaro text-chocolate transition group-hover:translate-x-1">
           →
         </span>
       </a>
     </div>
-  
-    <!-- Grid simétrico perfecto -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 3xl:gap-8 auto-rows-[220px] 2xl:auto-rows-[260px]">
+    
+    <!-- Redujimos la altura de las filas y el tamaño mínimo de las cartas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 3xl:gap-8 lg:auto-rows-[240px] 2xl:auto-rows-[280px]">
       {% for producto in destacados %}
         {% if producto.estado == 'DISPONIBLE' %}
           {% if forloop.first %}
-            <!-- Destacado principal: ocupa 2x2. Forzamos h-full para que llene la fila -->
+            <!-- Destacado principal: reducido a min-h-[350px] -->
             <a href="{% url 'producto_detalle' producto.id %}"
-               class="group relative block overflow-hidden rounded-[2rem] bg-chocolate sm:col-span-2 sm:row-span-2 h-full">
+               class="group relative block overflow-hidden rounded-[2rem] bg-chocolate lg:col-span-2 lg:row-span-2 sm:col-span-2 min-h-[350px] sm:min-h-[400px] lg:min-h-0">
               {% if producto.imagen %}
                 <img
                   src="{{ producto.imagen.url }}"
                   alt="{{ producto.nombre }}"
-                  class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                  class="absolute inset-0 h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.04]"
                 />
               {% endif %}
               <div class="absolute inset-0 bg-gradient-to-t from-chocolate/95 via-chocolate/35 to-transparent"></div>
@@ -236,22 +229,18 @@ transition group-hover:translate-x-1">
               </div>
             </a>
           {% else %}
-            <!-- Tarjetas secundarias: h-full para llenar la celda del grid exactamente -->
-            <div class="group relative flex flex-col overflow-hidden rounded-[2rem] bg-rosaClaro transition hover:-translate-y-2 hover:shadow-lift h-full">
-              <!-- Contenedor de imagen relativo que crece para llenar el espacio disponible -->
-              <div class="relative flex-1 overflow-hidden">
-                <a href="{% url 'producto_detalle' producto.id %}" class="absolute inset-0 block">
-                  {% if producto.imagen %}
-                    <img
-                      src="{{ producto.imagen.url }}"
-                      alt="{{ producto.nombre }}"
-                      class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]"
-                    />
-                  {% endif %}
-                </a>
-              </div>
-              <!-- Contenedor de texto y botón fijo en la parte inferior -->
-              <div class="flex flex-col justify-between p-4 lg:p-5 bg-rosaClaro relative z-10 shrink-0">
+            <div class="group relative flex flex-col overflow-hidden rounded-[2rem] bg-rosaClaro transition hover:-translate-y-2 hover:shadow-lift">
+              <a href="{% url 'producto_detalle' producto.id %}"
+                 class="relative block w-full h-32 lg:h-36 2xl:h-40 shrink-0 overflow-hidden">
+                {% if producto.imagen %}
+                  <img
+                    src="{{ producto.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    class="h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.06]"
+                  />
+                {% endif %}
+              </a>
+              <div class="flex flex-1 flex-col justify-between p-4 lg:p-5">
                 <div class="flex items-start justify-between gap-3">
                   <a href="{% url 'producto_detalle' producto.id %}" class="min-w-0">
                     <h3 class="font-display text-base lg:text-lg font-semibold truncate text-chocolate hover:text-cafe transition">
@@ -285,7 +274,85 @@ transition group-hover:translate-x-1">
       {% endfor %}
     </div>
   </section>
-
+  {# ============================================================ #}
+  {# PRODUCTOS NUEVOS                                               #}
+  {# ============================================================ #}
+  <section id="es_nuevo" class="relative py-20 lg:py-24 3xl:py-32 mx-4 lg:mx-8 my-8 rounded-[2rem] lg:rounded-[3rem] overflow-hidden">
+    <div class="absolute inset-0 bg-mantequilla/35 rounded-[2rem] lg:rounded-[3rem]"></div>
+    <span class="absolute top-16 right-20 text-rosa text-3xl animate-pulse z-10">✦</span>
+    <span class="absolute bottom-10 left-10 text-chocolate/30 text-2xl z-10">✦</span>
+    <span class="absolute top-1/2 left-1/4 text-mantequilla text-xl z-10">✦</span>
+    <div class="relative mx-auto w-full max-w-[1900px] px-6 lg:px-10 2xl:px-14 3xl:px-20">
+      <div class="mb-12 lg:mb-14">
+        <span class="inline-flex items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe">
+          <span class="h-2 w-2 rounded-full bg-rosa"></span>
+          Recién horneados
+        </span>
+        <h2 class="font-display mt-3 text-4xl md:text-5xl lg:text-6xl 3xl:text-7xl font-semibold tracking-tight text-chocolate">
+          Productos nuevos
+        </h2>
+        <p class="mt-3 max-w-2xl text-sm lg:text-base text-cafe">
+          Nuevas creaciones hechas para sorprenderte.
+        </p>
+      </div>
+      <div class="space-y-5 3xl:space-y-7">
+        {% for producto in es_nuevos %}
+          {% if producto.estado == 'DISPONIBLE' %}
+            <div class="group relative grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[300px_1fr] 3xl:grid-cols-[360px_1fr] items-center rounded-[2rem] 3xl:rounded-[2.5rem] bg-crema overflow-hidden shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all">
+              <a href="{% url 'producto_detalle' producto.id %}"
+                 class="relative block w-full aspect-[4/3] md:h-52 lg:h-56 3xl:h-64 overflow-hidden">
+                {% if producto.imagen %}
+                  <img
+                    src="{{ producto.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    class="h-full w-full object-cover object-center transition duration-700 group-hover:scale-105"
+                  />
+                {% endif %}
+                <span class="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-rosa px-3 py-1.5 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate shadow-soft">
+                  <span class="h-1.5 w-1.5 rounded-full bg-chocolate"></span>
+                  Nuevo
+                </span>
+              </a>
+              <div class="flex flex-col justify-between p-6 md:p-8 3xl:p-10">
+                <div>
+                  <a href="{% url 'producto_detalle' producto.id %}">
+                    <h3 class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-semibold text-chocolate hover:text-cafe transition">
+                      {{ producto.nombre }}
+                    </h3>
+                  </a>
+                  <p class="mt-3 max-w-2xl text-base lg:text-lg text-cafe line-clamp-3">
+                    {{ producto.descripcion }}
+                  </p>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mt-7">
+                  <p class="font-display text-2xl lg:text-3xl 3xl:text-4xl font-bold text-chocolate">
+                    {{ producto.precio|cop }}
+                  </p>
+                  <form method="post" action="{% url 'agregar_al_carrito' producto.id %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 rounded-full bg-chocolate px-6 py-3 lg:px-7 lg:py-3.5 text-sm lg:text-base font-bold text-mantequilla shadow-soft hover:bg-cafe transition">
+                      Añadir al carrito
+                      <span>→</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% empty %}
+          <div class="rounded-[2rem] bg-crema/80 px-6 py-20 text-center shadow-soft">
+            <h3 class="font-display text-xl lg:text-2xl font-semibold text-chocolate">
+              Sin productos disponibles.
+            </h3>
+            <p class="mt-2 text-sm lg:text-base text-cafe">
+              Muy pronto tendremos nuevas delicias.
+            </p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
   {# ============================================================ #}
   {# CTA FINAL — Más pequeño                                       #}
   {# ============================================================ #}

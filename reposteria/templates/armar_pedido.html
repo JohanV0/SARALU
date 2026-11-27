@@ -1,21 +1,15 @@
 {% extends "layout/base.html" %}
 {% load static %}
 {% load moneda %}
-
 {% block title %}Armar Pedido — SARALU{% endblock %}
-
 {% block content %}
-
   {# ---------- HERO BAND ---------- #}
   <section class="relative mx-4 lg:mx-8 mt-6 lg:mt-8 overflow-hidden rounded-[2rem] lg:rounded-[3rem] bg-rosaClaro/70 px-6 sm:px-8 lg:px-12 3xl:px-16 py-10 lg:py-14">
-
     <span class="pointer-events-none absolute top-8 right-10 text-mantequilla text-3xl animate-pulse">✦</span>
     <span class="pointer-events-none absolute bottom-8 right-1/3 text-rosa text-2xl animate-bounce">✦</span>
     <span class="pointer-events-none absolute top-1/2 left-6 text-azul text-xl">✦</span>
     <span class="pointer-events-none absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-mantequilla/40 blur-3xl"></span>
-
     <div class="relative mx-auto w-full max-w-[1900px]">
-
       <nav class="flex flex-wrap items-center gap-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-cafe/70">
         <a href="{% url 'home' %}" class="hover:text-chocolate transition">Inicio</a>
         <span class="text-chocolate/30">/</span>
@@ -23,35 +17,25 @@
         <span class="text-chocolate/30">/</span>
         <span class="text-chocolate">Armar pedido</span>
       </nav>
-
       <h1 class="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl 3xl:text-7xl font-semibold leading-[1.05] tracking-tight text-chocolate">
         Arma tu
         <span class="font-script text-rosa text-5xl sm:text-6xl lg:text-7xl 3xl:text-8xl inline-block ml-2">
           pedido
         </span>
       </h1>
-
       <p class="mt-5 lg:mt-7 max-w-2xl text-sm lg:text-base text-cafe">
         Elige cómo quieres recibirlo, revisa el resumen y confirma en un paso.
       </p>
-
     </div>
   </section>
-
-
   {# ---------- MAIN ---------- #}
   <main class="flex-grow relative mx-auto w-full max-w-[1900px] px-4 sm:px-7 lg:px-10 2xl:px-14 3xl:px-20 py-10 lg:py-14">
-
     <div class="grid lg:grid-cols-[1.15fr_0.85fr] gap-6 lg:gap-8 3xl:gap-10 items-start">
-
       {# ---------- COLUMNA IZQUIERDA: FORMULARIO ---------- #}
       <section class="relative">
-
         <form method="POST" action="{% url 'armar_pedido' %}" id="form-pedido"
               class="relative overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema p-5 sm:p-8 lg:p-10 shadow-soft ring-1 ring-chocolate/10">
-
           {% csrf_token %}
-
           <div class="relative flex items-start justify-between gap-4">
             <div class="flex items-start gap-4 min-w-0">
               <span class="grid h-12 w-12 lg:h-14 lg:w-14 3xl:h-16 3xl:w-16 shrink-0 place-items-center rounded-3xl bg-mantequilla font-display text-xl lg:text-2xl 3xl:text-3xl font-bold text-chocolate shadow-soft">
@@ -66,9 +50,7 @@
             </div>
             <span class="pointer-events-none text-mantequilla text-2xl rotate-12">★</span>
           </div>
-
           <div class="mt-6 h-px bg-chocolate/10"></div>
-
           {# Tipo de entrega #}
           <div class="mt-6 lg:mt-8">
             <label for="tipo-entrega-select" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
@@ -80,7 +62,6 @@
               </svg>
               ¿Cómo deseas recibirlo?
             </label>
-
             <div class="relative">
               <select name="tipo_entrega" id="tipo-entrega-select" required onchange="toggleDireccion()"
                       class="w-full appearance-none rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 pr-11 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
@@ -95,20 +76,7 @@
               </svg>
             </div>
           </div>
-
           {# Campo dinámico de Dirección o Info de Tienda #}
-
-          {# Teléfono de contacto #}
-          <div class="mt-5">
-            <label class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
-              Teléfono de contacto
-            </label>
-            <input type="tel" name="telefono" id="input-telefono" required
-                   value="{{ request.user.perfil.telefono|default:'' }}"
-                   placeholder="Ej: 3151234567"
-                   class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
-          </div>
-          
           <div id="campo-domicilio" class="mt-5">
             <label for="input-direccion" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
               Dirección exacta de entrega
@@ -117,12 +85,10 @@
                    placeholder="Ej: Calle 60 # 5-23, apto 301"
                    class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
           </div>
-
           <div id="info-tienda" class="hidden mt-5 rounded-2xl bg-mantequilla/40 p-4 border border-mantequilla text-sm text-chocolate">
             <p class="font-bold">📍 Dirección de recogida:</p>
             <p class="mt-1 text-cafe">La Arboleda Campestre, Conjunto Almendros, Ibagué.</p>
           </div>
-
           {# Fecha y hora #}
           <div class="mt-5 flex flex-col sm:flex-row gap-4 sm:gap-5">
             <div class="w-full sm:w-1/2">
@@ -139,13 +105,11 @@
               </label>
               <input type="date" name="fecha" id="input-fecha" required
                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
-
               <div id="mensaje-error-fecha" class="hidden mt-2 text-xs sm:text-sm font-bold text-red-500 flex items-start gap-1">
                 <span>⚠</span>
                 <span>Esta fecha no está disponible. Por favor, selecciona otra.</span>
               </div>
             </div>
-
             <div class="w-full sm:w-1/2">
               <label for="input-hora" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-chocolate/50" fill="none"
@@ -160,8 +124,7 @@
                      class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
             </div>
           </div>
-
-          {# Teléfono de contacto (NUEVO: la vista lo exige) #}
+          {# Teléfono de contacto (conectado al flujo de WhatsApp) #}
           <div class="mt-5">
             <label for="input-telefono" class="mb-2 flex items-center gap-2 text-[11px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-chocolate/50" fill="none"
@@ -176,7 +139,6 @@
                    placeholder="Ej: 3001234567"
                    class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3.5 text-sm lg:text-base font-semibold text-chocolate focus:border-chocolate focus:outline-none transition">
           </div>
-
           {# Features #}
           <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs lg:text-sm text-cafe font-semibold">
             <span class="flex items-center gap-2">
@@ -192,7 +154,6 @@
               Calidad
             </span>
           </div>
-
           {# PASO 2: Comentarios o descripción del pedido #}
           <div class="mt-7 pt-6 border-t border-chocolate/10">
             <div class="flex items-center gap-3 mb-4">
@@ -206,17 +167,13 @@
                 </h3>
               </div>
             </div>
-
             <textarea name="comentarios" rows="3" placeholder="Ej: Por favor que el pastel lleve dedicatoria de feliz cumpleaños, o indicaciones especiales..."
                       class="w-full rounded-2xl border-2 border-chocolate/10 bg-white px-4 py-3 text-sm lg:text-base font-medium text-chocolate focus:border-chocolate focus:outline-none transition"></textarea>
           </div>
-
           <div class="mt-7 h-px bg-chocolate/10"></div>
-
           <p class="mt-5 text-[11px] lg:text-xs text-cafe/90 leading-relaxed">
             Al confirmar aceptas nuestros términos. Te llevaremos a WhatsApp con el resumen de tu pedido ya escrito: solo debes pulsar "Enviar" para confirmarlo con nosotros.
           </p>
-
           <button type="submit" id="btn-confirmar"
                   class="group relative mt-5 inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-full bg-chocolate px-8 py-4 text-base lg:text-lg font-bold text-mantequilla shadow-soft hover:bg-cafe hover:-translate-y-1 hover:shadow-lift transition-all">
             <span class="pointer-events-none absolute top-2 right-6 text-mantequilla/40 text-sm rotate-12">★</span>
@@ -227,39 +184,28 @@
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
           </button>
-
         </form>
-
       </section>
-
-
       {# ---------- COLUMNA DERECHA: RESUMEN (STICKY) ---------- #}
       <aside class="space-y-5 lg:sticky lg:top-6 self-start">
-
         <div class="overflow-hidden rounded-[2rem] lg:rounded-[2.5rem] bg-crema shadow-soft ring-1 ring-chocolate/10">
-
           <div class="relative flex items-center justify-between gap-4 bg-rosaClaro px-6 py-5 border-b border-chocolate/10">
             <span class="pointer-events-none absolute top-3 right-20 text-mantequilla text-lg rotate-12">★</span>
             <span class="pointer-events-none absolute bottom-3 right-8 text-rosa text-sm -rotate-12">★</span>
-
             <div>
               <p class="text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/55">Resumen</p>
               <h2 class="font-display mt-1 text-2xl lg:text-3xl font-semibold leading-none text-chocolate">
                 Resumen de compra
               </h2>
             </div>
-
             <span class="shrink-0 rounded-full bg-chocolate px-3 py-1 text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-mantequilla">
               {{ items|length }} items
             </span>
           </div>
-
           <div class="p-5 sm:p-6 lg:p-7">
-
             <div class="space-y-3">
               {% for item in items %}
                 <div class="flex items-center gap-3 rounded-2xl bg-white/70 p-3 ring-1 ring-chocolate/5">
-
                   <div class="relative h-14 w-14 lg:h-16 lg:w-16 shrink-0 overflow-hidden rounded-xl bg-rosaClaro ring-1 ring-chocolate/10">
                     {% if item.producto.imagen %}
                       <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" class="h-full w-full object-cover">
@@ -268,7 +214,6 @@
                       x{{ item.cantidad }}
                     </span>
                   </div>
-
                   <div class="min-w-0 flex-1">
                     <p class="font-display text-sm lg:text-base font-bold leading-tight truncate text-chocolate">
                       {{ item.producto.nombre }}
@@ -277,11 +222,9 @@
                       Cantidad: {{ item.cantidad }}
                     </p>
                   </div>
-
                   <p class="font-display text-sm lg:text-base font-bold whitespace-nowrap text-chocolate">
                     {{ item.subtotal|cop }}
                   </p>
-
                 </div>
               {% empty %}
                 <div class="rounded-2xl bg-white/70 p-6 text-center ring-1 ring-chocolate/5">
@@ -291,7 +234,6 @@
                 </div>
               {% endfor %}
             </div>
-
             <div class="mt-6 space-y-3 border-t border-dashed border-chocolate/20 pt-5">
               <div class="flex items-center justify-between text-sm lg:text-base text-cafe">
                 <span>Subtotal</span>
@@ -302,7 +244,6 @@
                 <span class="font-semibold text-chocolate/60">Se calcula al confirmar</span>
               </div>
             </div>
-
             <div class="mt-5 flex items-end justify-between rounded-2xl bg-mantequilla/50 px-5 py-4 ring-1 ring-mantequilla">
               <div>
                 <span class="block text-[10px] lg:text-xs font-bold uppercase tracking-widest2 text-chocolate/60">
@@ -313,14 +254,10 @@
                 {{ subtotal|cop }}
               </span>
             </div>
-
           </div>
         </div>
-
-
         {# Mini tarjetas informativas #}
         <div class="rounded-[2rem] bg-crema p-4 sm:p-5 ring-1 ring-chocolate/10 shadow-soft space-y-3">
-
           <div class="flex items-start gap-3">
             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-mantequilla text-chocolate">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -337,9 +274,7 @@
               <p class="mt-0.5 text-[11px] lg:text-xs text-cafe">Disponible en Ibagué y alrededores.</p>
             </div>
           </div>
-
           <div class="h-px bg-chocolate/10"></div>
-
           <div class="flex items-start gap-3">
             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-rosaClaro text-chocolate">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -354,9 +289,7 @@
               <p class="mt-0.5 text-[11px] lg:text-xs text-cafe">Sin costo adicional en la Arboleda Campestre.</p>
             </div>
           </div>
-
           <div class="h-px bg-chocolate/10"></div>
-
           <div class="flex items-start gap-3">
             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-azul/60 text-chocolate">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -371,25 +304,18 @@
               <p class="mt-0.5 text-[11px] lg:text-xs text-cafe">Confirmamos contigo antes de preparar.</p>
             </div>
           </div>
-
         </div>
-
       </aside>
-
     </div>
-
   </main>
-
   {# --- SCRIPT PARA VALIDACIÓN E INTERACTIVIDAD --- #}
   {{ fechas_bloqueadas_json|json_script:"fechas-bloqueadas-data" }}
-
   <script>
     function toggleDireccion() {
       const selectEntrega = document.getElementById('tipo-entrega-select');
       const campoDomicilio = document.getElementById('campo-domicilio');
       const inputDireccion = document.getElementById('input-direccion');
       const infoTienda = document.getElementById('info-tienda');
-
       if (selectEntrega.value === 'recojo') {
         campoDomicilio.classList.add('hidden');
         inputDireccion.removeAttribute('required');
@@ -400,10 +326,8 @@
         infoTienda.classList.add('hidden');
       }
     }
-
     document.addEventListener('DOMContentLoaded', function () {
       toggleDireccion(); // por si el navegador restaura el formulario
-
       const form = document.getElementById('form-pedido');
       const inputFecha = document.getElementById('input-fecha');
       const mensajeError = document.getElementById('mensaje-error-fecha');
@@ -411,14 +335,12 @@
       const fechasBloqueadas = JSON.parse(
         document.getElementById('fechas-bloqueadas-data').textContent
       );
-
       // No permitir fechas pasadas (usa la fecha local, no UTC)
       const hoy = new Date();
       const yyyy = hoy.getFullYear();
       const mm = String(hoy.getMonth() + 1).padStart(2, '0');
       const dd = String(hoy.getDate()).padStart(2, '0');
       inputFecha.min = `${yyyy}-${mm}-${dd}`;
-
       function validarFecha() {
         const bloqueada = fechasBloqueadas.includes(inputFecha.value);
         mensajeError.classList.toggle('hidden', !bloqueada);
@@ -427,7 +349,6 @@
         btnConfirmar.classList.toggle('cursor-not-allowed', bloqueada);
       }
       inputFecha.addEventListener('change', validarFecha);
-
       // Evitar doble envío (dos pedidos duplicados)
       form.addEventListener('submit', function () {
         btnConfirmar.disabled = true;
@@ -435,5 +356,4 @@
       });
     });
   </script>
-
 {% endblock %}

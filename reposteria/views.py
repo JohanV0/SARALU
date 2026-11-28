@@ -2,23 +2,24 @@ import re
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Prefetch, Q ,F
+from django.db.models import Prefetch, Q, F
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date, parse_time
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db import transaction
-from urllib.parse import quote 
-from django.conf import settings  
+from urllib.parse import quote
+from django.conf import settings
 from .forms import ResenaForm
 
 from .models import (
-    Carrito,Categoria,ConfiguracionAgenda,CupoFecha,
-    DetallePedido,FechaBloqueada,HistorialEstadoPedido,
-    ItemCarrito,Pedido,Producto,Resena,RespuestaResena,
+    Carrito, Categoria, ConfiguracionAgenda, CupoFecha,
+    DetallePedido, FechaBloqueada, HistorialEstadoPedido,
+    ItemCarrito, Pedido, Producto, Resena, RespuestaResena,
     HorarioAtencion,
 )
+
 
 def home(request):
     return render(request, 'home.html', {
@@ -44,9 +45,9 @@ def catalogo_view(request):
     if categoria_code:
         productos = productos.filter(categoria__categoria=categoria_code)
 
-    paginator = Paginator(productos, 2) #para saber la cantidad de itenas van a aparecer
-    page_number = request.GET.get("page") #para saber el numero de la pagina desde la URL
-    page_obj = paginator.get_page(page_number) #get_page evita error si se elije numero fuera del que hay (inicio o final)
+    paginator = Paginator(productos, 2)  # para saber la cantidad de itenas van a aparecer
+    page_number = request.GET.get("page")  # para saber el numero de la pagina desde la URL
+    page_obj = paginator.get_page(page_number)  # get_page evita error si se elije numero fuera del que hay (inicio o final)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -56,8 +57,8 @@ def catalogo_view(request):
         'productos': productos,
         'categorias': categorias,
         'categoria_actual': categoria_code,
-        'page_obj' : page_obj,          
-        'extra_query' : extra_query,
+        'page_obj': page_obj,
+        'extra_query': extra_query,
     }
     return render(request, 'catalogo.html', contexto)
 
@@ -257,16 +258,16 @@ def nuevo_producto(request):
 def lista_productos(request):
     productos = Producto.objects.all()
     busqueda = request.GET.get("buscar", "").strip()
-    estado = request.GET.get("estado","").strip()
+    estado = request.GET.get("estado", "").strip()
 
     if busqueda:
         productos = productos.filter(
-            Q(nombre__icontains = busqueda) 
+            Q(nombre__icontains=busqueda)
         ).distinct()
 
     if estado:
         productos = productos.filter(estado=estado)
-    estados = Producto._meta.get_field('estado').choices 
+    estados = Producto._meta.get_field('estado').choices
 
     paginator = Paginator(productos, 4)
     page_number = request.GET.get("page")
@@ -276,15 +277,16 @@ def lista_productos(request):
     query_params.pop('page', None)
     extra_query = query_params.urlencode()
 
-    contexto ={
-            "productos":productos,
-            "busqueda" : busqueda,
-            "estado" : estado,
-            "estados" : estados,
-            "page_obj" : page_obj,
-            "extra_query" : extra_query,
-        }
-    return render(request,'lista_productos.html',contexto)
+    contexto = {
+        "productos": productos,
+        "busqueda": busqueda,
+        "estado": estado,
+        "estados": estados,
+        "page_obj": page_obj,
+        "extra_query": extra_query,
+    }
+    return render(request, 'lista_productos.html', contexto)
+
 
 @login_required
 def armar_pedido_view(request):
@@ -303,11 +305,10 @@ def armar_pedido_view(request):
     if request.method == 'POST':
         tipo_entrega = request.POST.get('tipo_entrega', 'domicilio').strip()
         fecha_str = request.POST.get('fecha', '').strip()
-        hora_str = request.POST.get('hora', '').strip()
+        hora = request.POST.get('hora', '').strip()
         direccion_cliente = request.POST.get('direccion', '').strip()
-        telefono_form = request.POST.get('telefono', '').strip()
-        comentarios_cliente = request.POST.get('comentarios', '').strip()
         telefono_ingresado = request.POST.get('telefono', '').strip()
+        comentarios_cliente = request.POST.get('comentarios', '').strip()
 
         # --- Validar el teléfono (solo dígitos, entre 7 y 15) ---
         telefono = re.sub(r'\D', '', telefono_ingresado)
@@ -324,7 +325,8 @@ def armar_pedido_view(request):
 
         # --- Validar fecha y hora obligatorias ---
         fecha_obj = parse_date(fecha_str) if fecha_str else None
-        if not fecha_obj or not hora:
+        hora_obj = parse_time(hora) if hora else None
+        if not fecha_obj or not hora_obj:
             messages.error(request, "Selecciona la fecha y la hora de entrega.")
             return redirect('armar_pedido')
 
@@ -551,23 +553,23 @@ def mis_pedidos_view(request):
     if estado:
         pedidos = pedidos.filter(estado=estado)
 
-    paginator = Paginator(pedidos, 4) 
+    paginator = Paginator(pedidos, 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    
+
     contexto = {
         'page_obj': page_obj,
         'busqueda': busqueda,
         'estado': estado,
-        'estados': Pedido.ESTADOS, # Enviamos los estados para el <select> del HTML
+        'estados': Pedido.ESTADOS,  # Enviamos los estados para el <select> del HTML
     }
-    
+
     return render(request, 'mis_pedidos.html', contexto)
 
 
 @login_required
 @user_passes_test(admin)
-def lista_pedidos_admin_view(request):  
+def lista_pedidos_admin_view(request):
     # La dueña puede ver todos los pedidos ordenados del más reciente al más antiguo
     pedidos = Pedido.objects.all().order_by('-creado')
     contexto = {
@@ -634,25 +636,25 @@ def pedidos_pendientes_view(request):
 
     if busqueda:
         pedidos = pedidos.filter(
-            Q(nombre_contacto__icontains = busqueda) |
-            Q(telefono_contacto__icontains = busqueda) |
-            Q(direccion_entrega__icontains = busqueda) |
-            Q(creado__date__icontains = busqueda) |
-            Q(detalles__producto__nombre__icontains = busqueda)
+            Q(nombre_contacto__icontains=busqueda) |
+            Q(telefono_contacto__icontains=busqueda) |
+            Q(direccion_entrega__icontains=busqueda) |
+            Q(creado__date__icontains=busqueda) |
+            Q(detalles__producto__nombre__icontains=busqueda)
         ).distinct()
 
     if estado:
         pedidos = pedidos.filter(estado=estado)
 
-    paginator = Paginator(pedidos, 4) 
+    paginator = Paginator(pedidos, 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    
+
     contexto = {
         'page_obj': page_obj,
         'busqueda': busqueda,
         'estado': estado,
-        'estados': Pedido.ESTADOS, # Enviamos los estados para el <select> del HTML
+        'estados': Pedido.ESTADOS,  # Enviamos los estados para el <select> del HTML
     }
 
     return render(request, 'pedidos_pendientes.html', contexto)
@@ -738,7 +740,7 @@ def marcar_entregado_view(request, pedido_id):
 @user_passes_test(admin)
 def todos_los_pedidos_view(request):
     busqueda = request.GET.get("buscar", "").strip()
-    estado = request.GET.get("estado","").strip()
+    estado = request.GET.get("estado", "").strip()
 
     pedidos = (
         Pedido.objects
@@ -757,7 +759,7 @@ def todos_los_pedidos_view(request):
             Q(detalles__producto__nombre__icontains=busqueda)
         ).distinct()
 
-    paginator = Paginator(pedidos, 4) 
+    paginator = Paginator(pedidos, 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -766,9 +768,9 @@ def todos_los_pedidos_view(request):
     extra_query = query_params.urlencode()
 
     contexto = {
-            'page_obj': page_obj, 
-            'busqueda': busqueda,
-            'extra_query': extra_query
+        'page_obj': page_obj,
+        'busqueda': busqueda,
+        'extra_query': extra_query
     }
 
-    return render(request,'todos_los_pedidos.html',contexto)
+    return render(request, 'todos_los_pedidos.html', contexto)
